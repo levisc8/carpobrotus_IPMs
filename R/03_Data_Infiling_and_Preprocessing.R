@@ -109,3 +109,6 @@ png('Figures/Israel/Havatselet/Preliminary_Plots.png',
                nrow = 2, ncol = 2)
 dev.off()
 
+# If necessary, copy over png file so the collaboration outline can use it
+# fs::file_copy('Figures/Israel/Havatselet/Preliminary_Plots.png',
+#               '../Stellenbosch_Phys_Collab/R/Preliminary_Plots.png')
