@@ -98,3 +98,14 @@ pdf('Figures/Israel/Havatselet/Preliminary_Plots.pdf',
                RametFecPlot, GenetFecPlot,
                nrow = 2, ncol = 2)
 dev.off()
+
+png('Figures/Israel/Havatselet/Preliminary_Plots.png',
+    width = 8,
+    height = 8,
+    units = 'in',
+    res = 72)
+  grid.arrange(RametHist, GenetHist,
+               RametFecPlot, GenetFecPlot,
+               nrow = 2, ncol = 2)
+dev.off()
+
