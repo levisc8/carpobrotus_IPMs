@@ -19,26 +19,55 @@ HavatseletGenets <- ramet_to_genet(HavatseletRamets,
                                    Clone_Of,
                                    size.breaks = 10)
 
-# Base graphics figures
+# Generate info on reproductive status
+HavatseletRamets$Repro <- ifelse(is.na(HavatseletRamets$Flower_N), 0, 1)
 
-# par(mfrow = c(2, 2))
-# 
-# hist(log(HavatseletRamets$Size),
-#      main = '',
-#      xlab = expression('Log ramet size distribution m' ^2),
-#      breaks = 70)
-# 
-# hist(log(HavatseletGenets$Size),
-#      main = '',
-#      xlab = expression('Log genet size distribution m' ^2),
-#      breaks = 10)
-# 
-# plot(Flower_N ~ Size, data = HavatseletRamets,
-#      ylab = '# of Flowers per Ramet')
-# 
-# 
-# plot(Flower_N ~ Size, data = HavatseletGenets,
-#      ylab = '# of Flowers per Genet')
+for(i in seq_len(dim(HavatseletGenets)[1])) {
+  HavatseletGenets$Repro[i] <- ifelse(HavatseletGenets$Flower_N[i] == 0, 0, 1)
+}
+
+# First models. Fecundity!
+RametFlowerGLM <- glm(Flower_N ~ LogSize, 
+                      data = HavatseletRamets,
+                      family = poisson())
+
+GenetFlowerGLM <- glm(Flower_N ~ LogSize, 
+                      data = HavatseletGenets,
+                      family = poisson())
+
+RametReproGLM <- glm(Repro ~ LogSize,
+                     data = HavatseletRamets,
+                     family = binomial())
+
+GenetReproGLM <- glm(Repro ~ LogSize,
+                     data = HavatseletGenets,
+                     family = binomial())
+
+message('Ramet flower #\n') # overdispersed
+summary(RametFlowerGLM)
+message('\nGenet flower #\n') # overdispersed
+summary(GenetFlowerGLM)
+
+message('\nRamet pr(Repro)\n') # not overdispersed!
+summary(RametReproGLM)
+message('\nGenet pr(Repro)\n') # overdispersed
+summary(GenetFlowerGLM)
+
+HavatseletGenets$PredPrRepro <- predict(GenetReproGLM,
+                                        data.frame(LogSize = HavatseletGenets$LogSize),
+                                        type = 'response')
+
+HavatseletRamets$PredPrRepro <- predict(RametReproGLM,
+                                        data.frame(LogSize = HavatseletRamets$LogSize),
+                                        type = 'response')
+
+HavatseletGenets$PredFlowers <- predict(GenetFlowerGLM,
+                                        data.frame(LogSize = HavatseletGenets$LogSize),
+                                        type = 'response')
+
+HavatseletRamets$PredFlowers <- predict(RametFlowerGLM,
+                                        data.frame(LogSize = HavatseletRamets$LogSize),
+                                        type = 'response')
 
 # ggplot2 + gridExtra
 
@@ -70,12 +99,14 @@ GenetHist <- ggplot(HavatseletGenets, aes(x = CleanBin)) +
   theme.bl + 
   scale_y_continuous('# of Genets') + 
   scale_x_continuous('Size of Genets',
-                     limit = c(-2, 7))
+                     limits = c(-2, 7))
 
 RametFecPlot <- ggplot(HavatseletRamets, 
                        aes(x = LogSize,
                            y = Flower_N)) + 
   geom_point(color = 'red') + 
+  geom_line(aes(y = PredFlowers),
+            color = 'red') +
   theme.bl + 
   scale_y_continuous('# of Flowers') + 
   scale_x_continuous(('Size of Ramets')) 
@@ -84,19 +115,51 @@ GenetFecPlot <- ggplot(HavatseletGenets,
                        aes(x = LogSize,
                            y = Flower_N)) + 
   geom_point(color = 'blue') + 
+  geom_line(aes(y = PredFlowers),
+            color = 'blue') +
   theme.bl + 
   scale_y_continuous('# of Flowers') + 
   scale_x_continuous('Size of Genets',
                      limits = c(-2, 7))
 
+RametReproPlot <- ggplot(HavatseletRamets,
+                         aes(x = LogSize,
+                             y = Repro)) + 
+  geom_point(color = 'red',
+             size = 1.25) + 
+  geom_line(aes(y = PredPrRepro),
+            color = 'red',
+            linetype = 'dashed',
+            size = 1.1,
+            alpha = 0.5) + 
+  theme.bl + 
+  scale_y_continuous('Pr(Reproductive)') + 
+  scale_x_continuous('Size of Ramets')
 
+
+
+GenetReproPlot <- ggplot(HavatseletGenets,
+                         aes(x = LogSize,
+                             y = Repro)) + 
+  geom_point(color = 'blue',
+             size = 1.25) + 
+  geom_line(aes(y = PredPrRepro),
+            color = 'blue',
+            linetype = 'dashed',
+            size = 1.1,
+            alpha = 0.5) + 
+  theme.bl + 
+  scale_y_continuous('Pr(Reproductive)') + 
+  scale_x_continuous('Size of Genets',
+                     limits = c(-2, 7))
 
 pdf('Figures/Israel/Havatselet/Preliminary_Plots.pdf',
     width = 8,
     height = 8)
   grid.arrange(RametHist, GenetHist,
                RametFecPlot, GenetFecPlot,
-               nrow = 2, ncol = 2)
+               RametReproPlot, GenetReproPlot,
+               nrow = 3, ncol = 2)
 dev.off()
 
 png('Figures/Israel/Havatselet/Preliminary_Plots.png',
@@ -106,9 +169,14 @@ png('Figures/Israel/Havatselet/Preliminary_Plots.png',
     res = 72)
   grid.arrange(RametHist, GenetHist,
                RametFecPlot, GenetFecPlot,
-               nrow = 2, ncol = 2)
+               RametReproPlot, GenetReproPlot,
+               nrow = 3, ncol = 2)
 dev.off()
 
 # If necessary, copy over png file so the collaboration outline can use it
-# fs::file_copy('Figures/Israel/Havatselet/Preliminary_Plots.png',
-#               '../Stellenbosch_Phys_Collab/R/Preliminary_Plots.png')
+
+if(fs::file_exists('../Stellenbosch_Phys_Collab/R/Preliminary_Plots.png')) {
+  fs::file_delete('../Stellenbosch_Phys_Collab/R/Preliminary_Plots.png')
+}
+fs::file_copy('Figures/Israel/Havatselet/Preliminary_Plots.png',
+              '../Stellenbosch_Phys_Collab/R/Preliminary_Plots.png')

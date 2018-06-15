@@ -19,7 +19,7 @@ ramet_to_genet <- function(x, ..., size.breaks) {
   group_var <- quos(...)
   
   x %>%
-    group_by(!!!group_var) %>%
+    group_by(!!! group_var) %>%
     summarise(N_Ramets = length(id),
               Size = sum(Size),
               Flower_N = sum(Flower_N, na.rm = TRUE)) %>%
