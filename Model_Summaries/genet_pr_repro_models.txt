@@ -1,0 +1,155 @@
+Intercept only, varies across populations
+
+ *********************
+
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: repro ~ 1 + (1 | population)
+   Data: all_genets
+
+     AIC      BIC   logLik deviance df.resid 
+   429.8    437.4   -212.9    425.8      327 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.6457 -0.8726  0.6077  0.6876  1.7361 
+
+Random effects:
+ Groups     Name        Variance Std.Dev.
+ population (Intercept) 0.8038   0.8965  
+Number of obs: 329, groups:  population, 7
+
+Fixed effects:
+            Estimate Std. Error z value Pr(>|z|)
+(Intercept)   0.0841     0.3696   0.228     0.82
+
+
+*********************
+
+Slope fixed, intercept varies across populations
+
+*********************
+
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: repro ~ log_size + (1 | population)
+   Data: all_genets
+
+     AIC      BIC   logLik deviance df.resid 
+   303.6    315.0   -148.8    297.6      326 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.6221 -0.5059  0.1373  0.5236  5.3725 
+
+Random effects:
+ Groups     Name        Variance Std.Dev.
+ population (Intercept) 0.354    0.5949  
+Number of obs: 329, groups:  population, 7
+
+Fixed effects:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept)  -0.3087     0.3015  -1.024    0.306    
+log_size      1.0753     0.1251   8.595   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+         (Intr)
+log_size -0.182
+
+
+*********************
+
+Slope and intercepts vary across sites,  but are not correlated
+
+*********************
+
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: repro ~ log_size + (1 | population) + (0 + log_size | population)
+   Data: all_genets
+
+     AIC      BIC   logLik deviance df.resid 
+   305.6    320.8   -148.8    297.6      325 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.6221 -0.5059  0.1373  0.5236  5.3725 
+
+Random effects:
+ Groups       Name        Variance Std.Dev.
+ population   (Intercept) 0.3539   0.5949  
+ population.1 log_size    0.0000   0.0000  
+Number of obs: 329, groups:  population, 7
+
+Fixed effects:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept)  -0.3087     0.3015  -1.024    0.306    
+log_size      1.0753     0.1251   8.595   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+         (Intr)
+log_size -0.182
+
+
+*********************
+
+Slope and intercepts vary across sites,  and are correlated
+
+*********************
+
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: repro ~ log_size + (log_size | population)
+   Data: all_genets
+
+     AIC      BIC   logLik deviance df.resid 
+   307.4    326.3   -148.7    297.4      324 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.5788 -0.5033  0.1255  0.5229  5.5935 
+
+Random effects:
+ Groups     Name        Variance Std.Dev. Corr
+ population (Intercept) 0.295880 0.54395      
+            log_size    0.007593 0.08714  1.00
+Number of obs: 329, groups:  population, 7
+
+Fixed effects:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept)  -0.2865     0.2828  -1.013    0.311    
+log_size      1.0551     0.1317   8.010 1.14e-15 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+         (Intr)
+log_size 0.008 
+
+
+*********************
+
+Likelihood ratio tests 
+
+*********************
+
+Data: all_genets
+Models:
+genet_repro_int_only: repro ~ 1 + (1 | population)
+genet_repro_size_int_r: repro ~ log_size + (1 | population)
+genet_repro_slope_int_uncor: repro ~ log_size + (1 | population) + (0 + log_size | population)
+genet_repro_slope_int_cor_2: repro ~ log_size + (log_size | population)
+                            Df    AIC    BIC  logLik deviance    Chisq Chi Df Pr(>Chisq)    
+genet_repro_int_only         2 429.77 437.36 -212.89   425.77                               
+genet_repro_size_int_r       3 303.64 315.03 -148.82   297.64 128.1293      1     <2e-16 ***
+genet_repro_slope_int_uncor  4 305.64 320.83 -148.82   297.64   0.0000      1     1.0000    
+genet_repro_slope_int_cor_2  5 307.37 326.35 -148.68   297.37   0.2754      1     0.5997    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+
+End output
