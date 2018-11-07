@@ -24,7 +24,7 @@ for(i in seq_along(pops[ ,1])) {
     glue('Polygons/{pops$Country[i]}/{pop}/Polygon_Final.shp'),
     pop
   )
- 
+  temp$country <- all_sites$Country[all_sites$Site == pop][1]
   all_polygons <- splice(all_polygons, temp) 
   
 }
