@@ -226,4 +226,4 @@ all_genets$repro_pred <- predict(genet_repro_size_int_r,
 all_genets$flower_pred <- add_predictions(genet_flower_n_size_int_r,
                                           all_genets)
 
-# Finish model fitting
+# Finish fecundity model fitting
