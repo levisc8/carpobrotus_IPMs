@@ -63,6 +63,11 @@ genet_repro_slope_int_uncor <- glmer(repro ~ log_size +
                                      data = all_genets,
                                      family = binomial())
 
+new_start <- getME(genet_repro_slope_int_uncor, c('theta', 'fixef'))
+
+genet_repro_slope_int_uncor_2 <- update(genet_repro_slope_int_uncor,
+                                      start = new_start)
+
 
 # All correlated as above - REFIT starting with output from unconverged model
 genet_repro_slope_int_cor <- glmer(repro ~ log_size + (log_size|population),
@@ -78,7 +83,7 @@ genet_repro_slope_int_cor_2 <- update(genet_repro_slope_int_cor,
 
 genet_LRT <- anova(genet_repro_int_only,
                    genet_repro_size_int_r,
-                   genet_repro_slope_int_uncor,
+                   genet_repro_slope_int_uncor_2,
                    genet_repro_slope_int_cor_2)
 
 
@@ -132,11 +137,15 @@ ramet_flower_n_int_only <- glmer.nb(flower_n ~ 1 + (1|population),
 ramet_flower_n_size_int_r <- glmer.nb(flower_n ~ log_size + (1|population),
                                 data = all_ramets)
 
-# slope and intercepts vary across sites, but are not correlated
-ramet_flower_n_slope_int_uncor <- glmer.nb(flower_n ~ log_size + 
-                                       (1|population) + 
-                                       (0 + log_size|population),
-                                     data = all_ramets)
+# slope and intercepts vary across sites, but are not correlated. This model
+# will not converge with the new zealand data added in, so I'm leaving it out
+# for now. I don't think it will make much difference anyway. 
+
+# ramet_flower_n_slope_int_uncor <- glmer.nb(flower_n ~ log_size + 
+#                                        (1|population) + 
+#                                        (0 + log_size|population),
+#                                      data = all_ramets,
+#                                      nb.control = glmerControl(optCtrl = list(maxfun = 1e6)))
 
 # slope and intercepts vary across sites and are correlated. I doubt this will
 # yield additional information, but would be interesting if there was spatial 
@@ -146,7 +155,7 @@ ramet_flower_n_slope_int_cor <- glmer.nb(flower_n ~ log_size + (log_size|populat
 
 ramet_flower_LRT <- anova(ramet_flower_n_int_only,
                           ramet_flower_n_size_int_r,
-                          ramet_flower_n_slope_int_uncor,
+                          # ramet_flower_n_slope_int_uncor,
                           ramet_flower_n_slope_int_cor)
 
 # Now genets
@@ -180,9 +189,9 @@ sink(file = 'Model_Summaries/ramet_flower_models.txt')
   cat('\n\n*********************\n\nSlope fixed, intercept varies across',
       'populations\n\n*********************\n\n')
   print(summary(ramet_flower_n_size_int_r))
-  cat('\n\n*********************\n\nSlope and intercepts vary across sites,',
-      ' but are not correlated\n\n*********************\n\n')
-  print(summary(ramet_flower_n_slope_int_uncor))
+  # cat('\n\n*********************\n\nSlope and intercepts vary across sites,',
+  #     ' but are not correlated\n\n*********************\n\n')
+  # print(summary(ramet_flower_n_slope_int_uncor))
   cat('\n\n*********************\n\nSlope and intercepts vary across sites,',
       ' and are correlated\n\n*********************\n\n')
   print(summary(ramet_flower_n_slope_int_cor))
@@ -217,12 +226,13 @@ sink()
 all_ramets$repro_pred <- predict(ramet_repro_size_int_r,
                                  type = 'response')
 
-all_ramets$flower_pred <- add_predictions(ramet_flower_n_slope_int_uncor,
+all_ramets$flower_pred <- add_predictions(ramet_flower_n_slope_int_cor,
                                           all_ramets)
 
 
 all_genets$repro_pred <- predict(genet_repro_size_int_r,
                                  type = 'response')
+
 all_genets$flower_pred <- add_predictions(genet_flower_n_size_int_r,
                                           all_genets)
 

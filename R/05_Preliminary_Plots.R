@@ -24,6 +24,11 @@ for(i in seq_along(unique(all_ramets$population))) {
   ramet_temp <- dplyr::filter(all_ramets, population == pop)
   genet_temp <- dplyr::filter(all_genets, population == pop)
   
+  n_ram_flower <- sum(ramet_temp$repro)
+  n_gen_flower <- sum(genet_temp$repro)
+  n_ram_tot <- dim(ramet_temp)[1]
+  n_gen_tot <- dim(genet_temp)[1]
+  
   genet_temp$clean_bin <- cut(genet_temp$log_size, 
                               breaks = round(dim(genet_temp)[1]/4)) %>%
     clean_bins()
@@ -40,7 +45,10 @@ for(i in seq_along(unique(all_ramets$population))) {
              fill = 'red') + 
     theme.bl + 
     scale_y_continuous('# of Ramets') + 
-    scale_x_continuous('Size of Ramets') + 
+    scale_x_continuous(paste('Size of Ramets (n = ',
+                             n_ram_tot,
+                             ')', 
+                             sep = "")) + 
     ggtitle(pop)
   
   genet_hist <- ggplot(genet_temp, aes(x = clean_bin)) + 
@@ -48,7 +56,10 @@ for(i in seq_along(unique(all_ramets$population))) {
              fill = 'blue') + 
     theme.bl + 
     scale_y_continuous('# of Genets') + 
-    scale_x_continuous('Size of Genets')
+    scale_x_continuous(paste('Size of Genets (n = ',
+                             n_gen_tot,
+                             ')', 
+                             sep = ""))
   
   ramet_fec_plot <- ggplot(ramet_temp, 
                            aes(x = log_size,
@@ -58,7 +69,10 @@ for(i in seq_along(unique(all_ramets$population))) {
               color = 'red') +
     theme.bl + 
     scale_y_continuous('# of Flowers') + 
-    scale_x_continuous(('Size of Ramets')) 
+    scale_x_continuous(paste('Size of Ramets (n = ', 
+                             n_ram_flower,
+                             ')',
+                             sep = "")) 
   
   genet_fec_plot <- ggplot(genet_temp,
                            aes(x = log_size,
@@ -68,7 +82,10 @@ for(i in seq_along(unique(all_ramets$population))) {
               color = 'blue') +
     theme.bl + 
     scale_y_continuous('# of Flowers') + 
-    scale_x_continuous('Size of Genets')
+    scale_x_continuous(paste('Size of Genets (n = ',
+                             n_gen_flower,
+                             ')',
+                             sep = ""))
   
   ramet_repro_plot <- ggplot(ramet_temp,
                              aes(x = log_size,
@@ -82,7 +99,10 @@ for(i in seq_along(unique(all_ramets$population))) {
               alpha = 0.5) + 
     theme.bl + 
     scale_y_continuous('Pr(Reproductive)') + 
-    scale_x_continuous('Size of Ramets')
+    scale_x_continuous(paste('Size of Ramets (n = ',
+                             n_ram_tot,
+                             ')',
+                             sep = ""))
   
   
   
@@ -98,7 +118,10 @@ for(i in seq_along(unique(all_ramets$population))) {
               alpha = 0.5) + 
     theme.bl + 
     scale_y_continuous('Pr(Reproductive)') + 
-    scale_x_continuous('Size of Genets')
+    scale_x_continuous(paste('Size of Genets (n = ',
+                             n_gen_tot,
+                             ')',
+                             sep = ""))
   
   pdf(glue('Figures/{country}/{pop}/Preliminary_Plots.pdf'),
       width = 8,

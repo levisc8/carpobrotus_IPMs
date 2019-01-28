@@ -22,6 +22,10 @@ infile_data <- function(path, pop) {
   # calculate breaks for size bins. Only used for histogram plotting
   log_breaks <- round(dim(temp)[1]/10, digits = -1)
   
+  # We only have precision to 7 0s for size in Qgis, and some ramets are smaller
+  # Thus, this becomes a discrete class w/ seedlings, etc
+  temp$size[temp$size == 0] <- 1e-8
+  
   out <- temp %>%
     mutate(population = pop) %>%
     dplyr::select(population, id, clone_of,

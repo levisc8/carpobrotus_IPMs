@@ -3,25 +3,25 @@ Intercept only, varies across populations
  *********************
 
 Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
- Family: Negative Binomial(0.6644)  ( log )
+ Family: Negative Binomial(0.6959)  ( log )
 Formula: flower_n ~ 1 + (1 | population)
    Data: all_ramets
 
      AIC      BIC   logLik deviance df.resid 
-  4236.6   4250.1  -2115.3   4230.6      670 
+  7293.8   7309.1  -3643.9   7287.8     1211 
 
 Scaled residuals: 
    Min     1Q Median     3Q    Max 
--0.755 -0.628 -0.537 -0.166 43.542 
+-0.773 -0.641 -0.491 -0.107 44.846 
 
 Random effects:
  Groups     Name        Variance Std.Dev.
- population (Intercept) 0.3117   0.5583  
-Number of obs: 673, groups:  population, 7
+ population (Intercept) 0.4745   0.6888  
+Number of obs: 1214, groups:  population, 12
 
 Fixed effects:
             Estimate Std. Error z value Pr(>|z|)    
-(Intercept)   2.1096     0.2624   8.038 9.11e-16 ***
+(Intercept)    1.764      0.218   8.094 5.75e-16 ***
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
@@ -33,68 +33,32 @@ Slope fixed, intercept varies across populations
 *********************
 
 Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
- Family: Negative Binomial(2.0252)  ( log )
+ Family: Negative Binomial(2.351)  ( log )
 Formula: flower_n ~ log_size + (1 | population)
    Data: all_ramets
 
      AIC      BIC   logLik deviance df.resid 
-  3548.9   3567.0  -1770.5   3540.9      669 
+  6007.7   6028.1  -2999.9   5999.7     1210 
 
 Scaled residuals: 
    Min     1Q Median     3Q    Max 
--1.253 -0.644 -0.268  0.312 42.936 
+-1.340 -0.642 -0.233  0.370 45.328 
 
 Random effects:
  Groups     Name        Variance Std.Dev.
- population (Intercept) 0.2055   0.4533  
-Number of obs: 673, groups:  population, 7
+ population (Intercept) 0.3519   0.5932  
+Number of obs: 1214, groups:  population, 12
 
 Fixed effects:
             Estimate Std. Error z value Pr(>|z|)    
-(Intercept)  1.29600    0.19414   6.675 2.46e-11 ***
-log_size     0.63375    0.02096  30.233  < 2e-16 ***
+(Intercept)  1.15792    0.18213   6.358 2.05e-10 ***
+log_size     0.64838    0.01542  42.047  < 2e-16 ***
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 Correlation of Fixed Effects:
          (Intr)
-log_size -0.113
-
-
-*********************
-
-Slope and intercepts vary across sites,  but are not correlated
-
-*********************
-
-Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
- Family: Negative Binomial(2.0661)  ( log )
-Formula: flower_n ~ log_size + (1 | population) + (0 + log_size | population)
-   Data: all_ramets
-
-     AIC      BIC   logLik deviance df.resid 
-  3542.3   3564.9  -1766.2   3532.3      668 
-
-Scaled residuals: 
-   Min     1Q Median     3Q    Max 
--1.270 -0.648 -0.254  0.360 37.059 
-
-Random effects:
- Groups       Name        Variance Std.Dev.
- population   (Intercept) 0.233290 0.48300 
- population.1 log_size    0.008558 0.09251 
-Number of obs: 673, groups:  population, 7
-
-Fixed effects:
-            Estimate Std. Error z value Pr(>|z|)    
-(Intercept)  1.23394    0.20981   5.881 4.07e-09 ***
-log_size     0.67850    0.05004  13.560  < 2e-16 ***
----
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-
-Correlation of Fixed Effects:
-         (Intr)
-log_size -0.141
+log_size -0.064
 
 
 *********************
@@ -104,33 +68,33 @@ Slope and intercepts vary across sites,  and are correlated
 *********************
 
 Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
- Family: Negative Binomial(2.0661)  ( log )
+ Family: Negative Binomial(2.5534)  ( log )
 Formula: flower_n ~ log_size + (log_size | population)
    Data: all_ramets
 
      AIC      BIC   logLik deviance df.resid 
-  3544.2   3571.3  -1766.1   3532.2      667 
+  5937.6   5968.2  -2962.8   5925.6     1208 
 
 Scaled residuals: 
    Min     1Q Median     3Q    Max 
--1.271 -0.650 -0.255  0.365 37.207 
+-1.396 -0.636 -0.211  0.399 39.597 
 
 Random effects:
  Groups     Name        Variance Std.Dev. Corr
- population (Intercept) 0.212764 0.46126      
-            log_size    0.009612 0.09804  0.25
-Number of obs: 673, groups:  population, 7
+ population (Intercept) 0.21989  0.4689       
+            log_size    0.04078  0.2019   0.81
+Number of obs: 1214, groups:  population, 12
 
 Fixed effects:
             Estimate Std. Error z value Pr(>|z|)    
-(Intercept)  1.25090    0.20754   6.027 1.67e-09 ***
-log_size     0.66821    0.05948  11.235  < 2e-16 ***
+(Intercept)  1.24147    0.15010   8.271   <2e-16 ***
+log_size     0.57417    0.06648   8.637   <2e-16 ***
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 Correlation of Fixed Effects:
          (Intr)
-log_size -0.080
+log_size 0.634 
 
 
 *********************
@@ -143,13 +107,11 @@ Data: all_ramets
 Models:
 ramet_flower_n_int_only: flower_n ~ 1 + (1 | population)
 ramet_flower_n_size_int_r: flower_n ~ log_size + (1 | population)
-ramet_flower_n_slope_int_uncor: flower_n ~ log_size + (1 | population) + (0 + log_size | population)
 ramet_flower_n_slope_int_cor: flower_n ~ log_size + (log_size | population)
-                               Df    AIC    BIC  logLik deviance    Chisq Chi Df Pr(>Chisq)    
-ramet_flower_n_int_only         3 4236.6 4250.1 -2115.3   4230.6                               
-ramet_flower_n_size_int_r       4 3548.9 3567.0 -1770.5   3540.9 689.6488      1    < 2e-16 ***
-ramet_flower_n_slope_int_uncor  5 3542.3 3564.9 -1766.2   3532.3   8.5900      1    0.00338 ** 
-ramet_flower_n_slope_int_cor    6 3544.2 3571.3 -1766.1   3532.2   0.1162      1    0.73316    
+                             Df    AIC    BIC  logLik deviance    Chisq Chi Df Pr(>Chisq)    
+ramet_flower_n_int_only       3 7293.8 7309.1 -3643.9   7287.8                               
+ramet_flower_n_size_int_r     4 6007.7 6028.1 -2999.9   5999.7 1288.127      1  < 2.2e-16 ***
+ramet_flower_n_slope_int_cor  6 5937.6 5968.2 -2962.8   5925.6   74.084      2  < 2.2e-16 ***
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 

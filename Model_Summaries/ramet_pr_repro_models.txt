@@ -8,20 +8,20 @@ Formula: repro ~ 1 + (1 | population)
    Data: all_ramets
 
      AIC      BIC   logLik deviance df.resid 
-  2782.2   2794.1  -1389.1   2778.2     2767 
+  6097.0   6111.8  -3046.5   6093.0    12061 
 
 Scaled residuals: 
     Min      1Q  Median      3Q     Max 
--0.9998 -0.4112 -0.4112 -0.2175  4.5982 
+-1.0024 -0.4106 -0.1135 -0.1135  8.8092 
 
 Random effects:
  Groups     Name        Variance Std.Dev.
- population (Intercept) 1.154    1.074   
-Number of obs: 2769, groups:  population, 7
+ population (Intercept) 2.081    1.442   
+Number of obs: 12063, groups:  population, 12
 
 Fixed effects:
-            Estimate Std. Error z value Pr(>|z|)   
-(Intercept)  -1.1609     0.4166  -2.786  0.00533 **
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept)  -1.8992     0.4143  -4.584 4.56e-06 ***
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
@@ -38,27 +38,27 @@ Formula: repro ~ log_size + (1 | population)
    Data: all_ramets
 
      AIC      BIC   logLik deviance df.resid 
-  2009.6   2027.4  -1001.8   2003.6     2766 
+  4226.4   4248.6  -2110.2   4220.4    12060 
 
 Scaled residuals: 
-    Min      1Q  Median      3Q     Max 
--3.7142 -0.4102 -0.2004 -0.0629 10.3624 
+   Min     1Q Median     3Q    Max 
+-4.097 -0.195 -0.081 -0.035 42.290 
 
 Random effects:
  Groups     Name        Variance Std.Dev.
- population (Intercept) 0.7323   0.8558  
-Number of obs: 2769, groups:  population, 7
+ population (Intercept) 1.699    1.304   
+Number of obs: 12063, groups:  population, 12
 
 Fixed effects:
             Estimate Std. Error z value Pr(>|z|)    
-(Intercept) -0.44846    0.34336  -1.306    0.192    
-log_size     1.02710    0.04647  22.101   <2e-16 ***
+(Intercept) -0.78607    0.38470  -2.043    0.041 *  
+log_size     1.10102    0.03216  34.232   <2e-16 ***
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 Correlation of Fixed Effects:
          (Intr)
-log_size 0.046 
+log_size 0.040 
 
 
 *********************
@@ -73,28 +73,28 @@ Formula: repro ~ log_size + (1 | population) + (0 + log_size | population)
    Data: all_ramets
 
      AIC      BIC   logLik deviance df.resid 
-  2011.6   2035.3  -1001.8   2003.6     2765 
+  4226.3   4255.9  -2109.2   4218.3    12059 
 
 Scaled residuals: 
-    Min      1Q  Median      3Q     Max 
--3.7142 -0.4102 -0.2004 -0.0629 10.3623 
+   Min     1Q Median     3Q    Max 
+-4.123 -0.198 -0.082 -0.035 41.790 
 
 Random effects:
  Groups       Name        Variance Std.Dev.
- population   (Intercept) 0.7323   0.8558  
- population.1 log_size    0.0000   0.0000  
-Number of obs: 2769, groups:  population, 7
+ population   (Intercept) 1.766308 1.32903 
+ population.1 log_size    0.005339 0.07307 
+Number of obs: 12063, groups:  population, 12
 
 Fixed effects:
             Estimate Std. Error z value Pr(>|z|)    
-(Intercept) -0.44846    0.34335  -1.306    0.192    
-log_size     1.02710    0.04647  22.101   <2e-16 ***
+(Intercept) -0.78437    0.39188  -2.002   0.0453 *  
+log_size     1.09710    0.04299  25.520   <2e-16 ***
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 Correlation of Fixed Effects:
          (Intr)
-log_size 0.046 
+log_size 0.029 
 
 
 *********************
@@ -109,28 +109,28 @@ Formula: repro ~ log_size + (log_size | population)
    Data: all_ramets
 
      AIC      BIC   logLik deviance df.resid 
-  2011.9   2041.5  -1000.9   2001.9     2764 
+  4227.5   4264.5  -2108.7   4217.5    12058 
 
 Scaled residuals: 
-    Min      1Q  Median      3Q     Max 
--3.5699 -0.4074 -0.2059 -0.0702 12.1961 
+   Min     1Q Median     3Q    Max 
+-4.193 -0.197 -0.084 -0.038 38.369 
 
 Random effects:
  Groups     Name        Variance Std.Dev. Corr
- population (Intercept) 0.740000 0.86023      
-            log_size    0.007505 0.08663  1.00
-Number of obs: 2769, groups:  population, 7
+ population (Intercept) 1.753035 1.32402      
+            log_size    0.004604 0.06785  0.57
+Number of obs: 12063, groups:  population, 12
 
 Fixed effects:
             Estimate Std. Error z value Pr(>|z|)    
-(Intercept) -0.42600    0.34501  -1.235    0.217    
-log_size     0.98213    0.06337  15.498   <2e-16 ***
+(Intercept) -0.77253    0.39109  -1.975   0.0482 *  
+log_size     1.08469    0.04229  25.647   <2e-16 ***
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 Correlation of Fixed Effects:
          (Intr)
-log_size 0.550 
+log_size 0.288 
 
 
 *********************
@@ -145,11 +145,11 @@ ramet_repro_int_only: repro ~ 1 + (1 | population)
 ramet_repro_size_int_r: repro ~ log_size + (1 | population)
 ramet_repro_slope_int_uncor_2: repro ~ log_size + (1 | population) + (0 + log_size | population)
 ramet_repro_slope_int_cor: repro ~ log_size + (log_size | population)
-                              Df    AIC    BIC  logLik deviance    Chisq Chi Df Pr(>Chisq)    
-ramet_repro_int_only           2 2782.2 2794.1 -1389.1   2778.2                               
-ramet_repro_size_int_r         3 2009.6 2027.4 -1001.8   2003.6 774.5899      1     <2e-16 ***
-ramet_repro_slope_int_uncor_2  4 2011.6 2035.3 -1001.8   2003.6   0.0000      1      1.000    
-ramet_repro_slope_int_cor      5 2011.9 2041.5 -1000.9   2001.9   1.7332      1      0.188    
+                              Df    AIC    BIC  logLik deviance     Chisq Chi Df Pr(>Chisq)    
+ramet_repro_int_only           2 6097.0 6111.8 -3046.5   6093.0                                
+ramet_repro_size_int_r         3 4226.4 4248.6 -2110.2   4220.4 1872.6097      1     <2e-16 ***
+ramet_repro_slope_int_uncor_2  4 4226.3 4255.9 -2109.2   4218.3    2.0882      1     0.1484    
+ramet_repro_slope_int_cor      5 4227.5 4264.5 -2108.7   4217.5    0.8665      1     0.3519    
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
