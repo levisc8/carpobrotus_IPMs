@@ -8,6 +8,7 @@ library(gridExtra) # plotting
 library(glue) # string manipulation
 library(purrr)
 library(lme4)
+library(brms) # attempt to get fecundity models converging
 
 
 # Utilities for carpobrotus IPM pipeline
@@ -23,8 +24,8 @@ infile_data <- function(path, pop) {
   log_breaks <- round(dim(temp)[1]/10, digits = -1)
   
   # We only have precision to 7 0s for size in Qgis, and some ramets are smaller
-  # Thus, this becomes a discrete class w/ seedlings, etc
-  temp$size[temp$size == 0] <- 1e-8
+  # Trying sf::st_area to see if it has higher precision
+  temp$size[temp$size == 0] <- sf::st_area(temp[temp$size == 0, ])
   
   out <- temp %>%
     mutate(population = pop) %>%
@@ -70,6 +71,7 @@ ramet_to_genet <- function(data, ...) {
   out <- data %>%
     group_by(!!! group_var) %>%
     summarise(n_ramets = length(id),
+              country = first(country),
               size = sum(size),
               flower_n = sum(flower_n, na.rm = TRUE),
               flower_col = first(flower_col)) %>%
@@ -98,16 +100,3 @@ get_gg_legend<-function(plot){
   legend
 }
 
-add_predictions <- function(model, data) {
-  preds <- numeric(dim(data)[1])
-  
-  model_pred <- predict(model, 
-                        newdata = data,
-                        type = 'response')
-  
-  preds[as.numeric(names(model_pred))] <- model_pred
-  preds[preds == 0] <- NA
-  
-  return(preds)
-  
-}

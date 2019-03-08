@@ -26,6 +26,7 @@ for(i in seq_along(pops[ ,1])) {
   )
   temp$country <- all_sites$Country[all_sites$Site == pop][1]
   all_polygons <- splice(all_polygons, temp) 
+  names(all_polygons)[i] <- pop
   
 }
 
