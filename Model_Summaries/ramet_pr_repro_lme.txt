@@ -1,0 +1,182 @@
+Intercept only, varies across populations
+
+ *********************
+
+Generalized linear mixed model fit by maximum likelihood (Laplace
+  Approximation) [glmerMod]
+ Family: binomial  ( logit )
+Formula: repro ~ 1 + (1 | population/country)
+   Data: all_ramets
+
+     AIC      BIC   logLik deviance df.resid 
+  4214.6   4236.4  -2104.3   4208.6    10283 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.0027 -0.2173 -0.1138 -0.1138  8.7857 
+
+Random effects:
+ Groups             Name        Variance Std.Dev.
+ country:population (Intercept) 1.3060   1.1428  
+ population         (Intercept) 0.9603   0.9799  
+Number of obs: 10286, groups:  country:population, 11; population, 11
+
+Fixed effects:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept)  -2.0435     0.4552  -4.489 7.16e-06 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+
+*********************
+
+Slope fixed, intercept varies across populations
+
+*********************
+
+Generalized linear mixed model fit by maximum likelihood (Laplace
+  Approximation) [glmerMod]
+ Family: binomial  ( logit )
+Formula: repro ~ log_size + (1 | population/country)
+   Data: all_ramets
+
+     AIC      BIC   logLik deviance df.resid 
+  3019.5   3048.4  -1505.7   3011.5    10282 
+
+Scaled residuals: 
+   Min     1Q Median     3Q    Max 
+-3.752 -0.157 -0.074 -0.038 37.953 
+
+Random effects:
+ Groups             Name        Variance Std.Dev.
+ country:population (Intercept) 0.4672   0.6835  
+ population         (Intercept) 0.9129   0.9555  
+Number of obs: 10286, groups:  country:population, 11; population, 11
+
+Fixed effects:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept)  -1.1093     0.3644  -3.044  0.00233 ** 
+log_size      1.0431     0.0367  28.420  < 2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+         (Intr)
+log_size 0.029 
+
+
+*********************
+
+Slope and intercepts vary across sites,  but are not correlated
+
+*********************
+
+Generalized linear mixed model fit by maximum likelihood (Laplace
+  Approximation) [glmerMod]
+ Family: binomial  ( logit )
+Formula: repro ~ log_size + (1 | population/country) + (0 + log_size |  
+    population/country)
+   Data: all_ramets
+
+     AIC      BIC   logLik deviance df.resid 
+  3023.3   3066.8  -1505.7   3011.3    10280 
+
+Scaled residuals: 
+   Min     1Q Median     3Q    Max 
+-3.738 -0.157 -0.074 -0.037 38.865 
+
+Random effects:
+ Groups               Name        Variance  Std.Dev.
+ country.population   (Intercept) 0.5531756 0.74376 
+ population           (Intercept) 0.8358417 0.91424 
+ country.population.1 log_size    0.0006794 0.02607 
+ population.1         log_size    0.0007474 0.02734 
+Number of obs: 10286, groups:  country:population, 11; population, 11
+
+Fixed effects:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept) -1.11035    0.36581  -3.035   0.0024 ** 
+log_size     1.04810    0.04288  24.441   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+         (Intr)
+log_size 0.020 
+convergence code: 0
+unable to evaluate scaled gradient
+Model failed to converge: degenerate  Hessian with 2 negative eigenvalues
+
+
+
+*********************
+
+Slope and intercepts vary across sites,  and are correlated
+
+*********************
+
+Generalized linear mixed model fit by maximum likelihood (Laplace
+  Approximation) [glmerMod]
+ Family: binomial  ( logit )
+Formula: repro ~ log_size + (log_size | population/country)
+   Data: all_ramets
+
+     AIC      BIC   logLik deviance df.resid 
+  3027.1   3085.0  -1505.6   3011.1    10278 
+
+Scaled residuals: 
+   Min     1Q Median     3Q    Max 
+-3.703 -0.157 -0.073 -0.036 40.500 
+
+Random effects:
+ Groups             Name        Variance  Std.Dev. Corr 
+ country:population (Intercept) 0.6811692 0.82533       
+                    log_size    0.0009451 0.03074  -1.00
+ population         (Intercept) 0.7039872 0.83904       
+                    log_size    0.0006107 0.02471  0.22 
+Number of obs: 10286, groups:  country:population, 11; population, 11
+
+Fixed effects:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept) -1.11607    0.36507  -3.057  0.00223 ** 
+log_size     1.05192    0.04457  23.604  < 2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+         (Intr)
+log_size -0.110
+convergence code: 0
+unable to evaluate scaled gradient
+Model failed to converge: degenerate  Hessian with 2 negative eigenvalues
+
+
+
+*********************
+
+Likelihood ratio tests 
+
+*********************
+
+Data: all_ramets
+Models:
+ramet_repro_int_only: repro ~ 1 + (1 | population/country)
+ramet_repro_size_int_r: repro ~ log_size + (1 | population/country)
+ramet_repro_slope_int_uncor_2: repro ~ log_size + (1 | population/country) + (0 + log_size | 
+ramet_repro_slope_int_uncor_2:     population/country)
+ramet_repro_slope_int_cor: repro ~ log_size + (log_size | population/country)
+                              Df    AIC    BIC  logLik deviance
+ramet_repro_int_only           3 4214.6 4236.4 -2104.3   4208.6
+ramet_repro_size_int_r         4 3019.5 3048.4 -1505.7   3011.5
+ramet_repro_slope_int_uncor_2  6 3023.3 3066.8 -1505.7   3011.3
+ramet_repro_slope_int_cor      8 3027.1 3085.0 -1505.6   3011.1
+                                  Chisq Chi Df Pr(>Chisq)    
+ramet_repro_int_only                                         
+ramet_repro_size_int_r        1197.1868      1     <2e-16 ***
+ramet_repro_slope_int_uncor_2    0.1067      2     0.9480    
+ramet_repro_slope_int_cor        0.2101      2     0.9003    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+
+End output

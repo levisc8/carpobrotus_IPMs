@@ -1,0 +1,131 @@
+## Prototype survival and growth for Israel 
+
+# First, figure out where the most recent polygons are. I do the digitization on
+# my laptop, but these files should really live on the server so we can all access
+# them. The next few lines make sure that the rest of the script has the most
+# recent set of polygons from Israel
+
+local_path <- 'C:/Users/sl13sise/Desktop/Local_P4D_Processing/Havatselet_2019/Q'
+to_copy <- dir_ls(local_path, regex = 'Polygon_.*?')
+time_test <- to_copy[grepl('_2019\\.shp', to_copy)]
+
+path <- "I:/sie/102_data_SL/PhD_Processed_Data/Polygons/Israel/Havatselet/"
+polys <- paste(path, c("Polygon_2019", 'Polygon_Final'), '.shp', sep = "")
+
+last_mod_rem <- file_info(polys[1])$modification_time
+last_mod_loc <- file_info(time_test)$modification_time
+
+if(last_mod_rem < last_mod_loc) {
+  file_copy(to_copy,
+            new_path = path,
+            overwrite = TRUE)
+}
+
+# This file tracks which ramets get merged together as a result of overlapping
+# growth between T and T+1
+
+merged_ramets <- read.csv("I:/sie/102_data_SL/PhD_Processed_Data/Csv_Data/All/merged_ramets.csv",
+                          stringsAsFactors = FALSE)
+
+rm_ramets <- read.csv("I:/sie/102_data_SL/PhD_Processed_Data/Csv_Data/All/t_2_omissions.csv",
+                      stringsAsFactors = FALSE)
+
+# _local deals with t_2 because the data are structured a little differently
+# and require different manipulations. These functions will eventually get 
+# refactored to work on a switch() call internally so that you only need to call
+# infile_data(), but I'm too lazy to deal with that right now ;)
+
+is_t_2 <- infile_data(polys[1], 'Havatselet',
+                      type = 'local_t_2',
+                      # Variables to keep
+                      population, id, clone_of,
+                      size, flower_n, flower_col, alive)
+
+is_t_1 <- infile_data(polys[2], 'Havatselet',
+                      type = 'local_t_1',
+                      # Variables to keep
+                      population, id, clone_of,
+                      size, flower_n, flower_col,
+                      merged_ramets = merged_ramets) %>%
+  filter(!id %in% rm_ramets$ramet) 
+
+# Join data together for modeling
+
+data_t_2 <- setNames(is_t_2,
+                   c(
+                     "id", 'population', 'clone_of', 'size_next', 'flower_n_next', 
+                     'flower_col', 'survival',
+                     'log_size_next', 'clean_bin_next', 'geometry',
+                     'repro_next'
+                    )
+                   ) %>%
+  as_tibble() %>%
+  select(-geometry)
+
+data_t_1 <- setNames(is_t_1,
+                       c(
+                         'id', 'population', 'clone_of',
+                         'size', 'flower_n', 'flower_col',
+                         'log_size', 'clean_bin',
+                         'geometry', 'repro'
+                        )
+                      ) %>%
+  as_tibble() %>%
+  select(-geometry)
+
+all_data <- full_join(data_t_1, data_t_2, by = 'id')
+
+# update_survival inserts 0s for plants that died and 1s for everything else.
+# For plants that are new this year, a 1 is incorrect - these should be NA.
+
+all_data$survival <- update_survival(all_data$population.y, 
+                                     all_data$survival)
+
+all_data$survival[is.na(all_data$log_size)] <- NA_integer_
+
+# Now we are ready to explore the data a bit! first, fit some
+# growth models, then plot the data to see how it looks. The data are not
+# completely digitized, so the survival model is really a place holder until
+# that process is completed. 
+
+grow_mod <- lm(log_size_next ~ log_size, data = all_data)
+
+# Now, fit a gam with a few knots to see if the linear is doing well
+grow_gam <- gam(log_size_next ~ s(log_size, k = 6), data = all_data)
+
+surv_mod <- glm(survival ~ log_size, 
+                data = all_data, 
+                family = binomial())
+
+xx <- seq(-5, 5, 0.1)
+plot(log_size_next ~ log_size, data = all_data)
+abline(grow_mod, col = 'red')
+lines(xx, predict(grow_gam, 
+                  newdata = data.frame(log_size = xx),
+                  type = 'response'),
+      lty = 2,
+      col = 'red')
+abline(a = 0, b = 1)
+
+legend('topleft',
+       legend = c('Linear Model',
+                  'GAM', 
+                  '1:1 Line'),
+       col = c('red', 'red', 'black'),
+       lty = c(1, 2, 1))
+
+summary(grow_mod)
+summary(surv_mod)
+
+par(mfrow = c(2,2))
+plot(grow_mod, ask = FALSE)
+
+# It looks like a model with decreasing variance may be the best move, but
+# first we definitely need to check some outliers. Ramet 201, 156, and 385 
+# all have lots of leverage. We should definitely check and make sure those are 
+# real. 
+
+# Survival is intercept only?? Oh wait, we counted a lot of plants that just haven't
+# been digitized yet as dead ;)
+plot(survival ~ log_size, data = all_data)
+lines(xx, predict(surv_mod, data.frame(log_size = xx), type = 'response'))

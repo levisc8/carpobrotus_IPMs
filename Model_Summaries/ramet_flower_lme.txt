@@ -1,0 +1,138 @@
+Intercept only, varies across populations
+
+ *********************
+
+Generalized linear mixed model fit by maximum likelihood (Laplace
+  Approximation) [glmerMod]
+ Family: Negative Binomial(0.7374)  ( log )
+Formula: flower_n ~ 1 + (1 | population/country)
+   Data: all_ramets
+
+     AIC      BIC   logLik deviance df.resid 
+  4998.2   5017.0  -2495.1   4990.2      821 
+
+Scaled residuals: 
+   Min     1Q Median     3Q    Max 
+-0.795 -0.680 -0.490 -0.068 40.102 
+
+Random effects:
+ Groups             Name        Variance Std.Dev.
+ country:population (Intercept) 0.3133   0.5597  
+ population         (Intercept) 0.2251   0.4745  
+Number of obs: 825, groups:  country:population, 11; population, 11
+
+Fixed effects:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept)   1.7197     0.2417   7.115 1.12e-12 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+
+*********************
+
+Slope fixed, intercept varies across populations
+
+*********************
+
+Generalized linear mixed model fit by maximum likelihood (Laplace
+  Approximation) [glmerMod]
+ Family: Negative Binomial(2.0173)  ( log )
+Formula: flower_n ~ log_size + (1 | population/country)
+   Data: all_ramets
+
+     AIC      BIC   logLik deviance df.resid 
+  4261.8   4285.4  -2125.9   4251.8      820 
+
+Scaled residuals: 
+   Min     1Q Median     3Q    Max 
+-1.248 -0.657 -0.299  0.335 38.565 
+
+Random effects:
+ Groups             Name        Variance Std.Dev.
+ country:population (Intercept) 0.008229 0.09071 
+ population         (Intercept) 0.283481 0.53243 
+Number of obs: 825, groups:  country:population, 11; population, 11
+
+Fixed effects:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept)  1.10684    0.17763   6.231 4.63e-10 ***
+log_size     0.59061    0.01907  30.967  < 2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+         (Intr)
+log_size -0.093
+convergence code: 0
+Model is nearly unidentifiable: large eigenvalue ratio
+ - Rescale variables?
+
+
+
+*********************
+
+Slope and intercepts vary across sites,  and are correlated
+
+*********************
+
+Generalized linear mixed model fit by maximum likelihood (Laplace
+  Approximation) [glmerMod]
+ Family: Negative Binomial(2.1988)  ( log )
+Formula: flower_n ~ log_size + (log_size | population/country)
+   Data: all_ramets
+
+     AIC      BIC   logLik deviance df.resid 
+  4218.6   4261.0  -2100.3   4200.6      816 
+
+Scaled residuals: 
+   Min     1Q Median     3Q    Max 
+-1.308 -0.644 -0.263  0.362 38.204 
+
+Random effects:
+ Groups             Name        Variance Std.Dev. Corr
+ country:population (Intercept) 0.07468  0.2733       
+                    log_size    0.02279  0.1510   0.84
+ population         (Intercept) 0.10142  0.3185       
+                    log_size    0.01375  0.1172   0.82
+Number of obs: 825, groups:  country:population, 11; population, 11
+
+Fixed effects:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept)   1.1651     0.1465   7.953 1.82e-15 ***
+log_size      0.5254     0.0684   7.680 1.59e-14 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+         (Intr)
+log_size 0.548 
+convergence code: 0
+Model is nearly unidentifiable: large eigenvalue ratio
+ - Rescale variables?
+
+
+
+*********************
+
+Likelihood ratio tests 
+
+*********************
+
+Data: all_ramets
+Models:
+ramet_flower_n_int_only: flower_n ~ 1 + (1 | population/country)
+ramet_flower_n_size_int_r: flower_n ~ log_size + (1 | population/country)
+ramet_flower_n_slope_int_cor: flower_n ~ log_size + (log_size | population/country)
+                             Df    AIC    BIC  logLik deviance   Chisq
+ramet_flower_n_int_only       4 4998.2 5017.0 -2495.1   4990.2        
+ramet_flower_n_size_int_r     5 4261.8 4285.4 -2125.9   4251.8 738.324
+ramet_flower_n_slope_int_cor  9 4218.6 4261.0 -2100.3   4200.6  51.273
+                             Chi Df Pr(>Chisq)    
+ramet_flower_n_int_only                           
+ramet_flower_n_size_int_r         1  < 2.2e-16 ***
+ramet_flower_n_slope_int_cor      4  1.958e-10 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+
+End output

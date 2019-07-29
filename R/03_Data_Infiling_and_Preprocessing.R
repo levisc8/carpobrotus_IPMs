@@ -22,7 +22,8 @@ for(i in seq_along(pops[ ,1])) {
   # This will generate both ramet and genet level data frames for each population
   temp <- infile_data(
     glue('Polygons/{pops$Country[i]}/{pop}/Polygon_Final.shp'),
-    pop
+    pop,
+    type = 'remote'
   )
   temp$country <- all_sites$Country[all_sites$Site == pop][1]
   all_polygons <- splice(all_polygons, temp) 
@@ -39,6 +40,9 @@ no_polygons <- map(all_polygons,
 )
 
 all_ramets <- do.call(rbind, no_polygons)
+
+# Fix some inconsistency in the classification of hybrids from QGIS
+all_ramets$flower_col[grepl('Y_P|Y_p', all_ramets$flower_col)] <- 'P_Y'
 
 all_genets <- all_ramets %>%
   ramet_to_genet(population, clone_of)

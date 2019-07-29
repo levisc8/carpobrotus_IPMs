@@ -24,6 +24,23 @@ for(i in seq_along(unique(all_ramets$population))) {
   ramet_temp <- dplyr::filter(all_ramets, population == pop)
   genet_temp <- dplyr::filter(all_genets, population == pop)
   
+  max_flow <- max(ramet_temp$flower_n, na.rm = TRUE)
+  temp_min <- range(ramet_temp$log_size)[1]
+  temp_max <- range(ramet_temp$log_size)[2]
+  pred_seq <- seq(temp_min, temp_max, length.out = dim(ramet_temp)[1])
+  temp_pred <- expand.grid(list(log_size = pred_seq, 
+                                flower_col = unique(ramet_temp$flower_col),
+                                population = pop)) %>%
+    .[complete.cases(.), ]
+  
+  flow_pred <- predict(ramet_flower_n_slope_int_cor_brm,
+                       newdata = temp_pred)[ , 1] %>%
+    cbind(temp_pred) %>% 
+    setNames(c('estimate',
+               'log_size',
+               'flower_col',
+               'population'))
+  
   n_ram_flower <- sum(ramet_temp$repro)
   n_gen_flower <- sum(genet_temp$repro)
   n_ram_tot <- dim(ramet_temp)[1]
@@ -64,21 +81,29 @@ for(i in seq_along(unique(all_ramets$population))) {
   ramet_fec_plot <- ggplot(ramet_temp, 
                            aes(x = log_size,
                                y = flower_n)) + 
-    geom_point(color = 'red') + 
-    geom_line(aes(y = flower_pred),
-              color = 'red') +
+    geom_point(aes(color = flower_col)) + 
+    geom_line(data = flow_pred,
+              aes(x = log_size, 
+                  y = estimate,
+                  color = flower_col
+              )) +
     theme.bl + 
-    scale_y_continuous('# of Flowers') + 
+    theme(legend.direction = 'horizontal') + 
+    scale_y_continuous('# of Flowers',
+                       limits = c(0, max_flow + (max_flow/10))) + 
     scale_x_continuous(paste('Size of Ramets (n = ', 
                              n_ram_flower,
                              ')',
                              sep = "")) 
   
+  fec_legend <- get_gg_legend(ramet_fec_plot)
+  
   genet_fec_plot <- ggplot(genet_temp,
                            aes(x = log_size,
                                y = flower_n)) + 
     geom_point(color = 'blue') + 
-    geom_line(aes(y = flower_pred),
+    geom_line(aes(x = log_size, 
+                  y = flower_pred),
               color = 'blue') +
     theme.bl + 
     scale_y_continuous('# of Flowers') + 
@@ -126,22 +151,27 @@ for(i in seq_along(unique(all_ramets$population))) {
   pdf(glue('Figures/{country}/{pop}/Preliminary_Plots.pdf'),
       width = 8,
       height = 8)
-    grid.arrange(ramet_hist, genet_hist,
-                 ramet_fec_plot, genet_fec_plot,
-                 ramet_repro_plot, genet_repro_plot,
-                 nrow = 3, ncol = 2)
+  grid.arrange(ramet_hist, genet_hist,
+               ramet_fec_plot, genet_fec_plot,
+               ramet_repro_plot, genet_repro_plot,
+               nrow = 3, ncol = 2)
   dev.off()
   
-  png(glue('Figures/{country}/{pop}/Preliminary_Plots.png'),
+  png(glue('Figures/Pngs/{pop}.png'),
       width = 8,
       height = 8,
       units = 'in',
       res = 72)
-    grid.arrange(ramet_hist, genet_hist,
-                 ramet_fec_plot, genet_fec_plot,
-                 ramet_repro_plot, genet_repro_plot,
-                 nrow = 3, ncol = 2)
+  grid.arrange(
+    ramet_hist, genet_hist,
+    ramet_fec_plot + theme(legend.position = 'none'), genet_fec_plot,
+    ramet_repro_plot, genet_repro_plot,
+    fec_legend,
+    nrow = 4, ncol = 2,
+    heights = c(rep(5/16, 3), 1/16)
+  )
+  
   dev.off()
   
-
+  
 }
