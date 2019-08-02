@@ -21,4 +21,9 @@ output: word_document
     
     + Finding optimal balance is possible w/ sensitivity/elasticity analysis
     
+3. Carpobrotus is difficult to study because it can grow in very inaccesible areas (e.g. cliff sides)
+
+    + Drones make this possible. structure from motion generates 2d maps from 3d data, and state variables can be extracted from these images for use in vital rate regressions.
+    
+    + drastically reduces the number of personnel needed for sampling, so is cost effective as well. 
     
