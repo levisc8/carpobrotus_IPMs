@@ -1,0 +1,24 @@
+---
+title: "Manuscript Outline"
+author: "Sam Levin, Ana Bogdan"
+date: "8/2/2019"
+output: word_document
+---
+
+## Introduction
+
+1. Aizoaceae contains XXX plant species, yet there are no structured demographic studies of any of them. 
+    
+    + Contains XXX invasive plant species, and XXX rare/endangered species. Structured demographic studies are needed to facilitate syntheses and conservation assessments. 
+    
+2. Invasions are demoraphic processes whereby spread is determined by biotic, abiotic factors **and** invader vital rates/life history traits (applicable across local and regional scales).
+    
+    + Carpobrotus spp. are globally invasive and a proper understanding of mechanisms requires a demographic knowledge base. 
+    
+    + Carpobrotus management can be quite expensive and labor intensive (e.g. manual removal)
+    
+    + Chemical methods work, but are generally frowned upon
+    
+    + Finding optimal balance is possible w/ sensitivity/elasticity analysis
+    
+    
