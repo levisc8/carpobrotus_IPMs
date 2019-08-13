@@ -177,34 +177,16 @@ vr_plot <- ggplot(for_plot) +
   theme(legend.position   = c(0.6125, 0.125))
 
 
-
-png('Ana_Israel_IPM/Figures/VR_Panel.png',
-    height = 10,
-    width = 14,
-    units = 'in',
-    res = 300)
-
-  grid.arrange(vr_plot)
-  
-dev.off()
-
-
 # Full kernel elasticity/sensitivity contour plots
 
-all_sens <- rbind(k_sens_const, k_sens_exp)
-
-k_sens_plot <- ggplot(all_sens) +
-  geom_tile(aes(x = x, y = y, fill = value)) +
+k_sens_cv_plot <- ggplot(k_sens_const) +
+  geom_tile(aes(x = x, y = y, fill = value),
+            show.legend = FALSE) +
   geom_contour(aes(x = x, y = y, z = value),
                color = 'black',
                size = 1.1) +
-  facet_wrap(~Model,
-             nrow = 2,
-             ncol = 1) + 
-  scale_fill_gradient("Sensitivity",
-                      low = 'red',
-                      high = 'yellow') +
-  scale_x_continuous(name = 'ln(Surface Area, T)',
+  scale_fill_gradient(low = 'red', high = 'yellow') +
+  scale_x_continuous(name = '',
                      limits = c(-4.9, 3.59),
                      breaks = seq(min(d1), max(d1), length.out = 5),
                      labels = round(seq(min(d1), max(d1), length.out = 5),
@@ -214,27 +196,56 @@ k_sens_plot <- ggplot(all_sens) +
                      breaks = seq(min(d1), max(d1), length.out = 5),
                      labels = round(seq(min(d1), max(d1), length.out = 5),
                                     digits = 3)) + 
-  theme_contour + 
-  theme(legend.position = 'left',
-        legend.key = element_rect(size = unit(4, 'in')),
-        legend.title = element_text(size = 14),
-        strip.text = element_blank(),
-        strip.background = element_rect(fill = NULL,
-                                        color = NULL))
+  theme_contour
 
 
-all_elas <- rbind(k_elas_const, k_elas_exp)
-
-k_elas_plot <- ggplot(all_elas) +
-  geom_tile(aes(x = x, y = y, fill = value)) +
+k_elas_cv_plot <- ggplot(k_elas_const) +
+  geom_tile(aes(x = x, y = y, fill = value),
+            show.legend = FALSE) +
   geom_contour(aes(x = x, y = y, z = value),
                color = 'black',
                size = 1.1) +
-  facet_wrap(~Model,
-             nrow = 2, ncol = 1) + 
-  scale_fill_gradient("Elasticity",
-                      low = 'red',
-                      high = 'yellow') +
+  scale_fill_gradient(low = 'red', high = 'yellow') +
+  scale_x_continuous(name = '',
+                     limits = c(-4.9, 3.59),
+                     breaks = seq(min(d1), max(d1), length.out = 5),
+                     labels = round(seq(min(d1), max(d1), length.out = 5),
+                                    digits = 3)) + 
+  scale_y_continuous(name = '',
+                     limits = c(-4.9, 3.59),
+                     breaks = seq(min(d1), max(d1), length.out = 5),
+                     labels = round(seq(min(d1), max(d1), length.out = 5),
+                                    digits = 3)) + 
+  theme_contour
+
+
+k_sens_ev_plot <- ggplot(k_sens_exp) +
+  geom_tile(aes(x = x, y = y, fill = value),
+            show.legend = FALSE) +
+  geom_contour(aes(x = x, y = y, z = value),
+               color = 'black',
+               size = 1.1) +
+  scale_fill_gradient(low = 'red', high = 'yellow') +
+  scale_x_continuous(name = 'ln(Surface Area, T)',
+                     limits = c(-5, 3.59),
+                     breaks = seq(min(d1), max(d1), length.out = 5),
+                     labels = round(seq(min(d1), max(d1), length.out = 5),
+                                    digits = 3)) + 
+  scale_y_continuous(name = 'ln(Surface Area, T + 1)',
+                     limits = c(-4.9, 3.59),
+                     breaks = seq(min(d1), max(d1), length.out = 5),
+                     labels = round(seq(min(d1), max(d1), length.out = 5),
+                                    digits = 3)) + 
+  theme_contour
+
+
+k_elas_ev_plot <- ggplot(k_elas_exp) +
+  geom_tile(aes(x = x, y = y, fill = value),
+            show.legend = FALSE) +
+  geom_contour(aes(x = x, y = y, z = value),
+               color = 'black',
+               size = 1.1) +
+  scale_fill_gradient(low = 'red', high = 'yellow') +
   scale_x_continuous(name = 'ln(Surface Area, T)',
                      limits = c(-4.9, 3.59),
                      breaks = seq(min(d1), max(d1), length.out = 5),
@@ -245,43 +256,36 @@ k_elas_plot <- ggplot(all_elas) +
                      breaks = seq(min(d1), max(d1), length.out = 5),
                      labels = round(seq(min(d1), max(d1), length.out = 5),
                                     digits = 3)) + 
-  theme_contour + 
-  theme(legend.position = 'right',
-        legend.key = element_rect(size = unit(4, 'in')),
-        legend.title = element_text(size = 14),
-        strip.text = element_blank(),
-        strip.background = element_rect(fill = NULL,
-                                        color = NULL))
-
-
-png(filename = 'Ana_Israel_IPM/Figures/sens_elas_kernel.png',
-    height = 10,
-    width = 14,
-    units = 'in',
-    res = 300)
-
-  grid.arrange(k_sens_plot, k_elas_plot,
-               nrow = 1, ncol = 2)
-
-
-dev.off()
+  theme_contour
 
 # Sub-kernel elasticity plots ------------
 
-all_P_elas <- rbind(P_elas_cv,
-                    P_elas_ev)
-
-P_elas_plot <- ggplot(all_P_elas) +
-  geom_tile(aes(x = x, y = y, fill = value)) +
+P_elas_cv_plot <- ggplot(P_elas_cv) +
+  geom_tile(aes(x = x, y = y, fill = value),
+            show.legend = FALSE) +
   geom_contour(aes(x = x, y = y, z = value),
                color = 'black',
                size = 1.1) +
-  facet_wrap(~Model,
-             nrow = 2,
-             ncol = 1) +
-  scale_fill_gradient("Elasticity",
-                      low = 'red',
-                      high = 'yellow') +
+  scale_fill_gradient(low = 'red', high = 'yellow') +
+  scale_x_continuous(name = '',
+                     limits = c(-4.9, 3.59),
+                     breaks = seq(min(d1), max(d1), length.out = 5),
+                     labels = round(seq(min(d1), max(d1), length.out = 5),
+                                    digits = 3)) + 
+  scale_y_continuous(name = 'ln(Surface Area, T + 1)',
+                     limits = c(-4.9, 3.59),
+                     breaks = seq(min(d1), max(d1), length.out = 5),
+                     labels = round(seq(min(d1), max(d1), length.out = 5),
+                                    digits = 3)) + 
+  theme_contour
+
+P_elas_ev_plot <- ggplot(P_elas_ev) +
+  geom_tile(aes(x = x, y = y, fill = value),
+            show.legend = FALSE) +
+  geom_contour(aes(x = x, y = y, z = value),
+               color = 'black',
+               size = 1.1) +
+  scale_fill_gradient(low = 'red', high = 'yellow') +
   scale_x_continuous(name = 'ln(Surface Area, T)',
                      limits = c(-4.9, 3.59),
                      breaks = seq(min(d1), max(d1), length.out = 5),
@@ -292,30 +296,34 @@ P_elas_plot <- ggplot(all_P_elas) +
                      breaks = seq(min(d1), max(d1), length.out = 5),
                      labels = round(seq(min(d1), max(d1), length.out = 5),
                                     digits = 3)) + 
-  theme_contour + 
-  theme(legend.position = 'left',
-        legend.key = element_rect(size = unit(4, 'in')),
-        legend.title = element_text(size = 14),
-        strip.text = element_blank(),
-        strip.background = element_rect(fill = NULL,
-                                        color = NULL))
-  
-  
+  theme_contour
 
-all_F_elas <- rbind(F_elas_cv,
-                    F_elas_ev)
-
-F_elas_plot <- ggplot(all_F_elas) +
-  geom_tile(aes(x = x, y = y, fill = value)) +
+F_elas_cv_plot <- ggplot(F_elas_cv) +
+  geom_tile(aes(x = x, y = y, fill = value),
+            show.legend = FALSE) +
   geom_contour(aes(x = x, y = y, z = value),
                color = 'black',
                size = 1.1) +
-  facet_wrap(~Model,
-             nrow = 2,
-             ncol = 1) +
-  scale_fill_gradient("Elasticity",
-                      low = 'red',
-                      high = 'yellow') +
+  scale_fill_gradient(low = 'red', high = 'yellow') +
+  scale_x_continuous(name = '',
+                     limits = c(-4.9, 3.59),
+                     breaks = seq(min(d1), max(d1), length.out = 5),
+                     labels = round(seq(min(d1), max(d1), length.out = 5),
+                                    digits = 3)) + 
+  scale_y_continuous(name = '',
+                     limits = c(-4.9, 3.59),
+                     breaks = seq(min(d1), max(d1), length.out = 5),
+                     labels = round(seq(min(d1), max(d1), length.out = 5),
+                                    digits = 3)) + 
+  theme_contour
+
+F_elas_ev_plot <- ggplot(F_elas_ev) +
+  geom_tile(aes(x = x, y = y, fill = value),
+            show.legend = FALSE) +
+  geom_contour(aes(x = x, y = y, z = value),
+               color = 'black',
+               size = 1.1) +
+  scale_fill_gradient(low = 'red', high = 'yellow') +
   scale_x_continuous(name = 'ln(Surface Area, T)',
                      limits = c(-4.9, 3.59),
                      breaks = seq(min(d1), max(d1), length.out = 5),
@@ -326,27 +334,8 @@ F_elas_plot <- ggplot(all_F_elas) +
                      breaks = seq(min(d1), max(d1), length.out = 5),
                      labels = round(seq(min(d1), max(d1), length.out = 5),
                                     digits = 3)) + 
-  theme_contour + 
-  theme(legend.position = 'right',
-        legend.key = element_rect(size = unit(4, 'in')),
-        legend.title = element_text(size = 14),
-        strip.text = element_blank(),
-        strip.background = element_rect(fill = NULL,
-                                        color = NULL)) 
+  theme_contour
 
-
-png(filename = 'Ana_Israel_IPM/Figures/sens_elas_sub_kernel.png',
-    height = 10,
-    width = 14,
-    units = 'in',
-    res = 300)
-
-  grid.arrange(P_elas_plot, F_elas_plot,
-               nrow = 1,
-               ncol = 2)
-
-
-dev.off()
 
 
 sub_kern_elas_plot <- ggplot(elas_plot) + 
@@ -378,15 +367,6 @@ sub_kern_elas_plot <- ggplot(elas_plot) +
   ) +
   theme_linerange
 
-png('Ana_Israel_IPM/Figures/sub_kernel_elas_panel.png',
-    height = 10,
-    width = 14,
-    units = 'in',
-    res = 300)
-
-  grid.arrange(sub_kern_elas_plot)
-
-dev.off()
 
 
 

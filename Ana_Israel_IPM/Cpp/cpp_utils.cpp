@@ -55,3 +55,4 @@ Rcpp::IntegerVector merge_ramets(Rcpp::IntegerVector id,
   
   return id;
 }
+

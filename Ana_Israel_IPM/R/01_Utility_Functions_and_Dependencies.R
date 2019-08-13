@@ -287,6 +287,66 @@ get_prob_rows <- function(model_obj, loo_obj, thresh) {
 
 sourceCpp(file = 'Ana_Israel_IPM/Cpp/cpp_utils.cpp')
 
-# Extras ------
+# Top level wrappers for sensitivity and elasticity computations. Pseudo-generic,
+# but dispatches on arguments rather than classes
+
+sensitivity <- function(K, h, level = c('kernel', 'vr', 'param'),
+                        ...) {
+  
+  switch(level,
+         "kernel" = .kernel_sens(K, h),
+         "vr"     = .vr_sens(K, h, ...))
+}
+
+elasticity <- function(K, h, level = c('kernel', 'vr', 'param'),
+                       ...) {
+  
+  switch(level,
+         "kernel" = .kernel_elas(K, h),
+         "vr"     = .vr_elas(K, h, ...))
+}
 
 
+# Sensitivity methods for kernel, vital rates, and parameters
+.kernel_sens <- function(K, h) {
+  w <- Re(eigen(K)$vectors[ , 1])
+  v <- Re(eigen(t(K))$vectors[ , 1])
+  
+  out <- outer(v, w) / sum(v * w * h)
+  
+  return(out)
+}
+
+
+# Elasticity methods for kernel, vital rates, and parameters
+
+.kernel_elas <- function(K, h) {
+  
+  sens <- sensitivity(K, h, 'kernel')
+  
+  lambda <- Re(eigen(K)$values[1])
+  
+  out <- sens * (K / h) / lambda
+  
+  return(out)
+}
+
+
+mat_to_df <- function(mat, meshp) {
+  
+  out <- expand.grid(list(x = meshp, y = meshp)) %>%
+    mutate(value = NA_real_)
+  
+  it <- 1
+  
+  for(i in seq_len(dim(mat)[1])) {
+    for(j in seq_len(dim(mat)[2])) {
+      
+      out[it, 3] <- mat[i, j]
+      it <- it + 1
+      
+    }
+  }
+  
+  return(out)
+}

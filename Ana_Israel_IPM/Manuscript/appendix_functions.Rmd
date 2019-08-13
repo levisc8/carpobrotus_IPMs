@@ -1,0 +1,118 @@
+---
+title: "Appendix functions"
+author: "Sam Levin, Ana Bogdan"
+date: "8/8/2019"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+## Drone results
+
+The drone surveys from 2018 required 6 batteries over the course of 2 days due to a limited battery supply. Ambient temperature was approximately 24 degrees and there were no clouds present during either sampling period. In total, 1720 images were taken of the population from a height of ~9m above ground level. Due to difficulties in following the terrain perfectly, pixel sizes varied, though were on average 0.26cm/pixel. Pix4DMapper successfully geolocated and matched 1695/1720 images across 6 blocks, with a median of 10005.9 matches/image and a 1.83% difference in initial and optimized camera parameters. 
+
+The 2019 survey was conducted on a single day under similar conditions to 2018. 1024 images were collected 10-15m above ground level to increase the variability within each image and prevent Pix4DMapper from generating blocks during orthomosaic generation. 1021/1024 images were successfully calibrated in a single block with a mean resolution of 0.45cm/pixel. Despite the drop in resolution, flowers and plants were still quite easy to identify in the resulting orthomosaic. Images had a median of 10219.3 matches, and there was a 0.35% difference between initial and optimized camera parameters. 
+
+```{r setup, echo = FALSE}
+
+knitr::opts_knit$set(root.dir = '../../../carpobrotus_IPMs')
+
+```
+
+```{r echo = FALSE, include = FALSE, cache = TRUE}
+
+source('Ana_Israel_IPM/R/01_Utility_Functions_and_Dependencies.R')
+source('Ana_Israel_IPM/R/02_Read_Data.R')
+source('Ana_Israel_IPM/R/03_VR_Model_Selection.R')
+source('Ana_Israel_IPM/R/04_IPM_Implementation.R')
+source('Ana_Israel_IPM/R/05_Sens_and_Elas.R')
+source('Ana_Israel_IPM/R/06_Bootstrap.R')
+source('Ana_Israel_IPM/R/07A_Figures_rmd.R')
+
+```
+
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+library(kableExtra)
+source('Ana_Israel_IPM/R/01_Utility_Functions_and_Dependencies.R')
+
+grow_aic_table <- grow_aic %>%
+  as_tibble() %>%
+  mutate(Model = "Growth",
+         Type  = c("Intercept",
+                   "Linear Term Only",
+                   "Quadratic Term",
+                   "GAM",
+                   "Exponential Variance")) %>%
+  select(Model, Type, df, AIC) 
+
+surv_aic_table <- surv_aic %>%
+  as_tibble() %>%
+  mutate(Model = "Survival",
+         Type  = c("Intercept",
+                   "Linear Term Only",
+                   "Quadratic Term",
+                   "GAM")) %>%
+  select(Model, Type, df, AIC) 
+
+knitr::kable(
+  grow_aic_table,
+  format = 'latex',
+  caption = "Table S1.1: AIC model selection tables for candidate growth models."
+) %>%
+  column_spec(1, border_left = TRUE) %>%
+  column_spec(4, border_right = TRUE)
+
+knitr::kable(
+  surv_aic_table,
+  format = 'latex',
+  caption = "Table S1.2: AIC model selection tables for candidate survival models."
+) %>%
+  column_spec(1, border_left = TRUE) %>%
+  column_spec(4, border_right = TRUE)
+
+
+```
+
+## IPM Functions
+
+1. $n(z', t + 1) = \int_{L}^{U} K(z',z)n(z, t) dz$
+
+2. $K(z', z) = P(z',z) + F(z', z)$
+
+3. $P(z', z) = s(z) * g(z', z)$
+
+4. $F(z',z)  = p_r(z) * f_s(z) * f_d(z') * f_r$
+
+### P(z',z)
+
+5.  $Logit^{-1}(s(z)) = \beta_{0, s} + \beta_{1,s} * z$
+
+6. $g(z',z) \sim Norm(\mu_g, \sigma_g)$
+
+7.  $\mu_g^{ev} = \beta_{0, g}^{ev} + \beta_{1,g}^{ev} * z$
+
+8. $\sigma_{g}^{ev} = e^{2 * \beta_{\sigma_g} * z}$
+
+9. $\mu_g^{cv} = \beta_{0, g}^{cv} + \beta_{1,g}^{cv} * z$
+
+10. $\sigma_g^{cv} = \sigma_g^{cv}$
+
+### F(z', z)
+
+11.  $Logit^{-1}(p_r(z)) = \beta_{0, p_r} + \beta_{1, p_r} * z$
+
+12.  $ln(f_s(z)) = \beta_{0, f_s} + \beta_{1, f_s} * z$
+
+13. $f_d(z') \sim Norm(\mu_{f_d}, \sigma_{f_d})$
+b
+### Implementation rules
+
+Integration rule: midpoint
+
+L = `r round(L, 3)`
+
+U = `r round(U, 3)`
+
+*#* meshpoints = 100 

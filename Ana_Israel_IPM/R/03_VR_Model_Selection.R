@@ -221,7 +221,9 @@ f_d_sd <- sd(new_plants$log_size_next, na.rm = TRUE)
 
 # Flower production ~ size 
 
-f_s_mod <- glm(flower_n ~ log_size, data = all_data, family = poisson())
+f_s_mod <- glm(flower_n ~ log_size, data = all_data, family = quasipoisson())
+
+print(summary(f_s_mod))
 
 fec_coef_list <- c(coef(p_r_mod_lin),
                    coef(f_s_mod),
