@@ -5,29 +5,20 @@
 # them. The next few lines make sure that the rest of the script has the most
 # recent set of polygons from Israel
 
-local_path <- 'C:/Users/sl13sise/Desktop/Local_P4D_Processing/Havatselet_2019/Q'
-to_copy <- dir_ls(local_path, regex = 'Polygon_.*?')
-time_test <- to_copy[grepl('2019_Final\\.shp', to_copy)]
+local_path <- 'Ana_Israel_IPM/Data/Havatselet/'
 
-path <- "I:/sie/102_data_SL/PhD_Processed_Data/Polygons/Israel/Havatselet/"
-polys <- paste(path, c("Polygon_2019_Final", 'Polygon_Final'), '.shp', sep = "")
-
-last_mod_rem <- file_info(polys[1])$modification_time
-last_mod_loc <- file_info(time_test)$modification_time
-
-if(last_mod_rem < last_mod_loc) {
-  file_copy(to_copy,
-            new_path = path,
-            overwrite = TRUE)
-}
+polys <- paste(local_path, c("Polygon_2019_Final",
+                             'Polygon_Final'), 
+               '.shp', 
+               sep = "")
 
 # This file tracks which ramets get merged together as a result of overlapping
 # growth between T and T+1
 
-merged_ramets <- read.csv("I:/sie/102_data_SL/PhD_Processed_Data/Csv_Data/All/merged_ramets.csv",
+merged_ramets <- read.csv("Ana_Israel_IPM/Data/merged_ramets.csv",
                           stringsAsFactors = FALSE)
 
-rm_ramets <- read.csv("I:/sie/102_data_SL/PhD_Processed_Data/Csv_Data/All/t_2_omissions.csv",
+rm_ramets <- read.csv("Ana_Israel_IPM/Data/t_2_omissions.csv",
                       stringsAsFactors = FALSE)
 
 # _local deals with t_2 because the data are structured a little differently
