@@ -15,19 +15,6 @@ n_resamp <- 1000
 
 # Set up place to hold boot strapping outputs
 
-temp_const_var_out <- splice(grow_const_var_coef_list,
-                             surv_coef_list,
-                             fec_coef_list,
-                             lambda = lambda_const_var,
-                             p_elas = sum(P_elas_cv_mat) * h ^ 2,
-                             f_elas = sum(F_elas_cv_mat) * h ^ 2)
-
-const_var_out <- lapply(temp_const_var_out,
-                        function(x, n_resamp) {
-                          c(x, rep(NA_real_, n_resamp))
-                        },
-                        n_resamp = n_resamp)
-
 temp_exp_var_out <- splice(grow_exp_var_coef_list,
                            surv_coef_list,
                            fec_coef_list,
@@ -59,7 +46,6 @@ for(i in seq_len(n_resamp)) {
   
   # Bootstrap growth model
   
-  boot_grow_mod_lin <- lm(log_size_next ~ log_size, data = boot_data)
   boot_grow_mod_exp <- gls(log_size_next ~ log_size, data = boot_data,
                            weights = varExp(),
                            na.action = na.omit,
@@ -90,19 +76,7 @@ for(i in seq_len(n_resamp)) {
   # We already have the implementation details from when we generated the point
   # estimate of lambda, so no need to redefine those.
   
-  P_const_var_boot <- outer(d1, d2, 
-                            FUN = p_cv_z1z,
-                            s_int = coef(boot_surv_mod)[1],
-                            s_slope = coef(boot_surv_mod)[2],
-                            g_int = coef(boot_grow_mod_lin)[1],
-                            g_slope = coef(boot_grow_mod_lin)[2],
-                            sd_g = sd(resid(boot_grow_mod_lin)),
-                            L = L,
-                            U = U,
-                            h = h) %>%
-    t()
-   
-  P_exp_var_boot <- outer(d1, d2,
+   P_exp_var_boot <- outer(d1, d2,
                           FUN = p_ev_z1z,
                           s_int    = coef(boot_surv_mod)[1],
                           s_slope  = coef(boot_surv_mod)[2],
@@ -130,36 +104,22 @@ for(i in seq_len(n_resamp)) {
                    h = h) %>%
     t()
   
-  K_const_var_boot <- (P_const_var_boot + Fm_boot)
   K_exp_var_boot   <- (P_exp_var_boot   + Fm_boot)
   
   
   # Store lambdas
-  const_var_out$lambda[(i + 1)] <- l_cv_boot <- Re(eigen(K_const_var_boot)$values[1])
   exp_var_out$lambda[(i + 1)]   <- l_ev_boot <- Re(eigen(K_exp_var_boot)$values[1])
   
-  k_sens_cv_boot <- sensitivity(K_const_var_boot, h, level = 'kernel')
   k_sens_ev_boot <- sensitivity(K_exp_var_boot, h, level = 'kernel')
   
-  P_fun_cv_boot <- P_const_var_boot / h
   P_fun_ev_boot <- P_exp_var_boot / h
   F_fun_boot    <- Fm_boot / h
   
-  p_elas_cv_mat_boot <- P_fun_cv_boot * k_sens_cv_boot / l_cv_boot
   p_elas_ev_mat_boot <- P_fun_ev_boot * k_sens_ev_boot / l_ev_boot
-  f_elas_cv_mat_boot <- F_fun_boot * k_sens_cv_boot / l_cv_boot
   f_elas_ev_mat_boot <- F_fun_boot * k_sens_ev_boot / l_ev_boot
-  
-  const_var_out$p_elas[(i + 1)] <- sum(p_elas_cv_mat_boot) * h^2
-  const_var_out$f_elas[(i + 1)] <- sum(f_elas_cv_mat_boot) * h^2
   
   exp_var_out$p_elas[(i + 1)] <- sum(p_elas_ev_mat_boot) * h^2
   exp_var_out$f_elas[(i + 1)] <- sum(f_elas_ev_mat_boot) * h^2
-  
-  # Store constant variace growth parameters
-  const_var_out$g_int[(i + 1)]    <- coef(boot_grow_mod_lin)[1]
-  const_var_out$g_slope[(i + 1)]  <- coef(boot_grow_mod_lin)[2] 
-  const_var_out$sd_g[(i + 1)]     <- sd(resid(boot_grow_mod_lin))
   
   # Store exponential variance growth parameters
   exp_var_out$g_int[(i + 1)]       <- coef(boot_grow_mod_exp)[1]
@@ -167,19 +127,19 @@ for(i in seq_len(n_resamp)) {
   exp_var_out$g_sigma_par[(i + 1)] <- as.numeric(boot_grow_mod_exp$modelStruct$varStruct)
   
   # Survival models are the same across both 
-  const_var_out$s_int[(i + 1)]   <- exp_var_out$s_int[(i + 1)]   <- coef(boot_surv_mod)[1]
-  const_var_out$s_slope[(i + 1)] <- exp_var_out$s_slope[(i + 1)] <- coef(boot_surv_mod)[2] 
+  exp_var_out$s_int[(i + 1)]   <- coef(boot_surv_mod)[1]
+  exp_var_out$s_slope[(i + 1)] <- coef(boot_surv_mod)[2] 
   
   # Same with pr(repro) and the other fecundity parameters
-  const_var_out$p_r_int[(i + 1)]   <- exp_var_out$p_r_int[(i + 1)]   <- coef(boot_p_r_mod)[1]
-  const_var_out$p_r_slope[(i + 1)] <- exp_var_out$p_r_slope[(i + 1)] <- coef(boot_p_r_mod)[2] 
+  exp_var_out$p_r_int[(i + 1)]   <- coef(boot_p_r_mod)[1]
+  exp_var_out$p_r_slope[(i + 1)] <- coef(boot_p_r_mod)[2] 
   
-  const_var_out$f_s_int[(i + 1)]   <- exp_var_out$f_s_int[(i + 1)]   <- coef(boot_f_s_mod)[1]
-  const_var_out$f_s_slope[(i + 1)] <- exp_var_out$f_s_slope[(i + 1)] <- coef(boot_f_s_mod)[2]
+  exp_var_out$f_s_int[(i + 1)]   <- coef(boot_f_s_mod)[1]
+  exp_var_out$f_s_slope[(i + 1)] <- coef(boot_f_s_mod)[2]
   
-  const_var_out$f_r[(i + 1)]    <- exp_var_out$f_r[(i + 1)]    <- boot_f_r
-  const_var_out$f_d_mu[(i + 1)] <- exp_var_out$f_d_mu[(i + 1)] <- boot_f_d_mu
-  const_var_out$f_d_sd[(i + 1)] <- exp_var_out$f_d_sd[(i + 1)] <- boot_f_d_sd
+  exp_var_out$f_r[(i + 1)]    <- boot_f_r
+  exp_var_out$f_d_mu[(i + 1)] <- boot_f_d_mu
+  exp_var_out$f_d_sd[(i + 1)] <- boot_f_d_sd
   
 }
 

@@ -1,23 +1,6 @@
 
-g_cv_z1z <- function(sv1, sv2, int, slope, sd_g, L, U, h) {
-  
-  mu <- int + slope * sv1
-  ev <- pnorm(U, mu, sd_g) - pnorm(L, mu, sd_g)
-  out <- (h * dnorm(sv2, mu, sd_g)) / ev
-  
-  return(out)
-}
-
 s_z <- function(int, slope, sv1) {
   1/(1 + exp(-(int + slope * sv1)))
-}
-
-p_cv_z1z <- function(sv1, sv2, s_int, s_slope, g_int, g_slope, sd_g, L, U, h) {
-  
-  g <- g_cv_z1z(sv1, sv2, g_int, g_slope, sd_g, L, U, h)
-  
-  return(s_z(s_int, s_slope, sv1) * g)
-  
 }
 
 g_ev_z1z <- function(sv1, sv2, int, slope, var_coef, L, U, h) {
@@ -60,19 +43,6 @@ b <- seq(L, U, length.out = n_mesh_p + 1)
 d1 <- d2 <- (b[2:(n_mesh_p + 1)] + b[1:n_mesh_p]) * 0.5
 h <- d1[2] - d1[1]
 
-
-P_const_var <- outer(d1, d2,
-                     FUN     = p_cv_z1z,
-                     s_int   = surv_coef_list$s_int,
-                     s_slope = surv_coef_list$s_slope,
-                     g_int   = grow_const_var_coef_list$g_int,
-                     g_slope = grow_const_var_coef_list$g_slope,
-                     sd_g    = grow_const_var_coef_list$sd_g,
-                     L       = L,
-                     U       = U,
-                     h       = h) %>%
-  t()
-
 P_exp_var <- outer(d1, d2,
                    FUN      = p_ev_z1z,
                    s_int    = surv_coef_list$s_int,
@@ -101,12 +71,9 @@ Fm <- outer(d1, d2,
             h = h) %>% 
   t()
 
-K_const_var <- (P_const_var + Fm)
 K_exp_var   <- (P_exp_var   + Fm)
 
-lambda_const_var <- Re(eigen(K_const_var)$values[1])
 lambda_exp_var   <- Re(eigen(K_exp_var)$values[1])
 
-message('Lambda for constant variance growth: ', round(lambda_const_var, 3), '\n')
 message('\n\nLambda for exponential variance growth: ', round(lambda_exp_var, 3))
 

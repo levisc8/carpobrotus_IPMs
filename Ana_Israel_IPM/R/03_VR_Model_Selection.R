@@ -223,6 +223,12 @@ f_d_sd <- sd(new_plants$log_size_next, na.rm = TRUE)
 
 f_s_mod <- glm(flower_n ~ log_size, data = all_data, family = quasipoisson())
 
+plot(flower_n ~ log_size, data = all_data)
+
+lines(xx, 
+      exp(coef(f_s_mod)[1] + coef(f_s_mod)[2] * xx),
+      col = 'red')
+
 print(summary(f_s_mod))
 
 fec_coef_list <- c(coef(p_r_mod_lin),
