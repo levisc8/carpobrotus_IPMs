@@ -1,0 +1,54 @@
+## IPM for Israeli Carpobrotus data
+
+Data are not currently stored on here, but will be uploaded once the
+paper is submitted.
+
+All project dependencies are listed in the file
+`R/01_Utility_Functions_and_Dependencies.R`, and the code will work with
+the latest version of each package. If you are missing any,
+`install.packages()` them before continuing.
+
+In addition to the R code, there are a couple C++ utility functions.
+These should get loaded automatically by the dependency script.
+
+## Scripts
+
+Contained in the `R/` sub-directory:
+
+`00_Master_Script.R`: Runs each subsequent script in order.
+
+`01_Utility_Functions_and_Dependencies.R`: Loads all user-specified
+functions and packages. Additionally `source`’s a C++ file with some
+user-specified functions
+
+`02_Read_Data.R`: Reads in shapefiles with individual information,
+ground truth target sizes, site information, merged ramet data (ramets
+that were separate in 2018 but coalesced in 2019), and ramets that fell
+outside of the flight path in 2019.
+
+`03_VR_Model_Selection.R`: Model comparison for vital rate models using
+AIC.
+
+`04_IPM_Implementation.R`: Implements the IPM using coefficients from
+`03` and the `ipmr` package.
+
+`05_Sens_and_Elas.R`: Computes sensitivities and elasticities of the
+`K`, `P`, and `F` kernels.
+
+`06_Bootstrap.R`: Re-samples the shapefile data with replacement and
+re-implements `03`-`05` to quantify uncertainty.
+
+`07_Figures.R`: Generates figures for publication.
+
+`07A_figures_rmd.R`: Generates an object needed to generate the appendix
+without actually making the figures.
+
+## Manuscript
+
+Currently contains drafts of the outline and paper. Will replace all of
+these with the actual paper when it gets submitted.
+
+## Cpp
+
+Contains user-specified C++ functions used in the data reading and model
+implementation steps.
