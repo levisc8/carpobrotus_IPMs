@@ -76,50 +76,88 @@ for(i in seq_len(n_resamp)) {
   # We already have the implementation details from when we generated the point
   # estimate of lambda, so no need to redefine those.
   
-   P_exp_var_boot <- outer(d1, d2,
-                          FUN = p_ev_z1z,
-                          s_int    = coef(boot_surv_mod)[1],
-                          s_slope  = coef(boot_surv_mod)[2],
-                          g_int    = coef(boot_grow_mod_exp)[1],
-                          g_slope  = coef(boot_grow_mod_exp)[2],
-                          var_coef = as.numeric(boot_grow_mod_exp$modelStruct$varStruct),
-                          L = L,
-                          U = U,
-                          h = h) %>%
-    t()
+  all_param_list <- list(
+    s_int    = coef(boot_surv_mod)[1],
+    s_slope  = coef(boot_surv_mod)[2],
+    g_int    = coef(boot_grow_mod_exp)[1],
+    g_slope  = coef(boot_grow_mod_exp)[2],
+    g_sigma_par = as.numeric(boot_grow_mod_exp$modelStruct$varStruct),
+    L = L,
+    U = U,
+    p_r_int = coef(boot_p_r_mod)[1],
+    p_r_slope = coef(boot_p_r_mod)[2],
+    f_s_int = coef(boot_f_s_mod)[1],
+    f_s_slope = coef(boot_f_s_mod)[2],
+    f_r = boot_f_r,
+    f_d_mu = boot_f_d_mu,
+    f_d_sd = boot_f_d_sd
+  )
   
+ 
+  carp_boot <- init_ipm('simple_di_det') %>%
+    define_kernel(
+      name = "P",
+      formula = s_g_mult(S, G),
+      family = "CC",
+      G = dnorm(sa_2, mu_g, sd_g),
+      sd_g = sqrt(exp(2 * g_sigma_par * sa_1)),
+      mu_g = g_int + g_slope * sa_1,
+      S = inv_logit(s_int, s_slope, sa_1),
+      data_list = all_param_list,
+      states = list(c('sa')),
+      evict = TRUE,
+      evict_fun = truncated_distributions("norm", "G")
+    ) %>%
+    define_kernel(
+      name = "F",
+      formula = f_r * f_s * f_d * p_r,
+      family = "CC",
+      f_s = exp(f_s_int + f_s_slope * sa_1),
+      f_d = dnorm(sa_2, f_d_mu, f_d_sd),
+      p_r = inv_logit(p_r_int, p_r_slope, sa_1),
+      data_list = all_param_list,
+      states = list(c("sa")),
+      evict = TRUE,
+      evict_fun = truncated_distributions("norm", "f_d")
+    ) %>%
+    define_k(
+      name = "K",
+      family = "IPM",
+      K = P + F,
+      data_list = all_param_list,
+      states = list(c('sa')),
+      evict = FALSE
+    ) %>%
+    define_impl(
+      make_impl_args_list(
+        kernel_names = c("K", "P", "F"),
+        int_rule = rep('midpoint', 3),
+        dom_start = rep('sa', 3),
+        dom_end = rep('sa', 3) 
+      ) 
+    ) %>%
+    define_domains(
+      sa = c(L, U, n_mesh_p)
+    )  %>%
+    make_ipm(usr_funs = list(inv_logit = s_z))
   
-  Fm_boot <- outer(d1, d2,
-                   FUN = f_z1z,
-                   pr_int = coef(boot_p_r_mod)[1],
-                   pr_slope = coef(boot_p_r_mod)[2],
-                   f_s_int = coef(boot_f_s_mod)[1],
-                   f_s_slope = coef(boot_f_s_mod)[2],
-                   fr = boot_f_r,
-                   fd_mu = boot_f_d_mu,
-                   fd_sd = boot_f_d_sd,
-                   s_int = coef(boot_surv_mod)[1],
-                   s_slope = coef(boot_surv_mod)[2],
-                   L = L,
-                   h = h) %>%
-    t()
-  
-  K_exp_var_boot   <- (P_exp_var_boot   + Fm_boot)
-  
+  K_exp_var_boot <- carp_boot$iterators$K
+  P_exp_var_boot <- carp_boot$sub_kernels$P
+  F_exp_var_boot <- carp_boot$sub_kernels$F
   
   # Store lambdas
-  exp_var_out$lambda[(i + 1)]   <- l_ev_boot <- Re(eigen(K_exp_var_boot)$values[1])
+  exp_var_out$lambda[(i + 1)]   <- l_ev_boot <- lambda(carp_boot, comp_method = 'eigen')
   
   k_sens_ev_boot <- sensitivity(K_exp_var_boot, h, level = 'kernel')
   
   P_fun_ev_boot <- P_exp_var_boot / h
-  F_fun_boot    <- Fm_boot / h
+  F_fun_boot    <- F_exp_var_boot / h
   
   p_elas_ev_mat_boot <- P_fun_ev_boot * k_sens_ev_boot / l_ev_boot
   f_elas_ev_mat_boot <- F_fun_boot * k_sens_ev_boot / l_ev_boot
   
-  exp_var_out$p_elas[(i + 1)] <- sum(p_elas_ev_mat_boot) * h^2
-  exp_var_out$f_elas[(i + 1)] <- sum(f_elas_ev_mat_boot) * h^2
+  exp_var_out$p_elas[(i + 1)] <- sum(p_elas_ev_mat_boot) * h ^ 2
+  exp_var_out$f_elas[(i + 1)] <- sum(f_elas_ev_mat_boot) * h ^ 2
   
   # Store exponential variance growth parameters
   exp_var_out$g_int[(i + 1)]       <- coef(boot_grow_mod_exp)[1]

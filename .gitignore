@@ -8,3 +8,12 @@
 *.docx
 *.log
 *.zip
+*.xlsx
+*.csv
+*.cpg
+*.dbf
+*.prj
+*.qpj
+*.shp
+*.shx
+Ana_Israel_IPM/Manuscript/*_cache

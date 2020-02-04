@@ -4,15 +4,11 @@ author: "Sam Levin, Ana Bogdan"
 date: "8/8/2019"
 output:
   pdf_document: default
-  html_document:
-    df_print: paged
+header-includes:
+    - \usepackage{caption}
 ---
 
-## Drone results
-
-The drone surveys from 2018 required 6 batteries over the course of 2 days due to a limited battery supply. Ambient temperature was approximately 24 degrees and there were no clouds present during either sampling period. In total, 1720 images were taken of the population from a height of ~9m above ground level. Due to difficulties in following the terrain perfectly, pixel sizes varied, though were on average 0.26cm/pixel. Pix4DMapper successfully geolocated and matched 1695/1720 images across 6 blocks, with a median of 10005.9 matches/image and a 1.83% difference in initial and optimized camera parameters. 
-
-The 2019 survey was conducted on a single day under similar conditions to 2018. 1024 images were collected 10-15m above ground level to increase the variability within each image and prevent Pix4DMapper from generating blocks during orthomosaic generation. 1021/1024 images were successfully calibrated in a single block with a mean resolution of 0.45cm/pixel. Despite the drop in resolution, flowers and plants were still quite easy to identify in the resulting orthomosaic. Images had a median of 10219.3 matches, and there was a 0.35% difference between initial and optimized camera parameters. 
+\captionsetup[table]{labelformat=empty}  
 
 ```{r setup, echo = FALSE}
 
@@ -23,6 +19,7 @@ knitr::opts_knit$set(root.dir = '../../../carpobrotus_IPMs')
 ```{r echo = FALSE, include = FALSE, cache = TRUE}
 
 source('Ana_Israel_IPM/R/01_Utility_Functions_and_Dependencies.R')
+sourceCpp('Ana_Israel_IPM/R/01_Utility_funs_cpp.cpp')
 source('Ana_Israel_IPM/R/02_Read_Data.R')
 source('Ana_Israel_IPM/R/03_VR_Model_Selection.R')
 source('Ana_Israel_IPM/R/04_IPM_Implementation.R')
@@ -32,50 +29,7 @@ source('Ana_Israel_IPM/R/07A_Figures_rmd.R')
 
 ```
 
-
-```{r echo = FALSE, warning = FALSE, message = FALSE}
-library(kableExtra)
-source('Ana_Israel_IPM/R/01_Utility_Functions_and_Dependencies.R')
-
-grow_aic_table <- grow_aic %>%
-  as_tibble() %>%
-  mutate(Model = "Growth",
-         Type  = c("Intercept",
-                   "Linear Term Only",
-                   "Quadratic Term",
-                   "GAM",
-                   "Exponential Variance")) %>%
-  select(Model, Type, df, AIC) 
-
-surv_aic_table <- surv_aic %>%
-  as_tibble() %>%
-  mutate(Model = "Survival",
-         Type  = c("Intercept",
-                   "Linear Term Only",
-                   "Quadratic Term",
-                   "GAM")) %>%
-  select(Model, Type, df, AIC) 
-
-knitr::kable(
-  grow_aic_table,
-  format = 'latex',
-  caption = "Table S1.1: AIC model selection tables for candidate growth models."
-) %>%
-  column_spec(1, border_left = TRUE) %>%
-  column_spec(4, border_right = TRUE)
-
-knitr::kable(
-  surv_aic_table,
-  format = 'latex',
-  caption = "Table S1.2: AIC model selection tables for candidate survival models."
-) %>%
-  column_spec(1, border_left = TRUE) %>%
-  column_spec(4, border_right = TRUE)
-
-
-```
-
-## IPM Functions
+# IPM Functions
 
 1. $n(z', t + 1) = \int_{L}^{U} K(z',z)n(z, t) dz$
 
@@ -87,26 +41,22 @@ knitr::kable(
 
 ### P(z',z)
 
-5.  $Logit^{-1}(s(z)) = \beta_{0, s} + \beta_{1,s} * z$
+5. $Logit^{-1}(s(z)) = \beta_{0, s} + \beta_{1,s} * z$
 
 6. $g(z',z) \sim Norm(\mu_g, \sigma_g)$
 
-7.  $\mu_g^{ev} = \beta_{0, g}^{ev} + \beta_{1,g}^{ev} * z$
+7. $\mu_g = \beta_{0, g} + \beta_{1,g} * z$
 
-8. $\sigma_{g}^{ev} = e^{2 * \beta_{\sigma_g} * z}$
-
-9. $\mu_g^{cv} = \beta_{0, g}^{cv} + \beta_{1,g}^{cv} * z$
-
-10. $\sigma_g^{cv} = \sigma_g^{cv}$
+8. $\sigma_{g} = \sqrt{e^{2 * \beta_{\sigma_g} * z}}$
 
 ### F(z', z)
 
-11.  $Logit^{-1}(p_r(z)) = \beta_{0, p_r} + \beta_{1, p_r} * z$
+9. $Logit^{-1}(p_r(z)) = \beta_{0, p_r} + \beta_{1, p_r} * z$
 
-12.  $ln(f_s(z)) = \beta_{0, f_s} + \beta_{1, f_s} * z$
+10. $ln(f_s(z)) = \beta_{0, f_s} + \beta_{1, f_s} * z$
 
-13. $f_d(z') \sim Norm(\mu_{f_d}, \sigma_{f_d})$
-b
+11. $f_d(z') \sim Norm(\mu_{f_d}, \sigma_{f_d})$
+
 ### Implementation rules
 
 Integration rule: midpoint
@@ -116,3 +66,155 @@ L = `r round(L, 3)`
 U = `r round(U, 3)`
 
 *#* meshpoints = 100 
+
+
+# Drone results
+
+The drone surveys from 2018 required 6 batteries over the course of 2 days due to a limited battery supply. Ambient temperature was approximately 24 degrees and there were no clouds present during either sampling period. In total, 1720 images were taken of the population from a height of ~9m above ground level. Due to difficulties in following the terrain perfectly, pixel sizes varied, though were on average 0.26cm/pixel. Pix4DMapper successfully geolocated and matched 1695/1720 images across 6 blocks, with a median of 10005.9 matches/image and a 1.83% difference in initial and optimized camera parameters. 
+
+The 2019 survey was conducted on a single day under similar conditions to 2018. 1024 images were collected 10-15m above ground level to increase the variability within each image and prevent Pix4DMapper from generating blocks during orthomosaic generation. 1021/1024 images were successfully calibrated in a single block with a mean resolution of 0.45cm/pixel. Despite the drop in resolution, flowers and plants were still quite easy to identify in the resulting orthomosaic. Images had a median of 10219.3 matches, and there was a 0.35% difference between initial and optimized camera parameters. 
+
+At each sampling, squares of known size were also recored in each image and had polygons drawn around them (each target measured 0.375m X 0.315m). Thus, we were able to compute the ratio of observed surface areas to true surface areas for the orthomosaic. Observed plant surface areas were standardized using the ratio of the true size to the observed sizes.
+
+# Model fitting results
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+library(kableExtra)
+source('Ana_Israel_IPM/R/01_Utility_Functions_and_Dependencies.R')
+
+grow_aic_table <- grow_aic %>%
+  as_tibble() %>%
+  mutate(Model = "Growth",
+         Type  = c("Intercept Only",
+                   "Linear Term + Intercept",
+                   "Quadratic Term + Intercept",
+                   "GAM",
+                   "Exponential Variance")) %>%
+  select(Model, Type, df, AIC) 
+
+surv_aic_table <- surv_aic %>%
+  as_tibble() %>%
+  mutate(Model = "Survival",
+         Type  = c("Intercept Only",
+                   "Linear Term + Intercept",
+                   "Quadratic Term + Intercept",
+                   "GAM")) %>%
+  select(Model, Type, df, AIC) 
+
+surv_aic_table$df <- round(surv_aic_table$df, 3)
+
+p_r_aic_table <- p_r_aic %>%
+  as_tibble() %>%
+  mutate(Model = "Probability of Reproduction",
+         Type  = c("Intercept Only",
+                   "Linear Term + Intercept")) %>%
+  select(Model, Type, df, AIC) 
+
+f_s_aic_table <- f_s_aic %>%
+  as_tibble() %>%
+  mutate(Model = "Flower Production",
+         Type  = c("Intercept Only",
+                   "Linear Term + Intercept")) %>%
+  select(Model, Type, df, AIC) 
+
+
+coef_table <- tibble(
+  `Vital Rate` = c('Growth', NA_character_, NA_character_,
+                   'Survival', NA_character_,
+                   'Pr(Flowering)', NA_character_,
+                   'Flower Production', NA_character_,
+                   "Recruit Size", NA_character_
+  ),
+  Parameter = c('Intercept', 'Slope', 'Sigma Exponent',
+                rep(c("Intercept", "Slope"), 3),
+                "Mu", 'Sigma'),
+  Estimate = c(format(grow_exp_var$coefficients, digits = 4),
+               format(grow_exp_var$modelStruct$varStruct, digits = 4),
+               format(surv_mod_lin$coefficients, digits = 4),
+               format(p_r_mod_lin$coefficients, digits = 4),
+               format(f_s_mod$coefficients, digits = 4),
+               format(f_d_mu, digits = 4),
+               format(f_d_sd, digits = 4)
+               
+  ),
+  `Std. Error` = c(format(summary(grow_exp_var)$tTable[ , 2], digits = 3),
+                NA_real_,
+                format(summary(surv_mod_lin)$coefficients[ , 2], digits = 3),
+                format(summary(p_r_mod_lin)$coefficients[ , 2], digits = 3),
+                format(summary(f_s_mod)$coefficients[ , 2], digits = 3),
+                rep(NA_real_, 2)),
+  `Test Statistic` = c(format(summary(grow_exp_var)$tTable[ , 3], digits = 3),
+                NA_real_,
+                format(summary(surv_mod_lin)$coefficients[ , 3], digits = 3),
+                format(summary(p_r_mod_lin)$coefficients[ , 3], digits = 3),
+                format(summary(f_s_mod)$coefficients[ , 3], digits = 3),
+                rep(NA_real_, 2)),
+  `P-value` = c(format(summary(grow_exp_var)$tTable[ , 4], digits = 3),
+                NA_real_,
+                format(summary(surv_mod_lin)$coefficients[ , 4], digits = 3),
+                format(summary(p_r_mod_lin)$coefficients[ , 4], digits = 3),
+                format(summary(f_s_mod)$coefficients[ , 4], digits = 3),
+                rep(NA_real_, 2))
+)
+
+options(knitr.kable.NA = "")
+
+
+knitr::kable(
+  coef_table,
+  format = 'latex',
+  caption = 'Table S1.1: Coefficients, standard errors, test statistics, and p-values for each of the vital rate regression used in the IPM to generate point estimates of lambda, sensitivity, and elasticity functions.',
+  label = ""
+) %>%
+  column_spec(1, border_left = TRUE) %>%
+  column_spec(6, border_right = TRUE) %>%
+  kable_styling(latex_options = "hold_position")
+
+
+
+knitr::kable(
+  grow_aic_table,
+  format = 'latex',
+  caption = "Table S1.2: AIC model selection tables for candidate growth models.",
+  label = ""
+) %>%
+  column_spec(1, border_left = TRUE) %>%
+  column_spec(4, border_right = TRUE) %>%
+  kable_styling(latex_options = "hold_position")
+
+
+knitr::kable(
+  surv_aic_table,
+  format = 'latex',
+  caption = "Table S1.3: AIC model selection tables for candidate survival models.",
+  label = ""
+) %>%
+  column_spec(1, border_left = TRUE) %>%
+  column_spec(4, border_right = TRUE) %>%
+  kable_styling(latex_options = "hold_position")
+
+
+knitr::kable(
+  p_r_aic_table,
+  format = 'latex',
+  caption = "Table S1.4: AIC model selection tables for candidate probability of flowering models.",
+  label = ""
+) %>%
+  column_spec(1, border_left = TRUE) %>%
+  column_spec(4, border_right = TRUE) %>%
+  kable_styling(latex_options = "hold_position")
+
+knitr::kable(
+  f_s_aic_table,
+  format = 'latex',
+  caption = "Table S1.5: AIC model selection tables for candidate flower production models.",
+  label = ""
+) %>%
+  column_spec(1, border_left = TRUE) %>%
+  column_spec(4, border_right = TRUE) %>%
+  kable_styling(latex_options = "hold_position")
+
+
+
+```
+

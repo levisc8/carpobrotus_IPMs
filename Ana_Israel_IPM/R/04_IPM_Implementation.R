@@ -3,77 +3,134 @@ s_z <- function(int, slope, sv1) {
   1/(1 + exp(-(int + slope * sv1)))
 }
 
-g_ev_z1z <- function(sv1, sv2, int, slope, var_coef, L, U, h) {
-  
-  mu   <- int + slope * sv1
-  sd_g <- sqrt(exp(2 * var_coef * sv1))
-  
-  ev <- pnorm(U, mu, sd_g) - pnorm(L, mu, sd_g)
-  
-  out  <- (h * dnorm(sv2, mu, sd_g)) / ev
-  
-  return(out)
-}
+L <- min(c(all_data$log_size,
+           all_data$log_size_next),
+         na.rm = TRUE) * 1.2
 
-p_ev_z1z <- function(sv1, sv2, s_int, s_slope, g_int, g_slope, var_coef, L, U, h) {
-  
-  g <- g_ev_z1z(sv1, sv2, g_int, g_slope, var_coef, L, U, h)
-  
-  return(s_z(s_int, s_slope, sv1) * g)
-}
-
-f_z1z <- function(sv1, sv2, pr_int, pr_slope, f_s_int, f_s_slope,
-                  fr, fd_mu, fd_sd, s_int, s_slope, L, h) {
-  
-  pr_est <- 1/(1 + exp(-(pr_int + pr_slope * sv1)))
-  s_est <- s_z(s_int, s_slope, sv1)
-  f_est <- exp(f_s_int + f_s_slope * sv1)
-  d_est <- (h * dnorm(sv2, fd_mu, fd_sd)) / (1 - pnorm(L, fd_mu, fd_sd))
-  out <- pr_est * s_est * fr * f_est * d_est
-  return(out)
-  
-}
-
-L <- min(all_data$log_size_next, na.rm = TRUE) * 0.8
-U <- max(all_data$log_size_next, na.rm = TRUE) * 1.2
+U <- max(c(all_data$log_size,
+           all_data$log_size_next),
+         na.rm = TRUE) * 1.2
 
 n_mesh_p <- 100
 
-b <- seq(L, U, length.out = n_mesh_p + 1)
-d1 <- d2 <- (b[2:(n_mesh_p + 1)] + b[1:n_mesh_p]) * 0.5
-h <- d1[2] - d1[1]
+carp_ipmr <- init_ipm('simple_di_det') %>%
+  define_kernel(
+    name = "P",
+    formula = s_g_mult(S, G),
+    family = "CC",
+    G = dnorm(sa_2, mu_g, sd_g),
+    sd_g = sqrt(exp(2 * g_sigma_par * sa_1)),
+    mu_g = g_int + g_slope * sa_1,
+    S = inv_logit(s_int, s_slope, sa_1),
+    data_list = all_param_list,
+    states = list(c('sa')),
+    evict = TRUE,
+    evict_fun = truncated_distributions("norm", "G")
+  ) %>%
+  define_kernel(
+    name = "F",
+    formula = f_r * f_s * f_d * p_r,
+    family = "CC",
+    f_s = exp(f_s_int + f_s_slope * sa_1),
+    f_d = dnorm(sa_2, f_d_mu, f_d_sd),
+    p_r = inv_logit(p_r_int, p_r_slope, sa_1),
+    data_list = all_param_list,
+    states = list(c("sa")),
+    evict = TRUE,
+    evict_fun = truncated_distributions("norm", "f_d")
+  ) %>%
+  define_k(
+    name = "K",
+    family = "IPM",
+    K = P + F,
+    data_list = all_param_list,
+    states = list(c('sa')),
+    evict = FALSE
+  ) %>%
+  define_impl(
+    make_impl_args_list(
+      kernel_names = c("K", "P", "F"),
+      int_rule = rep('midpoint', 3),
+      dom_start = rep('sa', 3),
+      dom_end = rep('sa', 3) 
+    ) 
+  ) %>%
+  define_domains(
+    sa = c(L, U, n_mesh_p)
+  )  %>%
+  make_ipm(usr_funs = list(inv_logit = s_z))
 
-P_exp_var <- outer(d1, d2,
-                   FUN      = p_ev_z1z,
-                   s_int    = surv_coef_list$s_int,
-                   s_slope  = surv_coef_list$s_slope,
-                   g_int    = grow_exp_var_coef_list$g_int,
-                   g_slope  = grow_exp_var_coef_list$g_slope,
-                   var_coef = grow_exp_var_coef_list$g_sigma_par,
-                   L = L,
-                   U = U,
-                   h = h) %>%
-  t()
+lambda_ipmr <- lambda_exp_var <- lambda(carp_ipmr, comp_method = 'eigen')
 
+# Iterate over meshpoints to make sure matrix size doesn't matter
 
-Fm <- outer(d1, d2,
-            FUN       = f_z1z,
-            pr_int    = coef(p_r_mod_lin)[1],
-            pr_slope  = coef(p_r_mod_lin)[2],
-            f_s_int   = coef(f_s_mod)[1],
-            f_s_slope = coef(f_s_mod)[2],
-            fr        = f_r,
-            fd_mu     = f_d_mu,
-            fd_sd     = f_d_sd,
-            s_int     = coef(surv_mod_lin)[1],
-            s_slope   = coef(surv_mod_lin)[2],
-            L = L,
-            h = h) %>% 
-  t()
+mesh_p <- seq(100, 500, by = 50)
 
-K_exp_var   <- (P_exp_var   + Fm)
+lambdas <- data.frame(mesh_p = mesh_p,
+                      lambdas = c(lambda_ipmr, rep(NA_real_, 8)))
 
-lambda_exp_var   <- Re(eigen(K_exp_var)$values[1])
+it <- 1
 
-message('\n\nLambda for exponential variance growth: ', round(lambda_exp_var, 3))
+for(i in mesh_p) {
+  
+
+  carp_ipmr_test <- init_ipm('simple_di_det') %>%
+    define_kernel(
+      name = "P",
+      formula = s_g_mult(S, G),
+      family = "CC",
+      G = dnorm(sa_2, mu_g, sd_g),
+      sd_g = sqrt(exp(2 * g_sigma_par * sa_1)),
+      mu_g = g_int + g_slope * sa_1,
+      S = inv_logit(s_int, s_slope, sa_1),
+      data_list = all_param_list,
+      states = list(c('sa')),
+      evict = TRUE,
+      evict_fun = truncated_distributions("norm", "G")
+    ) %>%
+    define_kernel(
+      name = "F",
+      formula = f_r * f_s * f_d * p_r,
+      family = "CC",
+      f_s = exp(f_s_int + f_s_slope * sa_1),
+      f_d = dnorm(sa_2, f_d_mu, f_d_sd),
+      p_r = inv_logit(p_r_int, p_r_slope, sa_1),
+      data_list = all_param_list,
+      states = list(c("sa")),
+      evict = TRUE,
+      evict_fun = truncated_distributions("norm", "f_d")
+    ) %>%
+    define_k(
+      name = "K",
+      family = "IPM",
+      K = P + F,
+      data_list = all_param_list,
+      states = list(c('sa')),
+      evict = FALSE
+    ) %>%
+    define_impl(
+      make_impl_args_list(
+        kernel_names = c("K", "P", "F"),
+        int_rule = rep('midpoint', 3),
+        dom_start = rep('sa', 3),
+        dom_end = rep('sa', 3) 
+      ) 
+    ) %>%
+    define_domains(
+      sa = c(L, U, i) # iterate over different meshpoint numbers
+    )  %>%
+    make_ipm(usr_funs = list(inv_logit = s_z))
+  
+  lambdas$lambdas[it] <- lambda(carp_ipmr_test, comp_method = 'eigen')
+  
+  it <- it + 1
+  
+}
+
+plot(lambdas ~ mesh_p, data = lambdas)
+
+diff(lambdas$lambdas)
+
+# increasing from 100 to 150 does not really make a difference for lambda, so
+# i'm going to keep it at 100 meshpoints
 

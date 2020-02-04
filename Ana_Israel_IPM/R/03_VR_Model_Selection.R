@@ -6,7 +6,8 @@
 # that process is completed. 
 
 grow_mod_int  <- lm(log_size_next ~ 1,
-                    data = all_data)
+                    data = all_data[!is.na(all_data$size_next) &
+                                       !is.na(all_data$size), ])
 
 grow_mod_lin  <- lm(log_size_next ~ log_size, 
                     data = all_data)
@@ -158,10 +159,6 @@ message('\n\nGrowth AIC scores\n\n')
 print(grow_aic)
 
 # Extract coefficients so we can generate a "data_list" for ipmr
-grow_const_var_coef_list <- c(coef(grow_mod_lin),
-                              sd(resid(grow_mod_lin))) %>%
-   as.list() %>% 
-   setNames(c('g_int', 'g_slope', 'sd_g'))
 
 grow_exp_var_coef_list <- c(coef(grow_exp_var),
                             as.numeric(grow_exp_var$modelStruct$varStruct)) %>%
@@ -221,7 +218,26 @@ f_d_sd <- sd(new_plants$log_size_next, na.rm = TRUE)
 
 # Flower production ~ size 
 
-f_s_mod <- glm(flower_n ~ log_size, data = all_data, family = quasipoisson())
+f_s_int <- glm(flower_n ~ 1, data = all_data, family = poisson())
+f_s_mod <- glm(flower_n ~ log_size, data = all_data, family = poisson())
+
+# inspect AIC table
+f_s_aic <- AIC(f_s_int, f_s_mod)
+
+print(f_s_aic)
+
+# compute approximate dispersion
+dev_ratio <- summary(f_s_mod)$null.deviance / summary(f_s_mod)$deviance
+
+print(dev_ratio)
+
+# Likely overdispersed - use this instead. Can't do AIC with it because of 
+# quasi-likelihood, but we already know this functional form is more parsimonious,
+# so stick with it.
+
+f_s_mod_quas <- glm(flower_n ~ log_size, 
+                    data = all_data, 
+                    family = quasipoisson())
 
 plot(flower_n ~ log_size, data = all_data)
 
@@ -229,10 +245,10 @@ lines(xx,
       exp(coef(f_s_mod)[1] + coef(f_s_mod)[2] * xx),
       col = 'red')
 
-print(summary(f_s_mod))
+print(summary(f_s_mod_quas))
 
 fec_coef_list <- c(coef(p_r_mod_lin),
-                   coef(f_s_mod),
+                   coef(f_s_mod_quas),
                    f_r,
                    f_d_mu,
                    f_d_sd) %>%
@@ -240,5 +256,7 @@ fec_coef_list <- c(coef(p_r_mod_lin),
    setNames(c('p_r_int', 'p_r_slope',
               'f_s_int', 'f_s_slope',
               'f_r', 'f_d_mu', 'f_d_sd'))
+
+all_param_list  <- splice(fec_coef_list, grow_exp_var_coef_list, surv_coef_list)
 
 # End parameter estimation!

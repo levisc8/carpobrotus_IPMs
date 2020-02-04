@@ -6,7 +6,6 @@ library(ggplot2) # plotting
 library(dplyr) # data manipulation
 library(gridExtra) # plotting
 library(glue) # string manipulation
-library(tidyr)
 library(rlang)
 library(purrr)
 library(mgcv)
@@ -332,7 +331,7 @@ elasticity <- function(K, h, level = c('kernel', 'vr', 'param'),
 }
 
 
-mat_to_df <- function(mat, meshp) {
+mat_to_df_2 <- function(mat, meshp) {
   
   out <- expand.grid(list(x = meshp, y = meshp)) %>%
     mutate(value = NA_real_)

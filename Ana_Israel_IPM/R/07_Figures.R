@@ -136,10 +136,10 @@ grow_plot <- ggplot(all_data, aes(x = log_size,
               show.legend = FALSE,
               size = 1.25) +
   theme_vr +
-  scale_x_continuous('ln(Surface Area, T)',
-                     limits = c(-5, 5)) +
-  scale_y_continuous('ln(Surface Area, T + 1)',
-                     limits = c(-6.5, 5))
+  scale_x_continuous('ln(Surface Area, t)',
+                     limits = c(-6.1, 3.5)) +
+  scale_y_continuous('ln(Surface Area, t + 1)',
+                     limits = c(-6.1, 3.5))
 
 surv_plot <- ggplot(all_data, aes(x = log_size,
                                   y = survival)) +
@@ -155,9 +155,9 @@ surv_plot <- ggplot(all_data, aes(x = log_size,
             show.legend = FALSE,
             color = 'black') +
   theme_vr + 
-  scale_x_continuous('ln(Surface Area, T)', 
+  scale_x_continuous('ln(Surface Area, t)', 
                      limits = c(-5.5, 3.5)) +
-  scale_y_continuous('Survival (T + 1)',
+  scale_y_continuous('Survival (t + 1)',
                      limits = c(-0.1, 1.1),
                      breaks = c(0, 1))
 
@@ -175,9 +175,9 @@ pr_plot <- ggplot(all_data, aes(x = log_size,
             show.legend = FALSE,
             color = 'black') +
   theme_vr + 
-  scale_x_continuous('ln(Surface Area, T)', 
+  scale_x_continuous('ln(Surface Area, t)', 
                      limits = c(-5.5, 3.5)) +
-  scale_y_continuous('Pr(Reproductive, T)',
+  scale_y_continuous('Pr(Reproductive, t)',
                      limits = c(-0.1, 1.1),
                      breaks = c(0, 1))
 
@@ -193,7 +193,7 @@ fs_plot <- ggplot(all_data, aes(x = log_size,
             show.legend = FALSE,
             color = 'black') +
   theme_vr + 
-  scale_x_continuous('ln(Surface Area, T)', 
+  scale_x_continuous('ln(Surface Area, t)', 
                      limits = c(-5.5, 3.5)) +
   scale_y_continuous('# of Flowers',
                      limits = c(0, 70),
@@ -209,7 +209,7 @@ recr_plot <- ggplot(recruit_t_2, aes(x = log_size_next)) +
                 aes(x = log_size_next,
                     y = density)) + 
   theme_vr + 
-  scale_x_continuous('ln(Surface Area, T + 1)',
+  scale_x_continuous('ln(Surface Area, t + 1)',
                      limits = c(-7, 2)) + 
   scale_y_continuous('Probability Density', 
                      limits = c(0, 0.5)) + 
@@ -225,13 +225,14 @@ lam_plot <- ggplot(lam_pred,
                  color = 'black',
                  size = 1.75) + 
   theme_linerange + 
-  scale_y_continuous(parse(text = 'lambda')) +
+  scale_y_continuous(parse(text = 'lambda'),
+                     limits = c(0.94, 1.02)) +
   geom_hline(yintercept = 1,
              color = 'grey80',
              linetype = 'dashed',
              size = 2)
 
-png('Ana_Israel_IPM/Figures/VR_Panel.png',
+png(filename = 'Ana_Israel_IPM/Figures/Figure_2.png',
     height = 12,
     width = 14,
     units = 'in',
@@ -258,12 +259,12 @@ k_sens_plot <- ggplot(all_sens) +
                       low = 'red',
                       high = 'yellow') +
   scale_x_continuous(name = '',
-                     limits = c(-4.9, 3.59),
+                     limits = c(-7.3, 4),
                      breaks = seq(min(d1), max(d1), length.out = 5),
                      labels = round(seq(min(d1), max(d1), length.out = 5),
                                     digits = 3)) + 
-  scale_y_continuous(name = 'ln(Surface Area, T + 1)',
-                     limits = c(-4.9, 3.59),
+  scale_y_continuous(name = 'ln(Surface Area, t + 1)',
+                     limits = c(-7.3, 4),
                      breaks = seq(min(d1), max(d1), length.out = 5),
                      labels = round(seq(min(d1), max(d1), length.out = 5),
                                     digits = 3)) + 
@@ -279,20 +280,20 @@ k_sens_plot <- ggplot(all_sens) +
 all_elas <- k_elas_exp
 
 k_elas_plot <- ggplot(all_elas) +
-  geom_tile(aes(x = x, y = y, fill = value)) +
+  geom_tile(aes(x = y, y = x, fill = value)) +
   geom_contour(aes(x = x, y = y, z = value),
                color = 'black',
                size = 1.1)  + 
   scale_fill_gradient("Elasticity",
                       low = 'red',
                       high = 'yellow') +
-  scale_x_continuous(name = 'ln(Surface Area, T)',
-                     limits = c(-4.9, 3.59),
+  scale_x_continuous(name = 'ln(Surface Area, t)',
+                     limits = c(-7.3, 4),
                      breaks = seq(min(d1), max(d1), length.out = 5),
                      labels = round(seq(min(d1), max(d1), length.out = 5),
                                     digits = 3)) + 
   scale_y_continuous(name = '',
-                     limits = c(-4.9, 3.59),
+                     limits = c(-7.3, 4),
                      breaks = seq(min(d1), max(d1), length.out = 5),
                      labels = round(seq(min(d1), max(d1), length.out = 5),
                                     digits = 3)) + 
@@ -336,7 +337,7 @@ sub_kern_elas_plot <- ggplot(elas_plot) +
   scale_y_continuous('Elasticity') + 
   theme_vr
 
-png(filename = 'Ana_Israel_IPM/Figures/sens_elas_kernel.png',
+png(filename = 'Ana_Israel_IPM/Figures/Figure_3.png',
     height = 10,
     width = 14,
     units = 'in',

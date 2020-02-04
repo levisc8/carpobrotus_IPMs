@@ -32,6 +32,15 @@ is_t_2 <- infile_data(polys[1], 'Havatselet',
                       population, id, clone_of,
                       size, flower_n, flower_col, alive)
 
+ground_tru_pts <- filter(is_t_2, id >= 22000)
+is_t_2         <- filter(is_t_2, id < 22000)
+
+box_size <- .118125 # Drone box is .375 * .315 m
+
+tr_ratio <- mean(box_size / ground_tru_pts$size)
+
+is_t_2$size <- is_t_2$size * tr_ratio
+
 is_t_1 <- infile_data(polys[2], 'Havatselet',
                       type = 'local_t_1',
                       # Variables to keep
@@ -40,28 +49,33 @@ is_t_1 <- infile_data(polys[2], 'Havatselet',
                       merged_ramets = merged_ramets) %>%
   filter(!id %in% rm_ramets$ramet) 
 
+is_t_1$size <- is_t_1$size * tr_ratio
+
+
 # Join data together for modeling
 
 data_t_2 <- setNames(is_t_2,
                      c(
                        "id", 'population', 'clone_of', 'size_next', 'flower_n_next', 
                        'flower_col', 'survival',
-                       'log_size_next', 'clean_bin_next', 'geometry',
+                       'geometry', 'log_size_next', 'clean_bin_next', 
                        'repro_next'
                      )
 ) %>%
   as_tibble() %>%
+  mutate(log_size_next = log(size_next)) %>% 
   select(-geometry)
 
 data_t_1 <- setNames(is_t_1,
                      c(
                        'id', 'population', 'clone_of',
                        'size', 'flower_n', 'flower_col',
-                       'log_size', 'clean_bin',
-                       'geometry', 'repro'
+                       'log_size', 'geometry', 'clean_bin',
+                        'repro'
                      )
 ) %>%
   as_tibble() %>%
+  mutate(log_size = log(size)) %>%
   select(-geometry)
 
 all_data <- full_join(data_t_1, data_t_2, by = 'id')
@@ -73,3 +87,12 @@ all_data$survival <- update_survival(all_data$population.y,
                                      all_data$survival)
 
 all_data$survival[is.na(all_data$log_size)] <- NA_integer_
+
+# Quick sanity check to make sure data manipulation went according to plan..
+
+stopifnot(
+  all(
+    all(all_data$log_size == log(all_data$size), na.rm = TRUE),
+    all(all_data$log_size_next == log(all_data$size_next), na.rm = TRUE)
+  )
+)
