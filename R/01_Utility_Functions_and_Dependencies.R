@@ -41,8 +41,11 @@ infile_data <- function(path, pop,
 .infile_data_local_t_1 <- function(path, pop, ..., merged_ramets) {
   
   sel_vars <- rlang::enquos(...)
-  temp <- st_read(path,
-                  stringsAsFactors = FALSE)  
+  temp <- sf::st_read(path,
+                      stringsAsFactors = FALSE)  %>%
+    .type_poly_fields()
+  
+  if(sf::st_crs(temp)$epsg != 4326) temp <- sf::st_transform(temp, 4326)
   
   # Substitute merged ramet IDs so values can be recomputed 
   # C++ source is in R/Cpp/cpp_utils.cpp
@@ -67,20 +70,20 @@ infile_data <- function(path, pop,
   temp$size <- as.numeric(sf::st_area(temp))
   
   out <- temp %>%
-    mutate(population = pop) %>%
+    dplyr::mutate(population = pop) %>%
     dplyr::select(!!! sel_vars) %>%
-    group_by(id) %>%
-    summarise(population = first(population),
+    dplyr::group_by(id) %>%
+    dplyr::summarise(population = first(population),
               clone_of   = first(clone_of),
               size       = sum(size),
               flower_n   = sum(flower_n, na.rm = TRUE),
               flower_col = ifelse(!all(is.na(flower_col)),
                                   flower_col[which(!is.na(flower_col)[1])],
                                   NA_character_)) %>%
-    mutate(log_size = log(size)) %>%
-    mutate(size_bin = cut(log_size, breaks = log_breaks)) %>%
-    mutate(clean_bin = clean_bins(size_bin)) %>%
-    select(-size_bin)
+    dplyr::mutate(log_size = log(size)) %>%
+    dplyr::mutate(size_bin = cut(log_size, breaks = log_breaks)) %>%
+    dplyr::mutate(clean_bin = clean_bins(size_bin)) %>%
+    dplyr::select(-size_bin)
   
   # add in some additional info and make sure columns are correct
   
@@ -111,15 +114,23 @@ infile_data <- function(path, pop,
 .infile_data_local_t_2 <- function(path, pop, ...) {
   
   sel_vars <- rlang::enquos(...)
-  temp <- st_read(path,
-                  stringsAsFactors = FALSE)  
+  temp <- sf::st_read(path,
+                  stringsAsFactors = FALSE) %>%
+    .type_poly_fields() 
+  
+  if(sf::st_crs(temp)$epsg != 4326) temp <- sf::st_transform(temp, 4326)
   
   # Now do some initial data manipulation
   
   names(temp) <- tolower(names(temp))
   
+  if('survival' %in% names(temp)) {
+    names(temp) <- gsub('survival', 'alive', names(temp))
+    names(temp) <- gsub('surv', 'alive', names(temp))
+  }
+  
   # calculate breaks for size bins. Only used for histogram plotting
-  log_breaks <- round(dim(temp)[1]/10, digits = -1)
+  log_breaks <- round(dim(temp)[1]/10, digits = 0)
   
   # sf::st_area has substantially better precision than QGIS's $area macro. 
   # to overwrite computed sizes from QGIS. as.numeric converts it from
@@ -129,10 +140,10 @@ infile_data <- function(path, pop,
   temp$size <- as.numeric(sf::st_area(temp))
   
   out <- temp %>%
-    mutate(population = pop) %>%
+    dplyr::mutate(population = pop) %>%
     dplyr::select(!!! sel_vars) %>%
-    group_by(id) %>%
-    summarise(population = first(population),
+    dplyr::group_by(id) %>%
+    dplyr::summarise(population = first(population),
               clone_of   = first(clone_of),
               size       = sum(size),
               flower_n   = sum(flower_n, na.rm = TRUE),
@@ -140,10 +151,10 @@ infile_data <- function(path, pop,
                                   flower_col[which(!is.na(flower_col)[1])],
                                   NA_character_),
               alive = mean(alive, na.rm = TRUE)) %>%
-    mutate(log_size = log(size)) %>%
-    mutate(size_bin = cut(log_size, breaks = log_breaks)) %>%
-    mutate(clean_bin = clean_bins(size_bin)) %>%
-    select(-size_bin)
+    dplyr::mutate(log_size = log(size)) %>%
+    dplyr::mutate(size_bin = cut(log_size, breaks = log_breaks)) %>%
+    dplyr::mutate(clean_bin = clean_bins(size_bin)) %>%
+    dplyr::select(-size_bin)
   
   # add in some additional info and make sure columns are correct
   
@@ -152,16 +163,15 @@ infile_data <- function(path, pop,
   
   # QGIS automatically sets the NULLS to 0s when doing the auto-counting. Change
   # these back to NAs, as they are NOT 0s
-  out$flower_n <- as.integer(out$flower_n)
-  out$flower_n[out$flower_n == 0] <- NA_integer_
+  
+  out$flower_n                        <- as.integer(out$flower_n)
+  out$flower_n[out$flower_n == 0]     <- NA_integer_
   out$flower_col[is.na(out$flower_n)] <- NA_character_
+  out$alive                           <- as.integer(out$alive)
   
   # add in reproduction binary variable
-  out$repro <- ifelse(is.na(out$flower_n), 0, 1)
   
-  # check that id and clone_of are integers
-  if(!is.integer(out$id)) out$id <- as.integer(out$id)
-  if(!is.integer(out$clone_of)) out$clone_of <- as.integer(out$clone_of)
+  out$repro <- ifelse(is.na(out$flower_n), 0, 1)
   
   # drop rows that are mistakenly added to attribute table
   out <- out[!is.na(out$id), ]
@@ -172,10 +182,13 @@ infile_data <- function(path, pop,
 
 .infile_remote <- function(path, pop) {
   
-  temp <- st_read(paste(getwd(), path, sep = '/'),
+  temp <- sf::st_read(paste(getwd(), path, sep = '/'),
                   stringsAsFactors = FALSE)  
   
-  names(temp) <- tolower(names(temp))
+  names(temp) <- tolower(names(temp)) 
+  temp        <- .type_poly_fileds(temp)
+  
+  if(sf::st_crs(temp)$epsg != 4326) temp <- sf::st_transform(temp, 4326)
   
   # calculate breaks for size bins. Only used for histogram plotting
   log_breaks <- round(dim(temp)[1]/10, digits = -1)
@@ -185,13 +198,13 @@ infile_data <- function(path, pop,
   temp$size <- as.numeric(sf::st_area(temp))
   
   out <- temp %>%
-    mutate(population = pop) %>%
+    dplyr::mutate(population = pop) %>%
     dplyr::select(population, id, clone_of,
                   size, flower_n, flower_col) %>%
-    mutate(log_size = log(size)) %>%
-    mutate(size_bin = cut(.$log_size, breaks = log_breaks)) %>%
-    mutate(clean_bin = clean_bins(size_bin)) %>%
-    select(-size_bin)
+    dplyr::mutate(log_size = log(size)) %>%
+    dplyr::mutate(size_bin = cut(.$log_size, breaks = log_breaks)) %>%
+    dplyr::mutate(clean_bin = clean_bins(size_bin)) %>%
+    dplyr::select(-size_bin)
   
   # add in some additional info and make sure columns are correct
   
@@ -223,16 +236,16 @@ name_pop <- function(pop, level) {
 }
 
 ramet_to_genet <- function(data, ...) {
-  group_var <- enquos(...)
+  group_var <- rlang::enquos(...)
   
   out <- data %>%
-    group_by(!!! group_var) %>%
-    summarise(n_ramets = length(id),
+    dplyr::group_by(!!! group_var) %>%
+    dplyr::summarise(n_ramets = length(id),
               country = first(country),
               size = sum(size),
               flower_n = sum(flower_n, na.rm = TRUE),
               flower_col = first(flower_col)) %>%
-    mutate(log_size = log(size)) 
+    dplyr::mutate(log_size = log(size)) 
   
   out$flower_n[out$flower_n == 0] <- NA_integer_
   
@@ -244,7 +257,7 @@ ramet_to_genet <- function(data, ...) {
 
 clean_bins <- function(x) {
   lapply(x,
-         function(x) str_split(x, '\\(|,|\\]')[[1]][3] %>%
+         function(x) stringr::str_split(x, '\\(|,|\\]')[[1]][3] %>%
            as.numeric()) %>% 
     unlist()
 }
@@ -287,4 +300,78 @@ sourceCpp(file = 'R/Cpp/cpp_utils.cpp')
 
 # Extras ------
 
+# Correct data types from QGIS polygons for use in C++ merge_ramets/calc_surv
+
+.type_poly_fields <- function(polygon) {
+  
+  names(polygon) <- tolower(names(polygon))
+  
+  if(!is.integer(polygon$id))       polygon$id       <- as.integer(polygon$id)
+  if(!is.integer(polygon$flower_n)) polygon$flower_n <- as.integer(polygon$flower_n)
+  if(!is.integer(polygon$clone_of)) polygon$clone_of <- as.integer(polygon$clone_of)
+
+  return(polygon)
+}
+
+
+.ground_truth_data <- function(data, gcps, pop, time, method = 'mean_dif') {
+  
+  out <- switch(method,
+                'mean_dif' = .ground_truth_data_mean_dif(data, gcps, pop, time))
+  
+  return(out)
+  
+}
+
+.ground_truth_data_mean_dif <- function(data, gcps, pop, t_n) {
+  
+  ground_truth_sizes_pop <- dplyr::filter(data, id >= 22000)
+  
+  ground_truth_sizes_tru <- dplyr::filter(gcps, pops == pop & time == t_n)
+  
+  # If there aren't any ground truth points in the data, then I'm not sure
+  # what we can do about it. return early for now.
+  
+  if(dim(ground_truth_sizes_pop)[1] == 0) {
+    
+    return(data)
+    
+  }
+  
+  for_tru                <- dplyr::right_join(ground_truth_sizes_tru,
+                                              ground_truth_sizes_pop,
+                                              by = 'id') %>%
+    mutate(dif = (size - gcp_size) / gcp_size) 
+  
+  # Next, probably use a distance based re-scaling, but perhaps makes
+  # more sense to do it based on relative elevation of each gcp and plant?
+  # I think this is where the DSMs come in handy. For now, using the mean
+  # error to compute a "true" size per plant
+  
+  data$size     <- data$size * (1 + mean(for_tru$dif))
+  data$log_size <- log(data$size)
+  
+  return(data)
+  
+}
+
+update_flower_col <- function(data, pop, id, new_col, time) {
+  
+  time_col <- switch(time,
+                     "t_1" = 'flower_col',
+                     "t_2" = 'flower_col_next')
+  
+  data[data$population == pop & data$id == id, time_col] <- new_col
+  
+  return(data)
+  
+}
+
+# Initialize output directories
+
+if(!dir_exists('Model_Fits')) dir_create('Model_Fits')
+if(!dir_exists('Model_Summaries')) dir_create('Model_Summaries')
+if(!dir_exists('Model_Summaries/Trace_Plots')) dir_create('Model_Summaries/Plots')
+if(!dir_exists('Stan')) dir_create('Stan')
+if(!dir_exists('Figures')) dir_create('Figures')
 

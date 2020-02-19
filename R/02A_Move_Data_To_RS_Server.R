@@ -1,4 +1,4 @@
-
+# Moves data sets that are stored locally to RS server
 
 i_cd <- 'I:/sie/102_data_SL/carpobrotus_ipms'
 
