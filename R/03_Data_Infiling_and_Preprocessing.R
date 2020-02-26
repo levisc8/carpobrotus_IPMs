@@ -143,11 +143,11 @@ all_ramets <- update_flower_col(all_ramets,
                                 't_1') %>%
   update_flower_col('Vogelgat',
                     1,
-                    'Y_P',
+                    'P_Y',
                     't_1') %>%
   update_flower_col('Vogelgat',
                     1,
-                    'Y_P',
+                    'P_Y',
                     't_2') %>%
   update_flower_col('Springfontein',
                     44,
@@ -186,9 +186,14 @@ all_ramets <- update_flower_col(all_ramets,
                     'P',
                     't_2')
   
-# Store data and sned it to the RStudio server project folder.
+
+# Store data and send it to the RStudio server project folder (if running locally).
+# If not, then the line below automatically stores it on RSserver
 saveRDS(all_ramets, file = 'Data/all_ramets_di.rds')
 
-dest <- 'I:/sie/102_Data_SL/carpobrotus_ipms/Data/'
-
-file_copy('Data/all_ramets_di.rds', dest, overwrite = TRUE)
+if(! grepl('sie-group-share', getwd())){
+  
+  dest <- 'I:/sie/102_Data_SL/carpobrotus_ipms/Data/'
+  
+  file_copy('Data/all_ramets_di.rds', dest, overwrite = TRUE)
+}

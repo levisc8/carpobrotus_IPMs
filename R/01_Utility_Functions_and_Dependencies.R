@@ -351,6 +351,17 @@ sourceCpp(file = 'R/Cpp/cpp_utils.cpp')
   data$size     <- data$size * (1 + mean(for_tru$dif))
   data$log_size <- log(data$size)
   
+  msg <- paste(
+    "\nAverage error for ", pop, 
+    ' at time ', t_n, 
+    ' with ', ength(for_tru$dif),
+    ' points is: ',
+    mean(for_tru$dif),
+    '\n'
+  )
+  
+  message(msg, appendLF = FALSE)
+  
   return(data)
   
 }
