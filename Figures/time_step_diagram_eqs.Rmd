@@ -1,0 +1,43 @@
+---
+output: word_document
+---
+
+## Transitions
+
+1. plant -> plant $s(z) * g(z', z)$
+
+2. plant -> fruit $p_r(z) * S(z) * f_n(z) * p_m * p_{f_v}$
+
+3. fruit -> seedling $n_f * f_d(z')$
+
+
+## Glossary and data sets
+- $s(z)$: survival ~ size
+
+  - Data: drone mapping
+
+- $g(z',z)$: size (*t+1*) conditional on survival
+
+  - Data: drone mapping
+
+- $p_r(z)$: Probability of flowering ~ size
+
+  - Data: drone mapping
+
+- $f_n(z)$: Flower number conditional on flowering
+
+  - Data: drone mapping
+
+- $p_m$: Proportion of flowers at *t* that make it to *t + 1*
+
+  - Data: Sum of total fruits in seed density data set, scaled to actual plant area
+
+- $p_{f_v}$: Proportion of fruits that make it to *t + 1* that are still viable (e.g. $1 - abortion\_rate$)
+
+  - Data: sum of mature fruits in seed density data set divided by $p_m$
+
+- $f_d(z')$: Recruit size distribution
+
+  - Data: drone mapping
+  
+- 
