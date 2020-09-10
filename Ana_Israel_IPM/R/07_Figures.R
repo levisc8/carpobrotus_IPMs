@@ -226,7 +226,7 @@ lam_plot <- ggplot(lam_pred,
                  size = 1.75) + 
   theme_linerange + 
   scale_y_continuous(parse(text = 'lambda'),
-                     limits = c(0.94, 1.02)) +
+                     limits = c(0.93, 1.02)) +
   geom_hline(yintercept = 1,
              color = 'grey80',
              linetype = 'dashed',
@@ -352,7 +352,5 @@ png(filename = 'Ana_Israel_IPM/Figures/Figure_3.png',
                                       byrow = TRUE))
 
 dev.off()
-
-
 
 

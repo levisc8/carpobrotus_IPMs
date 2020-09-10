@@ -97,7 +97,7 @@ for(i in seq_len(n_resamp)) {
   carp_boot <- init_ipm('simple_di_det') %>%
     define_kernel(
       name = "P",
-      formula = s_g_mult(S, G),
+      formula = S * G,
       family = "CC",
       G = dnorm(sa_2, mu_g, sd_g),
       sd_g = sqrt(exp(2 * g_sigma_par * sa_1)),

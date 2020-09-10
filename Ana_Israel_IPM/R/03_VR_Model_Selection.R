@@ -184,8 +184,6 @@ new_plants <- all_data %>%
 
 n_new <- dim(new_plants)[1]
 
-f_r     <- n_new / n_flow
-
 # Probability of reproducing. f_r gets multiplied by s_z and p_r
 # to generate a fecundity kernel
 p_r_mod_int <- glm(repro ~ 1,        data = all_data, family = binomial())
@@ -239,6 +237,24 @@ f_s_mod_quas <- glm(flower_n ~ log_size,
                     data = all_data, 
                     family = quasipoisson())
 
+f_s_confint  <- confint(f_s_mod_quas) 
+
+f_s_mus      <- coef(f_s_mod_quas)
+f_s_sds      <- apply(
+   f_s_confint,
+   1,
+   function(x) {
+      (x[2] - x[1]) / 3.92 # The full range is almost 4 SDs (remember, + and -!)
+   }
+) %>%
+   as.list() %>%
+   setNames(
+      c(
+         "f_s_int_sd",
+         "f_s_slope_sd"
+      )
+   )
+
 plot(flower_n ~ log_size, data = all_data)
 
 lines(xx, 
@@ -249,14 +265,16 @@ print(summary(f_s_mod_quas))
 
 fec_coef_list <- c(coef(p_r_mod_lin),
                    coef(f_s_mod_quas),
-                   f_r,
+                   f_s_sds,
+                   n_new,
                    f_d_mu,
                    f_d_sd) %>%
    as.list() %>%
    setNames(c('p_r_int', 'p_r_slope',
               'f_s_int', 'f_s_slope',
-              'f_r', 'f_d_mu', 'f_d_sd'))
+              "f_s_int_sd", "f_s_slope_sd",
+              'n_new', 'f_d_mu', 'f_d_sd'))
 
-all_param_list  <- splice(fec_coef_list, grow_exp_var_coef_list, surv_coef_list)
+all_param_list  <- c(fec_coef_list, grow_exp_var_coef_list, surv_coef_list)
 
 # End parameter estimation!

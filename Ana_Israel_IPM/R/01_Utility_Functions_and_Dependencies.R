@@ -5,6 +5,7 @@ library(fs) # file manipulation
 library(stringr) # string manipulation
 library(ggplot2) # plotting 
 library(dplyr) # data manipulation
+library(tidyr)
 library(gridExtra) # plotting
 library(glue) # string manipulation
 library(rlang)
@@ -284,6 +285,7 @@ get_prob_rows <- function(model_obj, loo_obj, thresh) {
   return(out)
   
 }
+
 
 sourceCpp(file = 'Ana_Israel_IPM/Cpp/cpp_utils.cpp')
 

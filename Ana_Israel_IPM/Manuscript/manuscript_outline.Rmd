@@ -3,7 +3,7 @@ title: "Manuscript Outline"
 author: "Sam Levin, Ana Bogdan"
 date: "8/2/2019"
 output:
-  pdf_document: default
+  word_document: default
 ---
 
 ## Introduction
@@ -47,86 +47,91 @@ source('Ana_Israel_IPM/R/06_Bootstrap.R')
 source('Ana_Israel_IPM/R/07A_Figures_rmd.R')
 ```
 
-The drones adequately captured population dynamics at resolutions high enough to identify plants and flowers (Appendix 1). 
+The drone flights were successful, generating ultra-high resolution orthomosaic maps of approximately 2.3 hectares for the population in each year. 85% image overlap (front and side) provided an excellent balance between quality and speed, with neither site taking more than 2 hours of total time in the field to survey. The technique of overlaying maps from subsequent years adequately captured population dynamics at resolutions high enough to identify plants and flowers (Appendix 1). We identified `r dim(data_t_1)[1]` distinct ramets in 2018, re-found `r sum(all_data$survival, na.rm = TRUE)`, and were able to mark `r dim(recruit_t_2)[1]` new individuals. Georeferencing accuracy varied throughout the orthomosaic due to the blocks generated in 2018, but was never off by more than 4m, and we are confident that we correctly identified each ramet in 2019 as either existing or new. 
 
-Vital rate regression using log transformed surface area as a fixed effect yielded good fits for all of our vital rates (Table 1). 
+Vital rate regression using log transformed surface area as a fixed effect yielded good fits for all of our vital rates and generally lower AIC scores than intercept-only, quadratic fits, or GAMS (Figure 2, Table 1, Appendix 1). We found that GAMs and polynomial fits didn't substantially improve the overall model fit or substantially lower the AIC score for each vital rate, even with the increased complexity of the model itself. Thus, our IPM only includes models with a single fixed effect - log transformed surface area - as explanatory variables (Appendix 1). 
 
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
 library(kableExtra)
 
+options(knitr.kable.NA = "")
+
 knitr::kable(
-  tibble::tribble( ~Parameter, ~Estimated, ~`Lower CI`, ~`Upper CI`,
+  tibble::tribble( ~Parameter, ~Estimated, ~`Lower CI`, ~`Upper CI`, ~`Sample Size`,
                   "$\\beta_{0,s}$",  
-                  round(const_var_temp$s_int[1], 3),
-                  round(const_var_temp$s_int[2], 3),
-                  round(const_var_temp$s_int[3], 3),
+                  round(exp_var_temp$s_int[1], 3),
+                  round(exp_var_temp$s_int[2], 3),
+                  round(exp_var_temp$s_int[3], 3),
+                  sum(!is.na(all_data$survival)),
+                  
                 
                   "$\\beta_{1,s}$",
-                  round(const_var_temp$s_slope[1], 3),
-                  round(const_var_temp$s_slope[2], 3),
-                  round(const_var_temp$s_slope[3], 3),
+                  round(exp_var_temp$s_slope[1], 3),
+                  round(exp_var_temp$s_slope[2], 3),
+                  round(exp_var_temp$s_slope[3], 3),
+                  NA_real_,
                   
-                  "$\\beta_{0,g}^{ev}$",
+                  "$\\beta_{0,g}$",
                   round(exp_var_temp$g_int[1], 3),
                   round(exp_var_temp$g_int[2], 3),
                   round(exp_var_temp$g_int[3], 3),
+                  sum(all_data$survival, na.rm = TRUE),
                   
-                  "$\\beta_{1,g}^{ev}$",
+                  "$\\beta_{1,g}$",
                   round(exp_var_temp$g_slope[1], 3),
                   round(exp_var_temp$g_slope[2], 3),
                   round(exp_var_temp$g_slope[3], 3),
-                  
-                  "$\\beta_{0,g}^{cv}$",
-                  round(const_var_temp$s_int[1], 3),
-                  round(const_var_temp$s_int[2], 3),
-                  round(const_var_temp$s_int[3], 3),
-                  
-                  "$\\beta_{1, g}^{cv}$",
-                  round(const_var_temp$g_slope[1], 3),
-                  round(const_var_temp$g_slope[2], 3),
-                  round(const_var_temp$g_slope[3], 3),
-                  
+                  NA_real_,
+                 
                   "$\\beta_{\\sigma_g}$",
                   round(exp_var_temp$g_sigma_par[1], 3),
                   round(exp_var_temp$g_sigma_par[2], 3), 
                   round(exp_var_temp$g_sigma_par[3], 3),
-                  
-                  "$\\sigma_g^{cv}$",
-                  round(const_var_temp$sd_g[1], 3),
-                  round(const_var_temp$sd_g[2], 3),
-                  round(const_var_temp$sd_g[3], 3),
+                  NA_real_,
                   
                   "$\\beta_{0, p_r}$",
-                  round(const_var_temp$p_r_int[1], 3),
-                  round(const_var_temp$p_r_int[2], 3),
-                  round(const_var_temp$p_r_int[3], 3),
-                  
+                  round(exp_var_temp$p_r_int[1], 3),
+                  round(exp_var_temp$p_r_int[2], 3),
+                  round(exp_var_temp$p_r_int[3], 3),
+                  sum(!is.na(all_data$survival)),
+
                   "$\\beta_{1, p_r}$",
-                  round(const_var_temp$p_r_slope[1], 3),
-                  round(const_var_temp$p_r_slope[2], 3),
-                  round(const_var_temp$p_r_slope[3], 3),
+                  round(exp_var_temp$p_r_slope[1], 3),
+                  round(exp_var_temp$p_r_slope[2], 3),
+                  round(exp_var_temp$p_r_slope[3], 3),
+                  NA_real_,
                   
                   "$\\beta_{0, f_s}$",
-                  round(const_var_temp$f_s_int[1], 3),
-                  round(const_var_temp$f_s_int[2], 3),
-                  round(const_var_temp$f_s_int[3], 3),
+                  round(exp_var_temp$f_s_int[1], 3),
+                  round(exp_var_temp$f_s_int[2], 3),
+                  round(exp_var_temp$f_s_int[3], 3),
+                  sum(all_data$repro, na.rm = TRUE),
                   
                   "$\\beta_{1, f_s}$",
-                  round(const_var_temp$f_s_slope[1], 3),
-                  round(const_var_temp$f_s_slope[2], 3), 
-                  round(const_var_temp$f_s_slope[3], 3),
+                  round(exp_var_temp$f_s_slope[1], 3),
+                  round(exp_var_temp$f_s_slope[2], 3), 
+                  round(exp_var_temp$f_s_slope[3], 3),
+                  NA_real_,
                   
                   "$\\mu_{f_d}$",
-                  round(const_var_temp$f_d_mu[1], 3),
-                  round(const_var_temp$f_d_mu[2], 3),
-                  round(const_var_temp$f_d_mu[3], 3),
+                  round(exp_var_temp$f_d_mu[1], 3),
+                  round(exp_var_temp$f_d_mu[2], 3),
+                  round(exp_var_temp$f_d_mu[3], 3),
+                  dim(recruit_t_2)[1],
                   
                   "$\\sigma_{f_d}$",
-                  round(const_var_temp$f_d_sd[1], 3),
-                  round(const_var_temp$f_d_sd[2], 3),
-                  round(const_var_temp$f_d_sd[3], 3)
+                  round(exp_var_temp$f_d_sd[1], 3),
+                  round(exp_var_temp$f_d_sd[2], 3),
+                  round(exp_var_temp$f_d_sd[3], 3),
+                  dim(recruit_t_2)[1],
+                  
+                  "$\\lambda$",
+                  round(exp_var_temp$lambda[1], 3),
+                  round(exp_var_temp$lambda[2], 3),
+                  round(exp_var_temp$lambda[3], 3),
+                  NA_real_
   ),
-format = 'latex',
+format = 'pandoc',
 escape = FALSE,
 caption = "Table 1: Estimated regression coefficients and their 95% confidence intervals. Confidence intervals were obtained by bootstrapping the data set 1000 times and re-fitting the model."
 ) %>%
@@ -134,5 +139,5 @@ caption = "Table 1: Estimated regression coefficients and their 95% confidence i
   column_spec(4, border_right = TRUE)
 ```
 
-$\lambda_{cv}$ = `r round(const_var_temp$lambda[1], 3)`  (Lower CI = `r round(const_var_temp$lambda[2], 3)`, Upper CI = `r round(const_var_temp$lambda[3], 3)`) and $\lambda_{ev}$  = `r round(exp_var_temp$lambda[1], 3)`  (Lower CI = `r round(exp_var_temp$lambda[2], 3)`, Upper CI = `r round(exp_var_temp$lambda[3], 3)`). In both cases, the point estimate of population growth rate is below 1, indicating shrinking populations. However, the exponential variance model's confidence intervals include 1, indicating that the population may well be stable or growing. The constant variance model predicts a declining population in all cases. Elasticity analysis concluded that survival/growth transitions are far more important to $\lambda$ regardless of the model, though the exponential variance model predicted slightly less importance than the constant variance model (Figure 2).
+Our point estimage of $\lambda$  is `r round(exp_var_temp$lambda[1], 3)`  (Lower CI = `r round(exp_var_temp$lambda[2], 3)`, Upper CI = `r round(exp_var_temp$lambda[3], 3)`). The point estimate of population growth rate is below 1, indicating shrinking populations. However, the model's confidence intervals include 1, indicating that the population may well be stable or growing (Figure 2). Elasticity analysis concluded that survival/growth transitions are far more important to $\lambda$ regardless of the model (Figure 3).
 

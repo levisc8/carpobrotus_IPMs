@@ -16,7 +16,7 @@ n_mesh_p <- 100
 carp_ipmr <- init_ipm('simple_di_det') %>%
   define_kernel(
     name = "P",
-    formula = s_g_mult(S, G),
+    formula = S * G,
     family = "CC",
     G = dnorm(sa_2, mu_g, sd_g),
     sd_g = sqrt(exp(2 * g_sigma_par * sa_1)),
@@ -24,7 +24,7 @@ carp_ipmr <- init_ipm('simple_di_det') %>%
     S = inv_logit(s_int, s_slope, sa_1),
     data_list = all_param_list,
     states = list(c('sa')),
-    evict = TRUE,
+    evict_cor = TRUE,
     evict_fun = truncated_distributions("norm", "G")
   ) %>%
   define_kernel(
@@ -34,18 +34,20 @@ carp_ipmr <- init_ipm('simple_di_det') %>%
     f_s = exp(f_s_int + f_s_slope * sa_1),
     f_d = dnorm(sa_2, f_d_mu, f_d_sd),
     p_r = inv_logit(p_r_int, p_r_slope, sa_1),
+    f_r = n_new / (sum(f_s) / 100),
     data_list = all_param_list,
     states = list(c("sa")),
-    evict = TRUE,
+    evict_cor = TRUE,
     evict_fun = truncated_distributions("norm", "f_d")
   ) %>%
   define_k(
     name = "K",
     family = "IPM",
     K = P + F,
+    n_sa_t_1 = K %*% n_sa_t,
     data_list = all_param_list,
     states = list(c('sa')),
-    evict = FALSE
+    evict_cor = FALSE
   ) %>%
   define_impl(
     make_impl_args_list(
@@ -58,9 +60,14 @@ carp_ipmr <- init_ipm('simple_di_det') %>%
   define_domains(
     sa = c(L, U, n_mesh_p)
   )  %>%
-  make_ipm(usr_funs = list(inv_logit = s_z))
+  define_pop_state(
+    n_sa = rep(1/100, n_mesh_p)
+  ) %>%
+  make_ipm(usr_funs = list(inv_logit = s_z),
+           iterate = TRUE,
+           iterations = 100)
 
-lambda_ipmr <- lambda_exp_var <- lambda(carp_ipmr, comp_method = 'eigen')
+lambda_ipmr <- lambda_exp_var <- lambda(carp_ipmr)
 
 # Iterate over meshpoints to make sure matrix size doesn't matter
 
@@ -77,7 +84,7 @@ for(i in mesh_p) {
   carp_ipmr_test <- init_ipm('simple_di_det') %>%
     define_kernel(
       name = "P",
-      formula = s_g_mult(S, G),
+      formula = S * G,
       family = "CC",
       G = dnorm(sa_2, mu_g, sd_g),
       sd_g = sqrt(exp(2 * g_sigma_par * sa_1)),
@@ -85,7 +92,7 @@ for(i in mesh_p) {
       S = inv_logit(s_int, s_slope, sa_1),
       data_list = all_param_list,
       states = list(c('sa')),
-      evict = TRUE,
+      evict_cor = TRUE,
       evict_fun = truncated_distributions("norm", "G")
     ) %>%
     define_kernel(
@@ -95,9 +102,10 @@ for(i in mesh_p) {
       f_s = exp(f_s_int + f_s_slope * sa_1),
       f_d = dnorm(sa_2, f_d_mu, f_d_sd),
       p_r = inv_logit(p_r_int, p_r_slope, sa_1),
+      f_r = n_new / (sum(f_s) / 100),
       data_list = all_param_list,
       states = list(c("sa")),
-      evict = TRUE,
+      evict_cor = TRUE,
       evict_fun = truncated_distributions("norm", "f_d")
     ) %>%
     define_k(
@@ -106,7 +114,7 @@ for(i in mesh_p) {
       K = P + F,
       data_list = all_param_list,
       states = list(c('sa')),
-      evict = FALSE
+      evict_cor = FALSE
     ) %>%
     define_impl(
       make_impl_args_list(

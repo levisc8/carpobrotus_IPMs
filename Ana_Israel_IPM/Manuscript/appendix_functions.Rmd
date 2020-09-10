@@ -16,10 +16,9 @@ knitr::opts_knit$set(root.dir = '../../../carpobrotus_IPMs')
 
 ```
 
-```{r echo = FALSE, include = FALSE, cache = TRUE}
+```{r echo = FALSE, include = FALSE, cache = TRUE, cache.extra = tools::md5sum(c('Ana_Israel_IPM/R/01_Utility_Functions_and_Dependencies.R', 'Ana_Israel_IPM/R/02_Read_Data.R', 'Ana_Israel_IPM/R/03_VR_Model_Selection.R', 'Ana_Israel_IPM/R/04_IPM_Implementation.R', 'Ana_Israel_IPM/R/05_Sens_and_Elas.R', 'Ana_Israel_IPM/R/06_Bootstrap.R','Ana_Israel_IPM/R/07A_Figures_rmd.R'))}
 
 source('Ana_Israel_IPM/R/01_Utility_Functions_and_Dependencies.R')
-sourceCpp('Ana_Israel_IPM/R/01_Utility_funs_cpp.cpp')
 source('Ana_Israel_IPM/R/02_Read_Data.R')
 source('Ana_Israel_IPM/R/03_VR_Model_Selection.R')
 source('Ana_Israel_IPM/R/04_IPM_Implementation.R')
@@ -218,3 +217,24 @@ knitr::kable(
 
 ```
 
+
+```{r echo = FALSE, fig.cap = "Results for the flower number regression parameter perturbation analysis. The red point is the per-capita growth rate estimated from the regression parameters. The black line shows the upper and lower 95% confidence intervals derived from the draws that perturbed each flower number regression parameter. The range of values is quite small, and our qualitative results are not affected by the assumption of little temporal variation in flower production."}
+
+ggplot(data = unc_plot, aes(y = obs)) +
+  geom_point(aes(x = 1), color = 'red', size = 4) +
+  geom_linerange(aes(ymin = lo_ci,
+                     ymax = up_ci,
+                     x = 1),
+                 size = 1.25) +
+  xlab("") +
+  ylab(parse(text = "lambda")) +
+  theme_bw() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_text(size = 14),
+    axis.title.y = element_text(size = 18)
+  )
+
+
+
+```
