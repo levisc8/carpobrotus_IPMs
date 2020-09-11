@@ -1,0 +1,98 @@
+---
+output: word_document
+---
+
+## Transitions
+
+1. plant -> plant $s(z) * g(z', z)$
+
+2. plant -> fruit $p_r(z) * S(z) * f_n(z) * p_m * p_{f_v}$
+
+3. fruit -> seedling $n_f * p_e * g_i * v_s$
+
+4. fruit -> seed bank $n_f * (1-g_i) * v_s$
+
+5. seedling -> plant $s_s * f_d(z')$
+
+6. seed bank -> seedling $s_{sb} * g_{sb} * p_e$
+
+7. seed bank -> seed bank $s_{sb} * (1 - g_{sb})$
+
+
+## Glossary and data sets
+
+- $s(z)$: survival ~ size
+
+  - Data: drone mapping
+
+- $g(z',z)$: size (*t+1*) conditional on survival
+
+  - Data: drone mapping
+
+- $p_r(z)$: Probability of flowering ~ size
+
+  - Data: drone mapping
+
+- $f_n(z)$: Flower number conditional on flowering
+
+  - Data: drone mapping
+
+- $p_m$: Proportion of flowers at *t* that make it to *t + 1*
+
+  - Data: Sum of total fruits in seed density data set, scaled to actual plant area
+
+- $p_{f_v}$: Proportion of fruits that make it to *t + 1* that are still viable (e.g. $1 - abortion\_rate$)
+
+  - Data: sum of mature fruits in seed density data set divided by $p_m$
+
+- $f_d(z')$: Recruit size distribution
+
+  - Data: drone mapping
+  
+- $g_i$: germination rate of fresh seeds
+
+  - data: need to talk to Erola
+  
+    - DONE for SA, NZ, PT
+      
+      - Covid fucked ESP and USA
+    
+- $v_s$: total seed viability
+
+  - data: need to talk to Erola
+  
+  - DONE for all except CA and Israel, have for Spain, but other sites, not ours
+  
+- $n_f$: mean number of seeds per surviving mature fruit
+
+  - data: Erola
+  
+    - Done for Spain, SA, NZ, PT
+  
+- $p_e$: probability that a viable seed that germinates establishes
+
+  - data: Maybe Erola? I really don't know about this one. Consider using transfer function or something
+  
+  - Literature
+  
+- $s_s$: seedling survival
+
+  - data: seedling survey plots from Rooisand (no others available). This is THIN
+  
+- $s_{sb}$: seed bank survival probability
+
+  - data: need to talk to Erola
+  
+    - Not really, just simulate instead
+  
+- $g_{sb}$: seed bank germination probability
+
+  - data: need to talk to Erola
+  
+    - Not really, artificial aging experiments don't use, just simulate instead. 
+  
+## Function count
+
+Number of functions: 5
+
+Number of discrete parameters: 9
