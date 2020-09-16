@@ -1,7 +1,4 @@
 ---
-title: "Appendix functions"
-author: "Sam Levin, Ana Bogdan"
-date: "8/8/2019"
 output:
   pdf_document: default
 header-includes:

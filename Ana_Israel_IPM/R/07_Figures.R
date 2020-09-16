@@ -50,20 +50,20 @@ elas_plot <- filter(all_vr, vital_rate %in% c('p_elas', 'f_elas'))
 
 theme_contour <- theme(
   panel.background = element_blank(),
-  axis.text        = element_text(size   = 14),
-  axis.title.x     = element_text(size   = 16,
+  axis.text        = element_text(size   = 8),
+  axis.title.x     = element_text(size   = 10,
                                   margin = margin(
-                                    t = 20,
+                                    t = 5,
                                     r = 0, 
                                     l = 0, 
-                                    b = 2
+                                    b = 1
                                   )
   ),
-  axis.title.y     = element_text(size   = 16,
+  axis.title.y     = element_text(size   = 8,
                                   margin = margin(
                                     t = 0,
-                                    r = 20,
-                                    l = 2,
+                                    r = 5,
+                                    l = 1,
                                     b = 0
                                   )
   )
@@ -74,47 +74,47 @@ theme_linerange <- theme_bw() +
     # Extras to theme_bw()
     axis.text.x       = element_blank(), # Remove x-axis text + title
     axis.title.x      = element_blank(),
-    axis.text.y       = element_text(size = 14), # make y-axis text + title bigger
-    axis.title.y      = element_text(size = 18,
+    axis.text.y       = element_text(size = 7), # make y-axis text + title bigger
+    axis.title.y      = element_text(size = 9,
                                      margin = margin(
                                        t = 0,
-                                       l = 5,
-                                       r = 20,
+                                       l = 2,
+                                       r = 5,
                                        b = 0
                                      )),
-    strip.text        = element_text(size = 20), # Increases plot label size
+    strip.text        = element_text(size = 10), # Increases plot label size
     legend.background = element_rect(fill = NA,  # Box for the legend 
                                      color = 'black'),
-    legend.text       = element_text(size = 12),
-    legend.title      = element_text(size = 14)
+    legend.text       = element_text(size = 6),
+    legend.title      = element_text(size = 7)
   )
 
 theme_vr <- theme_bw() + 
   theme( 
     # Extras to theme_bw()
-    axis.text.x       = element_text(size = 14), 
-    axis.text.y       = element_text(size = 14), # make y-axis text + title bigger
-    axis.title.x      = element_text(size   = 16,
+    axis.text.x       = element_text(size = 7), 
+    axis.text.y       = element_text(size = 7), # make y-axis text + title bigger
+    axis.title.x      = element_text(size   = 8,
                                      margin = margin(
-                                       t = 20,
+                                       t = 5,
                                        r = 0, 
                                        l = 0, 
-                                       b = 15
+                                       b = 7
                                      )
     ),
-    axis.title.y     = element_text(size   = 16,
+    axis.title.y     = element_text(size   = 8,
                                     margin = margin(
-                                      t = 10,
-                                      r = 20,
-                                      l = 2,
+                                      t = 3,
+                                      r = 10,
+                                      l = 1,
                                       b = 0
                                     )
     ),
-    strip.text        = element_text(size = 20), # Increases plot label size
+    strip.text        = element_text(size = 8), # Increases plot label size
     legend.background = element_rect(fill = NA,  # Box for the legend 
                                      color = 'black'),
-    legend.text       = element_text(size = 12),
-    legend.title      = element_text(size = 14)
+    legend.text       = element_text(size = 6),
+    legend.title      = element_text(size = 7)
   )
 
 # Now, make the figure panel
@@ -232,9 +232,9 @@ lam_plot <- ggplot(lam_pred,
              linetype = 'dashed',
              size = 2)
 
-png(filename = 'Ana_Israel_IPM/Figures/Figure_2.png',
-    height = 12,
-    width = 14,
+tiff(filename = 'Ana_Israel_IPM/Figures/Figure_2.tiff',
+    height = 5,
+    width = 6,
     units = 'in',
     res = 300)
 
@@ -337,9 +337,9 @@ sub_kern_elas_plot <- ggplot(elas_plot) +
   scale_y_continuous('Elasticity') + 
   theme_vr
 
-png(filename = 'Ana_Israel_IPM/Figures/Figure_3.png',
-    height = 10,
-    width = 14,
+tiff(filename = 'Ana_Israel_IPM/Figures/Figure_3.tiff',
+    height = 4,
+    width = 6,
     units = 'in',
     res = 300)
 
