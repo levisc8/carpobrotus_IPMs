@@ -15,7 +15,7 @@ n_resamp <- 1000
 
 # Set up place to hold boot strapping outputs
 
-temp_exp_var_out <- splice(grow_exp_var_coef_list,
+temp_exp_var_out <- c(grow_exp_var_coef_list,
                            surv_coef_list,
                            fec_coef_list,
                            lambda = lambda_exp_var,
