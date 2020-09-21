@@ -25,4 +25,4 @@ Misc/*
 *.jpg
 *.tif
 *.xml
-*.zip
+repro_analysis/Data/*

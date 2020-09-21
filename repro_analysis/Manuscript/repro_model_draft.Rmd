@@ -43,13 +43,31 @@ We test climate and native status drive differences in probability of flowering 
           
           + B. annual precip
           
-          + c.  
+          + c. temp seasonality
+          
+          + d. temp coldest month (or quarter, debating) (cool tolerance)
+          
+          + e. precip seasonality
     
 2. Given the range of conditions we have data for, can we figure out whether they will reproduce more or less under future climate scenarios?
 
     + If so, where?
     
     + If we can't explain much variance, why not?
+
+```{r eval = FALSE}
+
+# Figure 1: Climate envelope of Carp spp. All figures include a range of GBIF occurrences in light colors, and our actual sites highlighted to illustrate range of sampling relative to actual global climate that they experience
+# 
+# Panel A: Mean ann temp ~ precip from Chelsa
+# 
+# Panel B: min temp ~ ann precip from Chelsa
+# 
+# Panel C: mean ann temp ~ precip from actual weather data for years before sampling (e.g. 2016-2018)
+# 
+# Panel D: min temp ~ ann precip from actual weather data for years before sampling (e.g. 2016-2018)
+
+```
 
 
 ## References
