@@ -1,0 +1,69 @@
+---
+output: word_document
+---
+
+
+## Introduction
+
+Mediterranean coastal dune systems are particularly threatened by the collective scourge of human-mediated habitat destruction, invasive species, and climate change. Species in the _Carpobrotus_ genus (Aizoaceae), specifically _Carpobrotus edulis_ and _Carpobrotus acinaciformis_, represent one the of the largest individual threats to this ecotype. _Carpobrotus spp._ are native to South Africa, but have been introduced to five other continents and is considered invasive in at least one region of each one (CABI 2020). Introductions in the California and New Zealand represent substantially cooler and wetter from the climate they evolved in (Figure 1 occurrence ~ clim figure). Nevertheless, _Carpobrotus spp._ have established, spread, and come to dominate these areas. Phenotypic shifts towards increased chilling tolerance in non-native ranges have been invoked as a potential mechanism underlying the spread outside of the native climate envelope (Fenollosa & Munne-Bosch 2018). 
+
+A critical part of the invasion process is the ability to reproduce and spread at both local and regional scales. _Carpobrotus spp._ reproduce both sexually and asexually. Reproduction through seed dispersal is critical during the spread phase of plant invasions, as it facilitates longer distance dispersal and establishment in new areas than vegetative reproduction can. _Carpobrotus spp._ have a highly flexible mating system, including the ability to produce apomictic seeds, self-pollination, and cross-pollination (Campoy et al. 2018). Furthermore, multiple species of mammals are known to consume and disperse _Carpobrotus spp._ seeds, in some cases up to 800m from the parent plant (D'Antonio, Odion, & Tyler 1993, Vila & D'Antonio 1998, Bourgeois et al. 2005, Novoa et al. 2012). 
+
+Invasions are inherently demographic processes, requiring individuals to survive, grow, and reproduce in their novel environments. Thus, we need to show that a proposed mechanism actually translates into improved demographic performance/fitness. Given the phenotypic shifts observed by Fenollosa & Bosch (2018), the next step is to assess whether these shifts translate into enhanced fitness.  
+
+We test climate and native status drive differences in probability of flowering and actual flower production across the native and invaded range, controlling for site specific differences.
+
+
+## Key questions
+
+1. What is the total variability in iceplant reproduction at global scale? This is more of a comprehensive overview of its flower production, and possibly, its mature fruit and seed production. 
+
+    + SA, NZ, ES/PT, IS, US
+    
+    + Not genetically explicit, but spatial and has environment 
+    
+    + Mature fruit production: We have mature seed pod density data from SA, NZ, and part of PT. We do not have it from ES or US. Anecdotally, it seems like sexual reproduction is highest in SA and US, whereas asexual reproduction seems dominant in the other areas.
+    
+      + Anecdotally = the number of seedlings I remember seeing in each place. Need to come up with a better quantitative metric if we want to include this part of the question!
+      
+    + Seed production: We need that data from Erola, which I suspect means we add her and Sergi as co-authors. I have no issue with this
+    
+    
+  + Proposed Models:
+  
+    + `probability of flowering ~ size * climate + (1|site)`
+    
+    + `flower_n ~ size * climate + (1|site)`
+    
+    + Climate variables:
+    
+      + My instinct is to download weather data and use the following:
+      
+          + A. min temp
+          
+          + B. annual precip
+          
+          + c.  
+    
+2. Given the range of conditions we have data for, can we figure out whether they will reproduce more or less under future climate scenarios?
+
+    + If so, where?
+    
+    + If we can't explain much variance, why not?
+
+
+## References
+
+CABI blah blah blah - http://www.cabi.org/isc/datasheet/10648
+
+Fenollosa E & Munne-Bosch S (2018) Increased chilling tolerance of the invasive species _Carpobrotus edulis_ may explain its expansion across new territories. _Conservation Physiology_ 7: 1-15. DOI: 10.1093/conphys/coz075
+
+Campoy JG, Acosta ATR, Affre L, Barreiro R, Brundu G, Buisson E, _et al._ (2018) Monographs of invasive plants in Europe: _Carpobrotus_. _Botany Letters_ DOI: 10.1080/23818107.2018.1487884
+
+
+### Refs from Campoy to find
+
+D'Antonio, Odion, & Tyler 1993
+Vila & D'Antonio 1998
+Bourgeois et al. 2005
+Novoa et al. 2012

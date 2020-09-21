@@ -1,0 +1,46 @@
+---
+title: "data sources and model notes"
+output: html_document
+---
+
+
+## SA Climate 
+
+Data source for station names: `repro_analysis/Data/sa_weather_stations`
+
+URL: https://www.weathersa.co.za/home/aboutclimateatsaws
+
+1. Melkbossstrand
+
+    + KERNKRAG
+    
+2. Vogelgat
+
+    + WALKER BAY
+
+3. Springfontein
+
+    + STANFORD - WALKER BAY VINEYARD ARS
+
+4. Rooisand
+
+    + KLEINMOND
+
+5. Struisbaai
+
+    + STRUISBAAI
+
+6. St Francis
+
+    + CAPE ST FRANCIS
+
+## NZ Climate
+
+
+## ES/PT Climate
+
+
+## IS Climate
+
+
+## US Climate
