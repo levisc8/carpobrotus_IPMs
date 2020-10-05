@@ -4,3 +4,5 @@
 source("repro_analysis/R/01_depends.R")
 source("repro_analysis/R/02_gbif_cleaning.R")
 source("repro_analysis/R/03_clim_envelopes.R")
+source("repro_analysis/R/04_flower_models.R")
+source("repro_analysis/R/05_flower_model_visualization.R")

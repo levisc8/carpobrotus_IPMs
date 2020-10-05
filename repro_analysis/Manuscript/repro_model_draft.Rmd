@@ -5,83 +5,112 @@ output: word_document
 
 ## Introduction
 
-Mediterranean coastal dune systems are particularly threatened by the collective scourge of human-mediated habitat destruction, invasive species, and climate change. Species in the _Carpobrotus_ genus (Aizoaceae), specifically _Carpobrotus edulis_ and _Carpobrotus acinaciformis_, represent one the of the largest individual threats to this ecotype. _Carpobrotus spp._ are native to South Africa, but have been introduced to five other continents and is considered invasive in at least one region of each one (CABI 2020). Introductions in the California and New Zealand represent substantially cooler and wetter from the climate they evolved in (Figure 1 occurrence ~ clim figure). Nevertheless, _Carpobrotus spp._ have established, spread, and come to dominate these areas. Phenotypic shifts towards increased chilling tolerance in non-native ranges have been invoked as a potential mechanism underlying the spread outside of the native climate envelope (Fenollosa & Munne-Bosch 2018). 
+Mediterranean coastal dune systems are particularly threatened by the collective scourge of human-mediated habitat destruction, invasive species, and climate change. Species in the _Carpobrotus_ genus (Aizoaceae), specifically _Carpobrotus edulis_ and _Carpobrotus acinaciformis_, represent one the of the largest individual threats to this ecotype. _C edulis_ and _C. acinaciformis_  are native to South Africa, but have been introduced to five other continents and are considered invasive in at least one region of each one (CABI 2020). Introductions in the California and New Zealand represent substantially cooler and wetter climate than the South African climate they evolved in (Figure 1 occurrence ~ clim figure). Nevertheless, these _Carpobrotus._ species have established, spread, and come to dominate these areas (Vila et al. 2006, Santoro et al. 2012, Fried et al. 2014). 
 
-A critical part of the invasion process is the ability to reproduce and spread at both local and regional scales. _Carpobrotus spp._ reproduce both sexually and asexually. Reproduction through seed dispersal is critical during the spread phase of plant invasions, as it facilitates longer distance dispersal and establishment in new areas than vegetative reproduction can. _Carpobrotus spp._ have a highly flexible mating system, including the ability to produce apomictic seeds, self-pollination, and cross-pollination (Campoy et al. 2018). Furthermore, multiple species of mammals are known to consume and disperse _Carpobrotus spp._ seeds, in some cases up to 800m from the parent plant (D'Antonio, Odion, & Tyler 1993, Vila & D'Antonio 1998, Bourgeois et al. 2005, Novoa et al. 2012). 
+A critical part of the invasion process is the ability to reproduce and spread at both local and regional scales. _C. edulis_ and _C. acinaciformis_ reproduce both sexually and asexually (Suehs et al. 2004). Reproduction through seed dispersal is critical during the spread phase of plant invasions, as it facilitates longer distance dispersal and establishment in new areas than vegetative reproduction can. Furthermore, cross-pollination with con-specifics enhances genetic diversity, which may be lacking due to founder effects in the invading population. _C. edulis_ and _C. acinaciformis_ have a highly flexible mating system, including the ability to produce apomictic seeds, self-pollination, and cross-pollination (Campoy et al. 2018), with _C. edulis_ showing more plasticity than _C. acinaciformis_ (Suehs et al. 2004). Furthermore, multiple species of mammals are known to consume and disperse seeds of these species, in some cases up to 800m from the parent plant (D'Antonio, Odion, & Tyler 1993, Vila & D'Antonio 1998, Bourgeois et al. 2005, Novoa et al. 2012). 
 
-Invasions are inherently demographic processes, requiring individuals to survive, grow, and reproduce in their novel environments. Thus, we need to show that a proposed mechanism actually translates into improved demographic performance/fitness. Given the phenotypic shifts observed by Fenollosa & Bosch (2018), the next step is to assess whether these shifts translate into enhanced fitness.  
-
-We test climate and native status drive differences in probability of flowering and actual flower production across the native and invaded range, controlling for site specific differences.
-
+Demographic processes are critical to invasions - successful invasions require individuals to survive, grow, and reproduce in their novel environments. Environmental variables are generally stochastic, and climate change is predicted to shift their distributions. In order to predict invasions under future climate scenarios, we need to show (i) whether climate affects species' vital rates and (ii) the direction of an effect if it is present. Recent work has shown thermal niche shifts in _Carpobrotus spp._ between the native to invasive range (Fenollosa & Bosch 2018), and  variation in seeds/fruit (Suehs et al 2004, Vila et al. 1998). Furthermore, there is a connection between flower density, pollen-mediated gene flow, and degree of hybridization/hybrid vigor in _C. edulis_ and _C. acinaciformis_ (Suehs et al. 2006).  However, the mean and variance of total reproductive potential, and the relationship of these quantities to climatic variables, is still an open question. We specifically focus on the vital rates underlying sexual reproduction - the probability of flowering and the number of flowers produced by flowering individuals. We test whether climate (and maybe native status??) drive differences in probability of flowering and average flower production across the native and invaded range, controlling for individual- and site-specific differences.
 
 ## Key questions
 
-1. What is the total variability in iceplant reproduction at global scale? This is more of a comprehensive overview of its flower production, and possibly, its mature fruit and seed production. 
+Ramet size is known to drive the probability of flowering and number of flowers produced. Thus, in each population, the effect of a given external driver (e.g. climate, genetics) should be present as an effect on the slope and/or intercept of the `pr_repro ~ size` or `flower_n ~ size` models. I think in order to estimate this effect size, we need to find a "global" slope/intercept, then compute the magnitude of the deviations that each population specific parameter shows from the global one. (NOTE: I hate using the word global, but I'm not sure what other word to use here. The point is that given a consistent environmnent/(epi)genetic state, the parameter values should be pretty similar). 
 
-    + SA, NZ, ES/PT, IS, US
+I *think* the model structures I've laid out below provide us with the right format to test this. BUT, I do want to talk to Aldo and Sanne about it, because they're way more well versed in climate drivers of demography than I am at this point. 
+
+1. Mean iceplant flower production at global scale? Variance in iceplant reproduction at global scale? This is more of a comprehensive overview of its flower production, and possibly, its mature fruit and seed production. 
+
+    + Data: SA, NZ, ES/PT, IS, US
     
-    + Not genetically explicit, but spatial and has environment 
-    
-    + Mature fruit production: We have mature seed pod density data from SA, NZ, and part of PT. We do not have it from ES or US. Anecdotally, it seems like sexual reproduction is highest in SA and US, whereas asexual reproduction seems dominant in the other areas.
-    
-      + Anecdotally = the number of seedlings I remember seeing in each place. Need to come up with a better quantitative metric if we want to include this part of the question!
+    + Proposed models:
+ 
+      + `p_r_z ~ size + (size|site)` (probability of flowering)
       
-    + Seed production: We need that data from Erola, which I suspect means we add her and Sergi as co-authors. I have no issue with this
+        + $p_r(z) = (\alpha_{p_r} + \alpha_{i,p_r}) + (\beta_{p_r} + \beta_{i,p_r}) * z + e$, ($_i$ = site)
+      
+      + `f_s ~ size + (size|site)` (number of flowers)
     
+        + $f_s(z) = (\alpha_{f_s} + \alpha_{i,f_s}) + (\beta_{f_s} + \beta_{i,f_s}) * z + e$, ($_i$ = site)
+      
+      + Can be combined to compute $\bar{\omega}(z) = p_b(z)p_rf_s(z)$ and $Var(\omega(z))$ ($\bar{\omega}(z)=$ average flower production as a function of size, conditional on flowering, and $p_r=$ recruitment probability (not sure if we really want to include this tbh)).
     
-  + Proposed Models:
+      + $Var(\omega(z)) = \sigma^2_b = \bar{\omega}(z) + \frac{1 - p_b(z)}{p_b(z)}\bar{\omega}(z)^2$ The variance in flower production conditional on flowering
+    
+2. Given the range of conditions we have data for, can we figure out whether they will reproduce more or less under future climate scenarios? If so, where? What are the implications for management?
+
+      + Data: Same as above plus WorldClim (for recent weather, Figure 2) and/or CHELSA (for less recent climate, Figure 1)
   
-    + `probability of flowering ~ size * climate + (1|site)`
+    + Proposed models: Meta-regressions (kind of like plant review). We use the $\beta s$ from the models in 1 as responses in model with climate predictor on $\beta_{i,p_r}, \beta_{i,f_s}$ (conceptually at least. I am not sure if this is statistically valid and really need to talk w/ Aldo/Sanne/someone in Rob's group about this setup).
     
-    + `flower_n ~ size * climate + (1|site)`
-    
-    + Climate variables:
-    
-      + My instinct is to download weather data and use the following:
+        + without genetic data:
       
-          + A. min temp
+          + `beta_f_s ~ climate` (N = 21)
+        
+          + `beta_p_r ~ climate` (N = 21)
+      
+      + With genetic data:
+    
+          + `beta_f_s ~ climate + genes` (no interaction planned due to sample size (N = 20, no genetic data from Israeli population))
+        
+          + `beta_p_r ~ climate + genes` (no interaction planned due to sample size (N = 20, no genetic data from Israeli population))
+        
+        
+      + Climate variables:
+    
+        + My instinct is to download weather data and use the following:
+      
+          + A. mean temp
           
           + B. annual precip
           
-          + c. temp seasonality
+          + C. temp seasonality
           
-          + d. temp coldest month (or quarter, debating) (cool tolerance)
+          + D. mean temp coldest month (or quarter, debating) (cool tolerance)
           
-          + e. precip seasonality
-    
-2. Given the range of conditions we have data for, can we figure out whether they will reproduce more or less under future climate scenarios?
+          + E. precip seasonality
+          
+        + Once we have these - we can either: 
+            
+          + 1. do env PCA and use 1-2 axes OR
+          
+          + 2. Fit models with all of the combinations, and look at predictive power.
+            
+            + Not a huge fan of the kitchen sink approach. Prefer 1 or a more literature-informed choice of variables.
 
-    + If so, where?
-    
-    + If we can't explain much variance, why not?
 
-```{r eval = FALSE}
+![Climate coverage 1979-2013](Figures/clim_coverage_1979-2013.png)
 
-# Figure 1: Climate envelope of Carp spp. All figures include a range of GBIF occurrences in light colors, and our actual sites highlighted to illustrate range of sampling relative to actual global climate that they experience
-# 
-# Panel A: Mean ann temp ~ precip from Chelsa
-# 
-# Panel B: min temp ~ ann precip from Chelsa
-# 
-# Panel C: mean ann temp ~ precip from actual weather data for years before sampling (e.g. 2016-2018)
-# 
-# Panel D: min temp ~ ann precip from actual weather data for years before sampling (e.g. 2016-2018)
+_Red triangles are our field sites, and black dots are GBIF records for Carpobrotus edulis, Carpobrotus acinaciformis, and Carpobrotus chilensis. Climate data is from CHELSA and is averaged over 1979-2013. Variables are mean annual temperature, temperature seasonality, mean temperature of coldest month, mean temperature of coldest quarter, mean annual precip, and precip seasonality. The upper triangle shows correlations between pairs of variables. I didn't really want that in the figure, but `ggpairs` does it by default and I haven't figured out how to turn it off. You can probably ignore that. The density plots on the diagonal show the density of points in each group. The pink is the density of GBIF occurrences for a given variable, and the green is the density of our field sites. I am not sure why those got different colors from the scatterplots, but again, I can't figure out how to change that._
 
-```
+
+![Climate coverage 2016-2018](Figures/clim_coverage_2016-2018.png)
+
+_Red triangles are our field sites, and black dots are GBIF records for Carpobrotus edulis, Carpobrotus acinaciformis, and Carpobrotus chilensis. Weather data is from WorldClim and is averaged over 2016-2018. The point here is to understand how well we cover the recent climate distributions with our field sites. Variables are mean annual temperature (mat_rec), temperature seasonality (t_seas_rec), mean temperature of coldest month (t_co_mo_rec), mean temperature of coldest quarter (t_co_qu_rec), mean annual precip (map_rec), and precip seasonality (p_seas_rec). The upper triangle shows correlations between pairs of variables. I didn't really want that in the figure, but `ggpairs` does it by default and I haven't figured out how to turn it off. You can probably ignore that. The density plots on the diagonal show the density of points in each group. The pink is the density of GBIF occurrences for a given variable, and the green is the density of our field sites. I am not sure why those got different colors from the scatterplots, but again, I can't figure out how to change that._
 
 
 ## References
 
-CABI blah blah blah - http://www.cabi.org/isc/datasheet/10648
+Bourgeois K, Suehs CM,  Vidal E  & Médail F (2005). Invasional Meltdown Potential: Facilitation between Introduced Plants and Mammals on French Mediterranean Islands. _Ecoscience_ 12 (2): 248–256. DOI: 10.2980/i1195-6860-12-2-248.1.
 
-Fenollosa E & Munne-Bosch S (2018) Increased chilling tolerance of the invasive species _Carpobrotus edulis_ may explain its expansion across new territories. _Conservation Physiology_ 7: 1-15. DOI: 10.1093/conphys/coz075
+CABI blah blah blah - http://www.cabi.org/isc/datasheet/10648
 
 Campoy JG, Acosta ATR, Affre L, Barreiro R, Brundu G, Buisson E, _et al._ (2018) Monographs of invasive plants in Europe: _Carpobrotus_. _Botany Letters_ DOI: 10.1080/23818107.2018.1487884
 
+D'Antonio CM, Odion DC, & Tyler CM (1993). Invasion of maritime chaparral by the introduced succulent _Carpobrotus edulis_. _Oecologia_ 95(1): 14-21. DOI: 10.1007/BF00649501
+
+Fenollosa E & Munne-Bosch S (2018) Increased chilling tolerance of the invasive species _Carpobrotus edulis_ may explain its expansion across new territories. _Conservation Physiology_ 7: 1-15. DOI: 10.1093/conphys/coz075
+
+Fried G, Laitung B, Pierre C, Chague N, & Panetta FD (2014). Impact of Invasive plants in Mediterranean habitats: disentangling the effects of characteristic of invaders and recipient communities. _Biological Invasions_ 16(8): 1639-1658.
+
+Novoa A, Gonzalez L, Moracova L, & Pysek P (2012). Effects of soil characteristics, allelopathy and frugivory on establishment of the invasive plant _Carpobrotus edulis_ and a co-occuring native, _Malcomia littorea_. _PLoS ONE_ 9(9): e53166.
+
+Santora R, Jucker T, Carranza M, & Acosta ATR (2012). Patterns of plant community assembly in invaded and non-invaded communities along a natural environmental gradient. _Journal of Vegetation Science_. 23(3): 483-494.
+
+Suehs CM, Affre L, & Medail F (2004). Invasion dynamics of two alien _Carpobrotus_ (Aizoaceae) taxa on a Mediterranean island: II. reproductive strategies. _Heredity_ 92, 550-556.
+
+Vila M, Tessier M, Suehs CM, Brundu G, Carta L, Galanidis A, _et al._ (2006). Local and regional assessments of the impacts of plant invaders on vegetation structure and soil properties of Mediterranean islands. _Journal of Biogeography_ 33: 853-861. 
+
+Vilà M, Weber E, & D’Antonio C. M. (1998). Flowering and mating system in hybridizing Carpobrotus (Aizoaceae) in coastal California. Canadian Journal of Botany, 76(7), 1165–1169. doi:10.1139/b98-130 
 
 ### Refs from Campoy to find
 
-D'Antonio, Odion, & Tyler 1993
-Vila & D'Antonio 1998
-Bourgeois et al. 2005
-Novoa et al. 2012
+Vila & D'Antonio 1998 (a-c???)
