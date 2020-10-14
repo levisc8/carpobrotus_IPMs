@@ -53,8 +53,8 @@ gg_image_plot <- function(data, x_vals,
   dummy_y <- enquo(dummy_y)
   z_var <- enquo(z_var)
   
-  x_vals <- seq(min(x_vals), max(x_vals), length.out = 5) %>% round()
-  y_vals <- seq(min(y_vals), max(y_vals), length.out = 5) %>% round()
+  x_vals <- seq(min(x_vals), max(x_vals), length.out = 5) %>% round(digits = 1)
+  y_vals <- seq(min(y_vals), max(y_vals), length.out = 5) %>% round(digits = 2)
   
   out <- ggplot(data) +
     geom_tile(

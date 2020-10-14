@@ -334,7 +334,7 @@ nat_mat_plot <- gg_image_plot(nat_mat,
                               var_omega_z ^ 0.3,
                               dummy_size,
                               dummy_clim) +
-  ggtitle(label = "", subtitle = "Annual Precipitation") +
+  ggtitle(label = "", subtitle = "Annual Temperature") +
   theme(legend.position = "none")
 
 nat_tco_plot <- gg_image_plot(nat_tco, 
@@ -365,7 +365,7 @@ inv_mat_plot <- gg_image_plot(inv_mat,
                               var_omega_z ^ 0.3,
                               dummy_size,
                               dummy_clim) +
-  ggtitle(label = "", subtitle = "Annual Precipitation") +
+  ggtitle(label = "", subtitle = "Annual Temperature") +
   theme(legend.position = "bottom") + 
   scale_fill_gradient("Var(Flower Production) (Cube Root)",
                       low = "red",

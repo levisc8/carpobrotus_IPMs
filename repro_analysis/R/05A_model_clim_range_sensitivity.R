@@ -165,7 +165,8 @@ all_repro_pred <- model_preds$repro_preds %>%
 
 t_co_for_plot <- use_t_co_rams %>%
   select(-c(flower_col, Sampled, size,
-            t_seas_rec, p_seas_rec, t_co_mo_rec)) %>%
+            t_seas_rec, p_seas_rec, t_co_mo_rec,
+            mat_rec, map_rec)) %>%
   pivot_longer(-c(id:id_pop, native),
                names_to = "clim_var",
                values_to = "clim_val") %>%
@@ -173,20 +174,24 @@ t_co_for_plot <- use_t_co_rams %>%
 
 mat_for_plot <- use_mat_rams %>%
   select(-c(flower_col, Sampled, size,
-            t_seas_rec, p_seas_rec, t_co_mo_rec)) %>%
+            t_seas_rec, p_seas_rec, t_co_mo_rec,
+            t_co_qu_rec, map_rec)) %>%
   pivot_longer(-c(id:id_pop, native),
-               names_to = "clim_var",
+               names_to = "clim_var", 
                values_to = "clim_val") %>%
   filter(log_size > mean(log_size))
-
+ 
 for_plot <- use_map_rams %>%
   select(-c(flower_col, Sampled, size,
-            t_seas_rec, p_seas_rec, t_co_mo_rec)) %>%
+            t_seas_rec, p_seas_rec, t_co_mo_rec,
+            t_co_qu_rec, mat_rec)) %>%
   pivot_longer(-c(id:id_pop, native),
                names_to = "clim_var",
                values_to = "clim_val") %>%
-  filter(log_size > mean(log_size)) %>%
+  filter(log_size > mean(log_size) & clim_val < 0) %>%
   bind_rows(t_co_for_plot, mat_for_plot)
+
+
 
 f_plt <- ggplot(for_plot, 
                 aes(y = flower_n, x = clim_val)) +
@@ -312,7 +317,7 @@ nat_mat_plot <- gg_image_plot(nat_mat,
                               omega_z ^0.3,
                               dummy_size,
                               dummy_clim) +
-  ggtitle(label = "", subtitle = "Annual Precipitation") +
+  ggtitle(label = "", subtitle = "Annual Temperature") +
   theme(legend.position = "none")
 
 nat_tco_plot <- gg_image_plot(nat_tco, 
@@ -343,7 +348,7 @@ inv_mat_plot <- gg_image_plot(inv_mat,
                               omega_z ^0.3,
                               dummy_size,
                               dummy_clim) +
-  ggtitle(label = "", subtitle = "Annual Precipitation") +
+  ggtitle(label = "", subtitle = "Annual Temperature") +
   theme(legend.position = "bottom") + 
   scale_fill_gradient("Mean Flower Production (cube root)",
                       low = "red",
@@ -399,7 +404,7 @@ nat_mat_plot <- gg_image_plot(nat_mat,
                               var_omega_z ^ 0.3,
                               dummy_size,
                               dummy_clim) +
-  ggtitle(label = "", subtitle = "Annual Precipitation") +
+  ggtitle(label = "", subtitle = "Annual Temperature") +
   theme(legend.position = "none")
 
 nat_tco_plot <- gg_image_plot(nat_tco, 
@@ -430,7 +435,7 @@ inv_mat_plot <- gg_image_plot(inv_mat,
                               var_omega_z ^ 0.3,
                               dummy_size,
                               dummy_clim) +
-  ggtitle(label = "", subtitle = "Annual Precipitation") +
+  ggtitle(label = "", subtitle = "Annual Temperature") +
   theme(legend.position = "bottom") + 
   scale_fill_gradient("Var(Flower Production) (Cube Root)",
                       low = "red",
