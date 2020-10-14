@@ -14,6 +14,7 @@ library(dismo)
 library(sf)
 library(fs)
 library(brms)
+library(gridExtra)
 
 # Helpers for model diagnostics
 
@@ -42,6 +43,56 @@ get_prob_rows <- function(model_obj, loo_obj, thresh) {
   
 }
 
+# Plotting functions for size X climate image plots
+
+gg_image_plot <- function(data, x_vals,
+                          y_vals, z_var,
+                          dummy_x, dummy_y) {
+  
+  dummy_x <- enquo(dummy_x)
+  dummy_y <- enquo(dummy_y)
+  z_var <- enquo(z_var)
+  
+  x_vals <- seq(min(x_vals), max(x_vals), length.out = 5) %>% round()
+  y_vals <- seq(min(y_vals), max(y_vals), length.out = 5) %>% round()
+  
+  out <- ggplot(data) +
+    geom_tile(
+      aes(
+        x    = !! dummy_x,
+        y    = !! dummy_y,
+        fill = !! z_var 
+      )
+    ) +
+    geom_contour(
+      aes(x = !! dummy_x,
+          y = !! dummy_y,
+          z = !! z_var),
+      color = "black",
+      size  = 0.9
+    ) +
+    scale_x_continuous("Ln(Surface Area)",
+                       breaks = seq(1, 50, length.out = 5),
+                       labels = x_vals) +
+    scale_y_continuous("SD(Global Climate Envelope Mean)",
+                       breaks = seq(1, 50, length.out = 5),
+                       labels = y_vals) +
+    scale_fill_gradient("",
+                        low = "red",
+                        high = "yellow") +
+    theme(
+      panel.background = element_blank()
+    )
+  
+  return(out)
+}
+
+get_gg_legend<-function(plot){
+  tmp <- ggplot_gtable(ggplot_build(plot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend <- tmp$grobs[[leg]]
+  legend
+}
 
 # The following functions are for reshaping the polygon data and converting it 
 # into a data frame. The data.frame format will be made available with the paper,
@@ -163,8 +214,8 @@ if(!file_exists("repro_analysis/Data/demography/all_ramets_di.rds")) {
     # If there aren't any ground truth points in the data, then I'm not sure
     # what we can do about it. return early for now.
     
-    if(nrow(ground_truth_sizes_pop) == 0 ||
-       nrow(ground_truth_sizes_tru) == 0) {
+    if(nrow(ground_truth_sizes_pop) == 0) { #||
+       # nrow(ground_truth_sizes_tru) == 0) {
       
       warning("No ground truth points found for population: ", pop)
       

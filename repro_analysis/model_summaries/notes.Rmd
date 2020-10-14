@@ -1,0 +1,53 @@
+---
+title: "model notes"
+author: "Sam Levin"
+date: "10/6/2020"
+output: html_document
+---
+
+
+## pr(repro)
+
+- Interaction between size * nativity isn't helpful - drop it
+
+- Use interaction between clim * nativity
+
+## flower_n
+
+- keep both interactions for all climate vars: they seem useful.
+
+- need to think about how to raise posterior predictive power... or how to deal with those huge outlier plants that we have.
+
+## Hypotheses
+
+- H1: Carpobrotus is native to warm arid areas, and will therefore do better in areas that are also warm and arid areas (e.g. Israel, Spain) than areas where it is not (e.g. New zealand, USA) 
+
+  - Unable to adapt through either rapid evolution (i.e. because long GenT, low recruitment) and/or low phenotypic/LH plasticity.
+  
+  - Interaction between climate and nativity is positive
+
+- Alternative H1: Carpobrotus has been constrained by dispersal barriers to areas that are warm and native, but is in fact more suited to cooler, less stressful climates.
+
+  - Perhaps able to reallocate resources for stress tolerance (maintenance) to growth + reproduction
+  
+  - Interaction between climate and nativity is negative
+  
+  - Try to find some historical climate data - we don't know if they actually evolved under climate regimes that are more similar to its invaded range than the current native range.
+  
+- Nativity is unimportant, plants respond the same no matter where they are
+
+  - nativity coefficient should be 0
+
+## Other notes
+
+Bring up some ethno-botanical notes (e.g. iceplant jam)
+
+Can we attempt to quantify other covariates for fitness (e.g. pollination)? If not quantify, then what else may drive these patterns that we have NO power to test 
+
+  - genetic mechanisms, biotic interactions, other abiotic factors that we just aren't including in our analysis
+
+## Model notes!
+
+Re-fit model w/ invaded climate constrained to the range of native climate to make sure that interaction isn't just an artefact of range of sampling in native range
+
+  - In progress: wait to see what happens post fitting

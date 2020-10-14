@@ -1,20 +1,20 @@
 # Fit the vital rate models using brms
 
-# all_ramets <- readRDS("repro_analysis/Data/demography/all_ramets_di.rds")
-# 
-# clim_data <- select(all_data, site, Sampled:p_seas_rec)
-# 
-# clim_ramets <- left_join(all_ramets, clim_data, by = c("population" = "site"))
-# 
-# nat_sites <- c("Melkboss", "Rooisand", "Springfontein",
-#                "St_Francis", "Struisbaai", "Vogelgat")
-# 
-# clim_ramets$native <- ifelse(clim_ramets$population %in% nat_sites,
-#                              1,
-#                              0)
-# 
-# saveRDS(clim_ramets, file = "repro_analysis/Data/demography/all_ramets_clim.rds")
-#
+all_ramets <- readRDS("repro_analysis/Data/demography/all_ramets_di.rds")
+
+clim_data <- select(all_data, site, Sampled:p_seas_rec)
+
+clim_ramets <- left_join(all_ramets, clim_data, by = c("population" = "site"))
+
+nat_sites <- c("Melkboss", "Rooisand", "Springfontein",
+               "St_Francis", "Struisbaai", "Vogelgat")
+
+clim_ramets$native <- ifelse(clim_ramets$population %in% nat_sites,
+                             1,
+                             0)
+
+saveRDS(clim_ramets, file = "repro_analysis/Data/demography/all_ramets_clim.rds")
+
 # # Temp Coldest Quarter ------------- 
 # 
 # repro_mod_t_co <- brm(repro ~ log_size + t_co_qu_rec * native,
