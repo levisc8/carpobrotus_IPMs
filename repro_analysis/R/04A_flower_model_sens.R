@@ -1,5 +1,4 @@
 # Fit the vital rate models using brms
-# Fit the vital rate models using brms
 
 all_ramets_temp <- readRDS("repro_analysis/Data/demography/all_ramets_clim.rds")
 
@@ -25,59 +24,101 @@ for(i in seq_along(center_vars)) {
   
 }
 
-new_names <- c(rev(names(all_ramets_temp)[1:2]), names(all_ramets_temp)[3:16])
-
-clim_ramets <- temp %>%
+all_ramets <- temp %>%
   filter(!is.na(id)) %>%
   select(-c(t_co_qu_rec.x:map_rec.x)) %>%
   setNames(
-    gsub(pattern = "\\.y", replacement = "", x = names(.))
-  ) 
+    names(all_ramets_temp)
+  )
 
-# # Temp Coldest Quarter ------------- 
-# 
-# repro_mod_t_co <- brm(repro ~ log_size + t_co_qu_rec * native,
-#                       data = clim_ramets,
-#                       family = bernoulli(),
-#                       chains = 4,
-#                       iter = 6000,
-#                       warmup = 2000,
-#                       cores = getOption("mc.cores", 4L),
-#                       save_model = 'stan/pr_flower_mod_t_co_qu.stan',
-#                       control = list(adapt_delta = 0.99,
-#                                      max_treedepth = 15))
-# 
+# The purpose of this script is to see if the interaction between nativity * clim
+# is still significant when invaded climate is restricted to roughly the same range
+# as native climate
 
-# 
-# ## Mean Annual Temperature ------------------
-# 
-# repro_mod_mat <- brm(repro ~ log_size + mat_rec * native,
-#                      data = clim_ramets,
-#                      family = bernoulli(),
-#                      chains = 4,
-#                      iter = 6000,
-#                      warmup = 2000,
-#                      cores = getOption("mc.cores", 4L),
-#                      save_model = 'stan/pr_flower_mod_mat.stan',
-#                      control = list(adapt_delta = 0.99,
-#                                     max_treedepth = 15))
-# 
-# 
-# # Mean annual precip ----------------
-# 
-# repro_mod_map <- brm(repro ~ log_size + map_rec * native,
-#                      data = clim_ramets,
-#                      family = bernoulli(),
-#                      chains = 4,
-#                      iter = 6000,
-#                      warmup = 2000,
-#                      cores = getOption("mc.cores", 4L),
-#                      save_model = 'stan/pr_flower_mod_map.stan',
-#                      control = list(adapt_delta = 0.99,
-#                                     max_treedepth = 15))
-# 
+center_vars <- gsub("\\.y", "", center_vars)
 
- # Flower models ----------
+natives <- filter(all_ramets, native == 1)
+
+ranges <- vapply(natives[ , center_vars], range, numeric(2L))
+
+ranges
+
+# the natives have the warmest t_co_qu, middle of the road mat, and low precip.
+# Taking +/- 0.2 on those values for subsetting data
+
+min_t_co <- ranges[1, 1] - 0.2
+max_t_co <- ranges[2, 1] + 0.2
+min_mat  <- ranges[1, 2] - 0.2
+max_mat  <- ranges[2, 2] + 0.2
+min_map  <- ranges[1, 3] - 0.2
+max_map  <- ranges[2, 3] + 0.2
+
+repro_t_co <- filter(all_ramets,
+                        native == 1 |
+                          (t_co_qu_rec >= min_t_co & t_co_qu_rec <= max_t_co))
+
+use_t_co_rams <- repro_t_co%>%
+  select(flower_n, log_size, t_co_qu_rec, native) %>%
+  filter(!is.na(flower_n)) %>%
+  lapply(function(x) {
+    attributes(x) <- NULL
+    return(x)
+  }) %>%
+  setNames(
+    c("Y", "size_l", "clim_val", "native")
+  )
+
+t_co_dat <- list(Y = use_t_co_rams$Y)
+
+t_co_dat$N <- length(use_t_co_rams$Y)
+t_co_dat$X <- model.matrix(Y ~ size_l + clim_val * native, data = use_t_co_rams)
+t_co_dat$K <- dim(t_co_dat$X)[2]
+
+
+repro_map <- filter(all_ramets,
+                       native == 1 |
+                         (map_rec >= min_map & map_rec <= max_map))
+
+
+use_map_rams <- repro_map %>%
+  select(flower_n, log_size, map_rec, native) %>%
+  filter(!is.na(flower_n)) %>%
+  lapply(function(x) {
+    attributes(x) <- NULL
+    return(x)
+  }) %>%
+  setNames(
+    c("Y", "size_l", "clim_val", "native")
+  )
+
+map_dat <- list(Y = use_map_rams$Y)
+
+map_dat$N <- length(use_map_rams$Y)
+map_dat$X <- model.matrix(Y ~ size_l + clim_val * native, data = use_map_rams)
+map_dat$K <- dim(map_dat$X)[2]
+
+
+repro_mat <- filter(all_ramets,
+                       native == 1 |
+                         (mat_rec >= min_mat & mat_rec <= max_mat))
+
+use_mat_rams <- repro_mat %>%
+  select(flower_n, log_size, mat_rec, native) %>%
+  filter(!is.na(flower_n)) %>%
+  lapply(function(x) {
+    attributes(x) <- NULL
+    return(x)
+  }) %>%
+  setNames(
+    c("Y", "size_l", "clim_val", "native")
+  )
+
+mat_dat <- list(Y = use_mat_rams$Y)
+
+mat_dat$N <- length(use_mat_rams$Y)
+mat_dat$X <- model.matrix(Y ~ size_l + clim_val * native, data = use_mat_rams)
+mat_dat$K <- dim(mat_dat$X)[2]
+
 
 trunc_fl_mod <- stan_model("repro_analysis/Stan/flower_n_0_trunc_mat.stan",
                            model_name = "nb_0_trunc_mat")
@@ -111,6 +152,9 @@ flower_n_map <- sampling(
   # control = list(adapt_delta = 0.98,
   #                max_treedepth = 15)
 )
+
+print(flower_n_t_co, pars = c("b", 'shape'))
+
 
 # 
 # # Save everything -------------

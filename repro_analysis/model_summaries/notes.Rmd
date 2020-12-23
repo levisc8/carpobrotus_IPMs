@@ -50,4 +50,14 @@ Can we attempt to quantify other covariates for fitness (e.g. pollination)? If n
 
 Re-fit model w/ invaded climate constrained to the range of native climate to make sure that interaction isn't just an artefact of range of sampling in native range
 
-  - In progress: wait to see what happens post fitting
+  - DONE! 
+  
+    - $Temp_{cq}$ looks super wonky, BUT, when range is restricted to native range data $\pm$ 0.2 SD, we only have two non-native sites, both of which are beneath the smallest value for native sites, and they aren't the most reproductive (`plot_raw_data(use_t_co_rams, flower_n, log_size, t_co_qu_rec)`)
+    
+      + Try to implement 0-truncated NegBin, see Aldo's email from 22.12.2020
+    
+    + Explore nonlinear models, and also grouping by continent (e.g. SA, NZ, ES/PT/IS, etc)
+    
+    + re-fit without nativity as well - just look at pattern, but keep nativity models for later (possibly discussion) 
+  
+  

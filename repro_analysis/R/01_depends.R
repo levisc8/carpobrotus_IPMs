@@ -14,6 +14,7 @@ library(dismo)
 library(sf)
 library(fs)
 library(brms)
+library(rstan)
 library(gridExtra)
 
 # Helpers for model diagnostics
@@ -92,6 +93,26 @@ get_gg_legend<-function(plot){
   leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
   legend <- tmp$grobs[[leg]]
   legend
+}
+
+plot_raw_data <- function(data, preds, ...) {
+  
+  resp <- rlang::enquo(resp)
+  preds <- rlang::enquos(...)
+  
+  use_data <- data %>%
+    dplyr::select(id, population, !! resp, log_size, !!! preds, native) %>%
+    tidyr::gather(key = "var", value = "value", -c(id, population, !! resp, native)) %>%
+    dplyr::filter(!is.na(!!resp))
+  
+  ggplot2::ggplot(use_data,
+                  ggplot2::aes(x = value,
+                               y = !! resp)) +
+    ggplot2::geom_point(ggplot2::aes(color = native)) +
+    ggplot2::facet_wrap(~var,
+               ncol = 1, nrow = 2,
+               scales = "free_x")
+  
 }
 
 # The following functions are for reshaping the polygon data and converting it 

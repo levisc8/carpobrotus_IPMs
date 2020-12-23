@@ -11,15 +11,15 @@ Samples: 4 chains, each with iter = 6000; warmup = 2000; thin = 1;
 
 Population-Level Effects: 
                    Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-Intercept              1.79      0.03     1.74     1.85 1.00    13004    11362
-log_size               0.74      0.01     0.72     0.76 1.00    12945    10454
-t_co_qu_rec           -0.08      0.02    -0.13    -0.04 1.00    12890    10443
-native                -1.63      0.25    -2.11    -1.15 1.00     8053     8524
-t_co_qu_rec:native     0.94      0.15     0.65     1.24 1.00     7913     9173
+Intercept              1.79      0.03     1.74     1.85 1.00    14365    12061
+log_size               0.74      0.01     0.72     0.76 1.00    13125    11393
+t_co_qu_rec           -0.08      0.02    -0.13    -0.04 1.00    13045    10826
+native                -1.63      0.25    -2.11    -1.15 1.00     7657     8086
+t_co_qu_rec:native     0.94      0.15     0.65     1.24 1.00     7656     8013
 
 Family Specific Parameters: 
       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-shape     1.36      0.05     1.27     1.46 1.00    12917    10767
+shape     1.36      0.05     1.27     1.45 1.00    13218    10813
 
 Samples were drawn using sampling(NUTS). For each parameter, Bulk_ESS
 and Tail_ESS are effective sample size measures, and Rhat is the potential
@@ -41,15 +41,15 @@ Samples: 4 chains, each with iter = 6000; warmup = 2000; thin = 1;
 
 Population-Level Effects: 
                Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-Intercept          1.86      0.03     1.80     1.91 1.00    11773    11918
-log_size           0.74      0.01     0.72     0.76 1.00    12421    10902
-map_rec            0.08      0.03     0.02     0.14 1.00    12955    10308
-native             1.49      0.63     0.27     2.73 1.00     6922     8409
-map_rec:native     1.16      0.44     0.30     2.03 1.00     6855     7846
+Intercept          1.86      0.03     1.80     1.91 1.00    14635    11858
+log_size           0.74      0.01     0.72     0.76 1.00    13371    11260
+map_rec            0.08      0.03     0.02     0.14 1.00    14182    10297
+native             1.49      0.63     0.26     2.74 1.00     7743     9275
+map_rec:native     1.16      0.44     0.30     2.03 1.00     7705     9080
 
 Family Specific Parameters: 
       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-shape     1.33      0.05     1.24     1.42 1.00    11637    10408
+shape     1.33      0.05     1.24     1.42 1.00    12439     9966
 
 Samples were drawn using sampling(NUTS). For each parameter, Bulk_ESS
 and Tail_ESS are effective sample size measures, and Rhat is the potential
@@ -71,15 +71,15 @@ Samples: 4 chains, each with iter = 6000; warmup = 2000; thin = 1;
 
 Population-Level Effects: 
                Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-Intercept          1.82      0.02     1.77     1.86 1.00    14142    12404
-log_size           0.74      0.01     0.72     0.76 1.00    14004    10875
-mat_rec           -0.10      0.02    -0.14    -0.07 1.00    14536    10810
-native            -2.52      0.36    -3.23    -1.82 1.00     8526     8791
-mat_rec:native     2.16      0.32     1.53     2.79 1.00     8538     8978
+Intercept          1.82      0.02     1.77     1.87 1.00    12060    11156
+log_size           0.74      0.01     0.72     0.76 1.00    12007    11340
+mat_rec           -0.10      0.02    -0.14    -0.07 1.00    13952    10232
+native            -2.51      0.36    -3.21    -1.80 1.00     8025     8851
+mat_rec:native     2.15      0.32     1.51     2.78 1.00     8018     9032
 
 Family Specific Parameters: 
       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-shape     1.37      0.05     1.28     1.47 1.00    12799    10374
+shape     1.37      0.05     1.28     1.47 1.00    12319    10383
 
 Samples were drawn using sampling(NUTS). For each parameter, Bulk_ESS
 and Tail_ESS are effective sample size measures, and Rhat is the potential

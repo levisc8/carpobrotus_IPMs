@@ -29,77 +29,77 @@ mat_seq <- seq(min(clim_ramets$mat_rec),
 t_c_seq <- seq(min(clim_ramets$t_co_qu_rec),
                max(clim_ramets$t_co_qu_rec),
                length.out = 50)
-# 
-# t_co_pred_dat <- expand.grid(log_size    = size_seq,
-#                              t_co_qu_rec = t_c_seq,
-#                              native      = c(1, 0))
-# 
-# mat_pred_dat <- expand.grid(log_size    = size_seq,
-#                             mat_rec     = mat_seq,
-#                             native      = c(1, 0))
-# 
-# map_pred_dat <- expand.grid(log_size    = size_seq,
-#                             map_rec     = map_seq,
-#                             native      = c(1, 0))
-# 
-# pred_repro_t_co_qu  <- predict(vr_mod_list$repro_mod_t_co,
-#                                newdata = t_co_pred_dat) %>%
-#   as_tibble() %>%
-#   cbind(t_co_pred_dat) %>%
-#   mutate(clim_var = "t_co_qu_rec",
-#          clim_val = t_co_qu_rec) %>%
-#   select(-t_co_qu_rec)
-# 
-# pred_repro_mat      <- predict(vr_mod_list$repro_mod_mat,
-#                                newdata = mat_pred_dat) %>%
-#   as_tibble() %>%
-#   cbind(mat_pred_dat) %>%
-#   mutate(clim_var = "mat_rec",
-#          clim_val = mat_rec) %>%
-#   select(-mat_rec)
-# 
-# all_repro_pred      <- predict(vr_mod_list$repro_mod_map,
-#                                newdata = map_pred_dat) %>%
-#   as_tibble() %>%
-#   cbind(map_pred_dat)%>%
-#   mutate(clim_var = "map_rec",
-#          clim_val = map_rec) %>%
-#   select(-map_rec) %>%
-#   rbind(pred_repro_mat, pred_repro_t_co_qu)%>%
-#   mutate(native = as.factor(native))
-# 
-# 
-# pred_flower_t_co_qu  <- predict(vr_mod_list$flower_mod_t_co,
-#                                newdata = t_co_pred_dat) %>%
-#   as_tibble() %>%
-#   cbind(t_co_pred_dat) %>%
-#   mutate(clim_var = "t_co_qu_rec",
-#          clim_val = t_co_qu_rec) %>%
-#   select(-t_co_qu_rec)
-# 
-# pred_flower_mat      <- predict(vr_mod_list$flower_mod_mat,
-#                                newdata = mat_pred_dat) %>%
-#   as_tibble() %>%
-#   cbind(mat_pred_dat) %>%
-#   mutate(clim_var = "mat_rec",
-#          clim_val = mat_rec) %>%
-#   select(-mat_rec)
-# 
-# all_flower_pred      <- predict(vr_mod_list$flower_mod_map,
-#                                newdata = map_pred_dat) %>%
-#   as_tibble() %>%
-#   cbind(map_pred_dat)%>%
-#   mutate(clim_var = "map_rec",
-#          clim_val = map_rec) %>%
-#   select(-map_rec)  %>%
-#   rbind(pred_flower_mat, pred_flower_t_co_qu) %>%
-#   mutate(native = as.factor(native))
-# # 
-# model_preds <- list(flower_preds = all_flower_pred,
-#                     repro_preds = all_repro_pred)
-# 
-# saveRDS(model_preds,
-#         file = "repro_analysis/Data/demography/model_predictions.rds")
+
+t_co_pred_dat <- expand.grid(log_size    = size_seq,
+                             t_co_qu_rec = t_c_seq,
+                             native      = c(1, 0))
+
+mat_pred_dat <- expand.grid(log_size    = size_seq,
+                            mat_rec     = mat_seq,
+                            native      = c(1, 0))
+
+map_pred_dat <- expand.grid(log_size    = size_seq,
+                            map_rec     = map_seq,
+                            native      = c(1, 0))
+
+pred_repro_t_co_qu  <- predict(vr_mod_list$repro_mod_t_co,
+                               newdata = t_co_pred_dat) %>%
+  as_tibble() %>%
+  cbind(t_co_pred_dat) %>%
+  mutate(clim_var = "t_co_qu_rec",
+         clim_val = t_co_qu_rec) %>%
+  select(-t_co_qu_rec)
+
+pred_repro_mat      <- predict(vr_mod_list$repro_mod_mat,
+                               newdata = mat_pred_dat) %>%
+  as_tibble() %>%
+  cbind(mat_pred_dat) %>%
+  mutate(clim_var = "mat_rec",
+         clim_val = mat_rec) %>%
+  select(-mat_rec)
+
+all_repro_pred      <- predict(vr_mod_list$repro_mod_map,
+                               newdata = map_pred_dat) %>%
+  as_tibble() %>%
+  cbind(map_pred_dat)%>%
+  mutate(clim_var = "map_rec",
+         clim_val = map_rec) %>%
+  select(-map_rec) %>%
+  rbind(pred_repro_mat, pred_repro_t_co_qu)%>%
+  mutate(native = as.factor(native))
+
+
+pred_flower_t_co_qu  <- predict(vr_mod_list$flower_mod_t_co,
+                               newdata = t_co_pred_dat) %>%
+  as_tibble() %>%
+  cbind(t_co_pred_dat) %>%
+  mutate(clim_var = "t_co_qu_rec",
+         clim_val = t_co_qu_rec) %>%
+  select(-t_co_qu_rec)
+
+pred_flower_mat      <- predict(vr_mod_list$flower_mod_mat,
+                               newdata = mat_pred_dat) %>%
+  as_tibble() %>%
+  cbind(mat_pred_dat) %>%
+  mutate(clim_var = "mat_rec",
+         clim_val = mat_rec) %>%
+  select(-mat_rec)
+
+all_flower_pred      <- predict(vr_mod_list$flower_mod_map,
+                               newdata = map_pred_dat) %>%
+  as_tibble() %>%
+  cbind(map_pred_dat)%>%
+  mutate(clim_var = "map_rec",
+         clim_val = map_rec) %>%
+  select(-map_rec)  %>%
+  rbind(pred_flower_mat, pred_flower_t_co_qu) %>%
+  mutate(native = as.factor(native))
+#
+model_preds <- list(flower_preds = all_flower_pred,
+                    repro_preds = all_repro_pred)
+
+saveRDS(model_preds,
+        file = "repro_analysis/Data/demography/model_predictions.rds")
 
 model_preds <- readRDS("repro_analysis/Data/demography/model_predictions.rds")
 
@@ -234,7 +234,7 @@ inv_tco <- filter(sum_plot_data,
 nat_map_plot <- gg_image_plot(nat_map, 
               x_vals = range(nat_map$log_size),
               y_vals = range(nat_map$clim_val),
-              omega_z ^0.3,
+              omega_z  ^ (1/3),
               dummy_size,
               dummy_clim) +
   ggtitle(label = "Native", subtitle = "Annual Precipitation") +
@@ -244,7 +244,7 @@ nat_map_plot <- gg_image_plot(nat_map,
 nat_mat_plot <- gg_image_plot(nat_mat, 
                               x_vals = range(nat_mat$log_size),
                               y_vals = range(nat_mat$clim_val),
-                              omega_z ^0.3,
+                              omega_z ^ (1/3),
                               dummy_size,
                               dummy_clim) +
   ggtitle(label = "", subtitle = "Annual Precipitation") +
@@ -253,7 +253,7 @@ nat_mat_plot <- gg_image_plot(nat_mat,
 nat_tco_plot <- gg_image_plot(nat_tco, 
                               x_vals = range(nat_mat$log_size),
                               y_vals = range(nat_mat$clim_val),
-                              omega_z ^0.3,
+                              omega_z  ^ (1/3),
                               dummy_size,
                               dummy_clim) +
   ggtitle(label = "", subtitle = "Temperature Coldest Quarter") +
@@ -265,7 +265,7 @@ nat_tco_plot <- gg_image_plot(nat_tco,
 inv_map_plot <- gg_image_plot(inv_map, 
                               x_vals = range(inv_map$log_size),
                               y_vals = range(inv_map$clim_val),
-                              omega_z ^0.3,
+                              omega_z  ^ (1/3),
                               dummy_size,
                               dummy_clim) +
   ggtitle(label = "Non-Native", subtitle = "Annual Precipitation") +
@@ -275,7 +275,7 @@ inv_map_plot <- gg_image_plot(inv_map,
 inv_mat_plot <- gg_image_plot(inv_mat, 
                               x_vals = range(inv_mat$log_size),
                               y_vals = range(inv_mat$clim_val),
-                              omega_z ^0.3,
+                              omega_z  ^ (1/3),
                               dummy_size,
                               dummy_clim) +
   ggtitle(label = "", subtitle = "Annual Precipitation") +
@@ -288,7 +288,7 @@ inv_mat_plot <- gg_image_plot(inv_mat,
 inv_tco_plot <- gg_image_plot(inv_tco, 
                               x_vals = range(inv_mat$log_size),
                               y_vals = range(inv_mat$clim_val),
-                              omega_z ^0.3,
+                              omega_z  ^ (1/3),
                               dummy_size,
                               dummy_clim) +
   ggtitle(label = "", subtitle = "Temperature Coldest Quarter") +
@@ -321,7 +321,7 @@ dev.off()
 nat_map_plot <- gg_image_plot(nat_map, 
                               x_vals = range(nat_map$log_size),
                               y_vals = range(nat_map$clim_val),
-                              var_omega_z ^ 0.3,
+                              var_omega_z  ^ (1/3),
                               dummy_size,
                               dummy_clim) +
   ggtitle(label = "Native", subtitle = "Annual Precipitation") +
@@ -331,7 +331,7 @@ nat_map_plot <- gg_image_plot(nat_map,
 nat_mat_plot <- gg_image_plot(nat_mat, 
                               x_vals = range(nat_mat$log_size),
                               y_vals = range(nat_mat$clim_val),
-                              var_omega_z ^ 0.3,
+                              var_omega_z  ^ (1/3),
                               dummy_size,
                               dummy_clim) +
   ggtitle(label = "", subtitle = "Annual Temperature") +
@@ -340,7 +340,7 @@ nat_mat_plot <- gg_image_plot(nat_mat,
 nat_tco_plot <- gg_image_plot(nat_tco, 
                               x_vals = range(nat_mat$log_size),
                               y_vals = range(nat_mat$clim_val),
-                              var_omega_z ^ 0.3,
+                              var_omega_z  ^ (1/3),
                               dummy_size,
                               dummy_clim) +
   ggtitle(label = "", subtitle = "Temperature Coldest Quarter") +
@@ -352,7 +352,7 @@ nat_tco_plot <- gg_image_plot(nat_tco,
 inv_map_plot <- gg_image_plot(inv_map, 
                               x_vals = range(inv_map$log_size),
                               y_vals = range(inv_map$clim_val),
-                              var_omega_z ^ 0.3,
+                              var_omega_z  ^ (1/3),
                               dummy_size,
                               dummy_clim) +
   ggtitle(label = "Non-Native", subtitle = "Annual Precipitation") +
@@ -362,7 +362,7 @@ inv_map_plot <- gg_image_plot(inv_map,
 inv_mat_plot <- gg_image_plot(inv_mat, 
                               x_vals = range(inv_mat$log_size),
                               y_vals = range(inv_mat$clim_val),
-                              var_omega_z ^ 0.3,
+                              var_omega_z  ^ (1/3),
                               dummy_size,
                               dummy_clim) +
   ggtitle(label = "", subtitle = "Annual Temperature") +
@@ -375,7 +375,7 @@ inv_mat_plot <- gg_image_plot(inv_mat,
 inv_tco_plot <- gg_image_plot(inv_tco, 
                               x_vals = range(inv_mat$log_size),
                               y_vals = range(inv_mat$clim_val),
-                              var_omega_z ^ 0.3,
+                              var_omega_z  ^ (1/3),
                               dummy_size,
                               dummy_clim) +
   ggtitle(label = "", subtitle = "Temperature Coldest Quarter") +

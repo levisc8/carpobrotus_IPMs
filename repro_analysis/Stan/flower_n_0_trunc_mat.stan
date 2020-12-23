@@ -6,7 +6,6 @@ data {
   int Y[N];  // response variable
   int<lower=1> K;  // number of population-level effects
   matrix[N, K] X;  // population-level design matrix
-  int prior_only;  // should the likelihood be ignored?
 }
 transformed data {
   int Kc = K - 1;
@@ -21,16 +20,25 @@ parameters {
   vector[Kc] b;  // population-level effects
   // temporary intercept for centered predictors
   real Intercept;
+  real<lower=0> shape;  // shape parameter
 }
 transformed parameters {
+  
+  vector[N] mu;
+  mu = Xc * b;
+  
 }
 model {
   // priors including all constants
-  target += student_t_lpdf(Intercept | 3, 0, 10);
+  target += student_t_lpdf(Intercept | 3, 1, 10);
+  target += gamma_lpdf(shape | 0.01, 0.01);
   // likelihood including all constants
-  if (!prior_only) {
-    target += bernoulli_logit_glm_lpmf(Y | Xc, Intercept, b);
-  }
+  
+  Y ~ neg_binomial_2_log(mu, shape);
+  
+  target += -log1m(neg_binomial_2_log_lpmf(0 | mu, shape));
+  
+  
 }
 generated quantities {
   // actual population-level intercept

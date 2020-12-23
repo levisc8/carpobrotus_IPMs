@@ -13,11 +13,7 @@ Demographic processes are critical to invasions - successful invasions require i
 
 ## Key questions
 
-Ramet size is known to drive the probability of flowering and number of flowers produced. Thus, in each population, the effect of a given external driver (e.g. climate, genetics) should be present as an effect on the slope and/or intercept of the `pr_repro ~ size` or `flower_n ~ size` models. I think in order to estimate this effect size, we need to find a "global" slope/intercept, then compute the magnitude of the deviations that each population specific parameter shows from the global one. (NOTE: I hate using the word global, but I'm not sure what other word to use here. The point is that given a consistent environmnent/(epi)genetic state, the parameter values should be pretty similar). 
-
-I *think* the model structures I've laid out below provide us with the right format to test this. BUT, I do want to talk to Aldo and Sanne about it, because they're way more well versed in climate drivers of demography than I am at this point. 
-
-1. Mean iceplant flower production at global scale? Variance in iceplant reproduction at global scale? This is more of a comprehensive overview of its flower production, and possibly, its mature fruit and seed production. 
+1. Patterns of iceplant flower production at global scale? Variance in iceplant reproduction at global scale? This is more of a comprehensive overview of its flower production, and possibly, its mature fruit and seed production. 
 
     + Data: SA, NZ, ES/PT, IS, US
     

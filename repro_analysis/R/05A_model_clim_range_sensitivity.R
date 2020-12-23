@@ -23,7 +23,7 @@ ranges <- vapply(natives[ , center_vars], range, numeric(2L))
 # Taking +/- 0.2 on those values for subsetting data
 
 min_t_co <- ranges[1, 1] - 0.2
-max_t_co <- max(natives$t_co_qu_rec)
+max_t_co <- ranges[2, 1] + 0.2
 min_mat  <- ranges[1, 2] - 0.2
 max_mat  <- ranges[2, 2] + 0.2
 min_map  <- ranges[1, 3] - 0.2
@@ -42,8 +42,8 @@ use_mat_rams <- filter(clim_ramets,
                          (mat_rec >= min_mat & mat_rec <= max_mat))
 
 t_co_size_seq <- seq(min(use_t_co_rams$log_size),
-                    max(use_t_co_rams$log_size),
-                    length.out = 50) 
+                     max(use_t_co_rams$log_size),
+                     length.out = 50) 
 
 mat_size_seq <- seq(min(use_mat_rams$log_size),
                     max(use_mat_rams$log_size),
@@ -76,7 +76,7 @@ mat_pred_dat <- expand.grid(log_size    = mat_size_seq,
 map_pred_dat <- expand.grid(log_size    = map_size_seq,
                             map_rec     = map_seq,
                             native      = c(1, 0))
-# 
+
 # pred_repro_t_co_qu  <- predict(vr_mod_list$repro_mod_t_co,
 #                                newdata = t_co_pred_dat) %>%
 #   as_tibble() %>%
@@ -132,7 +132,7 @@ map_pred_dat <- expand.grid(log_size    = map_size_seq,
 # 
 # model_preds <- list(flower_preds = all_flower_pred,
 #                     repro_preds = all_repro_pred)
-# 
+
 # saveRDS(model_preds,
 #         file = "repro_analysis/Data/demography/model_predictions_sens.rds")
 
@@ -304,7 +304,7 @@ inv_tco <- filter(sum_plot_data,
 nat_map_plot <- gg_image_plot(nat_map, 
                               x_vals = range(nat_map$log_size),
                               y_vals = range(nat_map$clim_val),
-                              omega_z ^0.3,
+                              omega_z ^ (1/3),
                               dummy_size,
                               dummy_clim) +
   ggtitle(label = "Native", subtitle = "Annual Precipitation") +
@@ -314,7 +314,7 @@ nat_map_plot <- gg_image_plot(nat_map,
 nat_mat_plot <- gg_image_plot(nat_mat, 
                               x_vals = range(nat_mat$log_size),
                               y_vals = range(nat_mat$clim_val),
-                              omega_z ^0.3,
+                              omega_z ^ (1/3),
                               dummy_size,
                               dummy_clim) +
   ggtitle(label = "", subtitle = "Annual Temperature") +
@@ -323,7 +323,7 @@ nat_mat_plot <- gg_image_plot(nat_mat,
 nat_tco_plot <- gg_image_plot(nat_tco, 
                               x_vals = range(nat_mat$log_size),
                               y_vals = range(nat_mat$clim_val),
-                              omega_z ^0.3,
+                              omega_z ^ (1/3),
                               dummy_size,
                               dummy_clim) +
   ggtitle(label = "", subtitle = "Temperature Coldest Quarter") +
@@ -335,7 +335,7 @@ nat_tco_plot <- gg_image_plot(nat_tco,
 inv_map_plot <- gg_image_plot(inv_map, 
                               x_vals = range(inv_map$log_size),
                               y_vals = range(inv_map$clim_val),
-                              omega_z ^0.3,
+                              omega_z ^ (1/3),
                               dummy_size,
                               dummy_clim) +
   ggtitle(label = "Non-Native", subtitle = "Annual Precipitation") +
@@ -345,7 +345,7 @@ inv_map_plot <- gg_image_plot(inv_map,
 inv_mat_plot <- gg_image_plot(inv_mat, 
                               x_vals = range(inv_mat$log_size),
                               y_vals = range(inv_mat$clim_val),
-                              omega_z ^0.3,
+                              omega_z ^ (1/3),
                               dummy_size,
                               dummy_clim) +
   ggtitle(label = "", subtitle = "Annual Temperature") +
@@ -358,7 +358,7 @@ inv_mat_plot <- gg_image_plot(inv_mat,
 inv_tco_plot <- gg_image_plot(inv_tco, 
                               x_vals = range(inv_mat$log_size),
                               y_vals = range(inv_mat$clim_val),
-                              omega_z ^0.3,
+                              omega_z ^ (1/3),
                               dummy_size,
                               dummy_clim) +
   ggtitle(label = "", subtitle = "Temperature Coldest Quarter") +
@@ -391,7 +391,7 @@ dev.off()
 nat_map_plot <- gg_image_plot(nat_map, 
                               x_vals = range(nat_map$log_size),
                               y_vals = range(nat_map$clim_val),
-                              var_omega_z ^ 0.3,
+                              var_omega_z ^ (1/3),
                               dummy_size,
                               dummy_clim) +
   ggtitle(label = "Native", subtitle = "Annual Precipitation") +
@@ -401,7 +401,7 @@ nat_map_plot <- gg_image_plot(nat_map,
 nat_mat_plot <- gg_image_plot(nat_mat, 
                               x_vals = range(nat_mat$log_size),
                               y_vals = range(nat_mat$clim_val),
-                              var_omega_z ^ 0.3,
+                              var_omega_z ^ (1/3),
                               dummy_size,
                               dummy_clim) +
   ggtitle(label = "", subtitle = "Annual Temperature") +
@@ -410,7 +410,7 @@ nat_mat_plot <- gg_image_plot(nat_mat,
 nat_tco_plot <- gg_image_plot(nat_tco, 
                               x_vals = range(nat_mat$log_size),
                               y_vals = range(nat_mat$clim_val),
-                              var_omega_z ^ 0.3,
+                              var_omega_z ^ (1/3),
                               dummy_size,
                               dummy_clim) +
   ggtitle(label = "", subtitle = "Temperature Coldest Quarter") +
@@ -422,7 +422,7 @@ nat_tco_plot <- gg_image_plot(nat_tco,
 inv_map_plot <- gg_image_plot(inv_map, 
                               x_vals = range(inv_map$log_size),
                               y_vals = range(inv_map$clim_val),
-                              var_omega_z ^ 0.3,
+                              var_omega_z ^ (1/3),
                               dummy_size,
                               dummy_clim) +
   ggtitle(label = "Non-Native", subtitle = "Annual Precipitation") +
@@ -432,7 +432,7 @@ inv_map_plot <- gg_image_plot(inv_map,
 inv_mat_plot <- gg_image_plot(inv_mat, 
                               x_vals = range(inv_mat$log_size),
                               y_vals = range(inv_mat$clim_val),
-                              var_omega_z ^ 0.3,
+                              var_omega_z ^ (1/3),
                               dummy_size,
                               dummy_clim) +
   ggtitle(label = "", subtitle = "Annual Temperature") +
@@ -443,9 +443,9 @@ inv_mat_plot <- gg_image_plot(inv_mat,
   guides(fill = guide_colorbar(title.position = "top"))
 
 inv_tco_plot <- gg_image_plot(inv_tco, 
-                              x_vals = range(inv_mat$log_size),
-                              y_vals = range(inv_mat$clim_val),
-                              var_omega_z ^ 0.3,
+                              x_vals = range(inv_tco$log_size),
+                              y_vals = range(inv_tco$clim_val),
+                              var_omega_z ^ (1/3),
                               dummy_size,
                               dummy_clim) +
   ggtitle(label = "", subtitle = "Temperature Coldest Quarter") +
