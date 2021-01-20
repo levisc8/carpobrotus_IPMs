@@ -3,7 +3,7 @@
 # First, do kernel sensitivities. Function definitions are 
 # in 01_Utils_and_Dependencies
 
-K_exp_var <- carp_ipmr$iterators$K
+K_exp_var <- do.call(`+`, carp_ipmr$sub_kernels)
 P_exp_var <- carp_ipmr$sub_kernels$P
 F_exp_var <- carp_ipmr$sub_kernels$F
 
@@ -129,10 +129,7 @@ for(i in seq_len(1000)) {
       name      = "F",
       formula   = f_r_stoch * f_s * f_d * p_r,
       family    = "CC",
-      
-      # Divide by 100 because there will be 100 duplicated values for every level of sa_1
-      
-      f_r_stoch = n_new / (sum(f_s) / 100), 
+      f_r_stoch = n_new / sum(f_s), 
       f_s       = exp(f_s_int_stoch + f_s_slope_stoch * sa_1),
       f_d       = dnorm(sa_2, f_d_mu, f_d_sd),
       p_r       = inv_logit(p_r_int, p_r_slope, sa_1),
@@ -141,21 +138,12 @@ for(i in seq_len(1000)) {
       evict_cor = TRUE,
       evict_fun = truncated_distributions("norm", "f_d")
     ) %>%
-    define_k(
-      name      = "K",
-      family    = "IPM",
-      K         = P + F,
-      n_sa_t_1  = K %*% n_sa_t,
-      data_list = unc_param_list,
-      states    = list(c('sa')),
-      evict_cor = FALSE
-    ) %>%
     define_impl(
       make_impl_args_list(  
-        kernel_names = c("K", "P", "F"),
-        int_rule     = rep('midpoint', 3),
-        dom_start    = rep('sa', 3),
-        dom_end      = rep('sa', 3) 
+        kernel_names = c("P", "F"),
+        int_rule     = rep('midpoint', 2),
+        state_start    = rep('sa', 2),
+        state_end      = rep('sa', 2) 
       ) 
     ) %>%
     define_domains(

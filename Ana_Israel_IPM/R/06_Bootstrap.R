@@ -120,33 +120,26 @@ for(i in seq_len(n_resamp)) {
       evict = TRUE,
       evict_fun = truncated_distributions("norm", "f_d")
     ) %>%
-    define_k(
-      name = "K",
-      family = "IPM",
-      K = P + F,
-      data_list = all_param_list,
-      states = list(c('sa')),
-      evict = FALSE
-    ) %>%
     define_impl(
       make_impl_args_list(
-        kernel_names = c("K", "P", "F"),
-        int_rule = rep('midpoint', 3),
-        dom_start = rep('sa', 3),
-        dom_end = rep('sa', 3) 
+        kernel_names = c("P", "F"),
+        int_rule = rep('midpoint', 2),
+        state_start = rep('sa', 2),
+        state_end = rep('sa', 2) 
       ) 
     ) %>%
     define_domains(
       sa = c(L, U, n_mesh_p)
-    )  %>%
+    ) %>% 
+    define_pop_state(n_sa = rep(1/100, 100)) %>% 
     make_ipm(usr_funs = list(inv_logit = s_z))
   
-  K_exp_var_boot <- carp_boot$iterators$K
+  K_exp_var_boot <- do.call(`+`, carp_boot$sub_kernels)
   P_exp_var_boot <- carp_boot$sub_kernels$P
   F_exp_var_boot <- carp_boot$sub_kernels$F
   
   # Store lambdas
-  exp_var_out$lambda[(i + 1)]   <- l_ev_boot <- lambda(carp_boot, comp_method = 'eigen')
+  exp_var_out$lambda[(i + 1)]   <- l_ev_boot <- lambda(carp_boot)
   
   k_sens_ev_boot <- sensitivity(K_exp_var_boot, h, level = 'kernel')
   

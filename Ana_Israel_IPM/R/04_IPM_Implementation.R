@@ -34,27 +34,18 @@ carp_ipmr <- init_ipm('simple_di_det') %>%
     f_s = exp(f_s_int + f_s_slope * sa_1),
     f_d = dnorm(sa_2, f_d_mu, f_d_sd),
     p_r = inv_logit(p_r_int, p_r_slope, sa_1),
-    f_r = n_new / (sum(f_s) / 100),
+    f_r = n_new / sum(f_s),
     data_list = all_param_list,
     states = list(c("sa")),
     evict_cor = TRUE,
     evict_fun = truncated_distributions("norm", "f_d")
-  ) %>%
-  define_k(
-    name = "K",
-    family = "IPM",
-    K = P + F,
-    n_sa_t_1 = K %*% n_sa_t,
-    data_list = all_param_list,
-    states = list(c('sa')),
-    evict_cor = FALSE
-  ) %>%
+  )  %>%
   define_impl(
     make_impl_args_list(
-      kernel_names = c("K", "P", "F"),
-      int_rule = rep('midpoint', 3),
-      dom_start = rep('sa', 3),
-      dom_end = rep('sa', 3) 
+      kernel_names = c("P", "F"),
+      int_rule = rep('midpoint', 2),
+      state_start = rep('sa', 2),
+      state_end = rep('sa', 2) 
     ) 
   ) %>%
   define_domains(
@@ -102,34 +93,29 @@ for(i in mesh_p) {
       f_s = exp(f_s_int + f_s_slope * sa_1),
       f_d = dnorm(sa_2, f_d_mu, f_d_sd),
       p_r = inv_logit(p_r_int, p_r_slope, sa_1),
-      f_r = n_new / (sum(f_s) / 100),
+      f_r = n_new / sum(f_s),
       data_list = all_param_list,
       states = list(c("sa")),
       evict_cor = TRUE,
       evict_fun = truncated_distributions("norm", "f_d")
     ) %>%
-    define_k(
-      name = "K",
-      family = "IPM",
-      K = P + F,
-      data_list = all_param_list,
-      states = list(c('sa')),
-      evict_cor = FALSE
-    ) %>%
     define_impl(
       make_impl_args_list(
-        kernel_names = c("K", "P", "F"),
-        int_rule = rep('midpoint', 3),
-        dom_start = rep('sa', 3),
-        dom_end = rep('sa', 3) 
+        kernel_names = c("P", "F"),
+        int_rule = rep('midpoint', 2),
+        state_start = rep('sa', 2),
+        state_end = rep('sa', 2) 
       ) 
     ) %>%
     define_domains(
       sa = c(L, U, i) # iterate over different meshpoint numbers
-    )  %>%
+    ) %>%
+    define_pop_state(
+      n_sa = rep(1/i, i)
+    ) %>%
     make_ipm(usr_funs = list(inv_logit = s_z))
   
-  lambdas$lambdas[it] <- lambda(carp_ipmr_test, comp_method = 'eigen')
+  lambdas$lambdas[it] <- lambda(carp_ipmr_test)
   
   it <- it + 1
   
