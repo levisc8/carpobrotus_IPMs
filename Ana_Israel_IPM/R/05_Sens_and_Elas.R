@@ -111,7 +111,7 @@ for(i in seq_len(1000)) {
   
   unc_param_list <- c(unc_param_list, unc_temp)
   
-  carp_ipmr <- init_ipm('simple_di_det') %>%
+  carp_ipmr <- init_ipm("simple", "di", "det") %>%
     define_kernel(
       name      = "P",
       formula   = S * G,
@@ -156,7 +156,6 @@ for(i in seq_len(1000)) {
              iterate    = TRUE,
              iterations = 100L)
   
-  # Exponentiate for comparison to deterministic lambda
   flow_unc_lambda[i] <- lambda(carp_ipmr)
   
   unc_param_list <- unc_param_list[!grepl("stoch", names(unc_param_list))]

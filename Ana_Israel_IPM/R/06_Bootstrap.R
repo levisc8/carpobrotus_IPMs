@@ -94,7 +94,7 @@ for(i in seq_len(n_resamp)) {
   )
   
  
-  carp_boot <- init_ipm('simple_di_det') %>%
+  carp_boot <- init_ipm("simple", "di", "det") %>%
     define_kernel(
       name = "P",
       formula = S * G,

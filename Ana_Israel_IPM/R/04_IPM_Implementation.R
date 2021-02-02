@@ -13,7 +13,7 @@ U <- max(c(all_data$log_size,
 
 n_mesh_p <- 100
 
-carp_ipmr <- init_ipm('simple_di_det') %>%
+carp_ipmr <- init_ipm("simple", "di", "det") %>%
   define_kernel(
     name = "P",
     formula = S * G,
@@ -72,7 +72,7 @@ it <- 1
 for(i in mesh_p) {
   
 
-  carp_ipmr_test <- init_ipm('simple_di_det') %>%
+  carp_ipmr_test <- init_ipm("simple", "di", "det") %>%
     define_kernel(
       name = "P",
       formula = S * G,
