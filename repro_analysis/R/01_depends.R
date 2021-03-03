@@ -16,6 +16,8 @@ library(fs)
 library(brms)
 library(rstan)
 library(gridExtra)
+library(actuar)
+library(bayesplot)
 
 # Helpers for model diagnostics
 
@@ -41,6 +43,65 @@ get_prob_rows <- function(model_obj, loo_obj, thresh) {
   })
   
   return(out)
+  
+}
+
+# Horseshoe prior model helpers
+
+hs_diagnostic_plots <- function(clim, func) {
+  
+  mod_path <- glue("repro_analysis/model_fits/shrink_mods/model_objects_{clim}_{func}.rds")
+  
+  vr_mod_list <- readRDS(mod_path)
+  
+  repro_mod <- vr_mod_list$repro_mod
+  flower_n_mod <- vr_mod_list$flower_n_mod
+  
+  pdf(glue("repro_analysis/Manuscript/Figures/shrink_mod_{clim}_{func}.pdf"))
+  
+  plot(repro_mod,
+       ask = FALSE)
+  
+  
+  p <- pp_check(repro_mod,
+                type     = 'bars',
+                nsamples = 100L,
+                freq     = FALSE)
+  
+  print(p)
+  
+  p <- pp_check(repro_mod,
+                type     = 'dens_overlay',
+                nsamples = 100L)
+  
+  print(p)
+  
+  
+  
+  
+  plot(flower_n_mod,
+       ask = FALSE)
+  
+  
+  p <- pp_check(flower_n_mod,
+                type     = 'bars',
+                nsamples = 100L,
+                freq     = FALSE) + 
+    xlim(c(0, 20))
+  
+  print(p)
+  
+  p <- pp_check(flower_n_mod,
+                type     = 'rootogram',
+                nsamples = 100L) 
+  
+  print(p + xlim(c(0,50)))
+  
+  print(p + xlim(c(50, 5000)))
+  
+  dev.off()
+  
+  invisible(TRUE)
   
 }
 
@@ -72,10 +133,10 @@ gg_image_plot <- function(data, x_vals,
       color = "black",
       size  = 0.9
     ) +
-    scale_x_continuous("Ln(Surface Area)",
+    scale_x_continuous("SD(Global Climate Envelope Mean)",
                        breaks = seq(1, 50, length.out = 5),
                        labels = x_vals) +
-    scale_y_continuous("SD(Global Climate Envelope Mean)",
+    scale_y_continuous("Ln(Surface Area)",
                        breaks = seq(1, 50, length.out = 5),
                        labels = y_vals) +
     scale_fill_gradient("",

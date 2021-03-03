@@ -232,11 +232,11 @@ inv_tco <- filter(sum_plot_data,
                   native == "Non-Native" & clim_var == "t_co_qu_rec")
 
 nat_map_plot <- gg_image_plot(nat_map, 
-              x_vals = range(nat_map$log_size),
-              y_vals = range(nat_map$clim_val),
-              omega_z  ^ (1/3),
-              dummy_size,
-              dummy_clim) +
+                              x_vals = range(nat_map$log_size),
+                              y_vals = range(nat_map$clim_val),
+                              omega_z  ^ (1/3),
+                              dummy_size,
+                              dummy_clim) +
   ggtitle(label = "Native", subtitle = "Annual Precipitation") +
   theme(legend.position = "none",
         axis.title.y = element_blank())

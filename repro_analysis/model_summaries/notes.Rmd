@@ -6,18 +6,6 @@ output: html_document
 ---
 
 
-## pr(repro)
-
-- Interaction between size * nativity isn't helpful - drop it
-
-- Use interaction between clim * nativity
-
-## flower_n
-
-- keep both interactions for all climate vars: they seem useful.
-
-- need to think about how to raise posterior predictive power... or how to deal with those huge outlier plants that we have.
-
 ## Hypotheses
 
 - H1: Carpobrotus is native to warm arid areas, and will therefore do better in areas that are also warm and arid areas (e.g. Israel, Spain) than areas where it is not (e.g. New zealand, USA) 
@@ -48,16 +36,154 @@ Can we attempt to quantify other covariates for fitness (e.g. pollination)? If n
 
 ## Model notes!
 
-Re-fit model w/ invaded climate constrained to the range of native climate to make sure that interaction isn't just an artefact of range of sampling in native range
+General Notes
 
-  - DONE! 
-  
-    - $Temp_{cq}$ looks super wonky, BUT, when range is restricted to native range data $\pm$ 0.2 SD, we only have two non-native sites, both of which are beneath the smallest value for native sites, and they aren't the most reproductive (`plot_raw_data(use_t_co_rams, flower_n, log_size, t_co_qu_rec)`)
+    + may want to test out a sliding window approach for linear models. 
     
-      + Try to implement 0-truncated NegBin, see Aldo's email from 22.12.2020
+        + Re-purpose submit scripts, etc from Sanne: https://github.com/SanneE1/Climate-windows/tree/master/Analysis/Climwin
+        
+        + NB: Aldo says sliding window w/ GAMs is a bad idea - to prone to overfitting data. stick with linear models
+
+## pr(repro)
+
+### Linear Models
+
+- Interaction between size * nativity (`repro ~ log_size + clim + log_size * native + clim * native`)
+
+    - Not useful    
+
+- interaction between clim * nativity
+
+    - Good model, but may not need interaction term
+
+- No interaction between clim * nativity 
+
+    - Currently nailing pp_checks. 
     
-    + Explore nonlinear models, and also grouping by continent (e.g. SA, NZ, ES/PT/IS, etc)
+### Non-linear models
+
+- Doesn't seem like they're going to improve predictive power, but should check posterior predictive checks and shape of smooths to see *how* non-linear they are. 
+
+    - Currently using quadratic terms. I may check a GAM as well, but I don't think it'll help much.
     
-    + re-fit without nativity as well - just look at pattern, but keep nativity models for later (possibly discussion) 
-  
-  
+### Next Steps
+
+1. Formal model comparison
+
+    + Results
+        
+        + MAT: Favors quadratic model
+        
+        + MAP: Favors quadratic model
+        
+        + T_co: Favors quadratic model
+        
+I believe now that I've pretty much exhausted functional forms and types of models I can/have the sanity to continue fitting for these. The posterior predictive checks are crushing, and I see no reason to continue trying new fits here. We have a winner!!!
+
+## flower_n
+
+### Broadly applicable notes
+
+A standard negative binomial/poisson is wildly overpredicting 0s (not very surprising tbh, but not something I've ever really checked before either). In general, the 0-truncated negative binomials are doing a much better job, but aren't quite nailing the lower end of the `flower_n` spectrum. 
+
+I have re-run w/ 0-truncated poissons using brms (easier to implement/work with for comparison purposes). Trouble here is knowing that the likelihood functions are probably off by a bit given the underestimated variance at each step. I was a little freaked out before because I didn't realize that rejection sampling (i.e. posterior simulations where you just keep sampling til you get a value in the truncation interval) was actually a thing statisticians condoned. It seems they do though, so probably should switch back to ZT-NB. Unfortunately, this can't get passed into `slidingwin` because those families don't exist. On the other hand, maybe quasi-poisson....?
+
+### Linear models
+
+Everything described below uses 0-trunc pois
+
+1. `flower_n ~ log_size + clim + log_size * native + clim * native`
+
+    + Basically worthless, ignore this.
+
+2. `flower_n ~ log_size + clim * native`
+
+    + Does an ok job, but still not great w/ pp_check.
+
+3. Constrained version of 2 where data from invaded range is limited to $\pm$ 0.2 SD of native range.
+
+    + Doesn't change much. On the other hand, I think the native * clim interaction is really just the model picking up the nonlinear effect of climate. Natives are clustered in the upper area of temp, and lower area of precip. Therefore, reckon it is a general climate effect rather than native individuals genuinely responding different. 
+    
+4. Same as above, but dropped nativity interaction. 
+
+5. Regularized models w/ horseshoe priors for monthly t_max, t_min, and prec data.
+
+    + These models have the same structure as above, but is an approach to investigate potential lagged effects that may be more physiologically explicit than mean based approaches
+    
+    + running now... stay tuned
+    
+
+### Non-linear models
+
+Exploring these using 0-truncated neg-bin GAMS. Standard GAMs also generate a ton of 0s (not surprising), so gunna see how these 0-truncated ones hold up.
+
+1. `flower_n ~ t2(log_size, clim)`
+
+    + `t2()` generates an interaction for log_size * clim. My reasoning is that if climate has non-linear effects across the range, small plants may also be more affected than big ones (or vice versa). 
+
+
+### RSG Suggestion:
+
+Try comparing $N_{t+1}/N_t$ for sites where you have two transitions. Can the flower models (either ZT-NB or standard NB) account for this? If so, which does a better job? 
+
+    + A bit crude, BUT, will inform at least a little bit as to which approach works. 
+    
+### Next steps
+
+1. Formal model comparison for mean models
+
+    + WAIC Results:
+
+      + MAT: Favors linear (but requires a LOO'ing)
+      
+      + MAP: favors quadratic (but requires a LOO'ing)
+      
+      + T_co: favors quadratic (but requires a LOO'ing)
+      
+    + LOO Results: All pareto-k estimates are within an acceptable range, but parameter counts are way off. 
+    
+      + MAT: Favors linear, p_LOO is ~ 640, which is ~635 more parameters than the model has. This indicates that we may favor an alternative model structure (possible hurdle)
+      
+      + MAP: Favors quadratic, but $SE \Delta_{loo} \gt \Delta_{loo}$ so maybe not reliable. 
+      
+      + T_co: Favors quadratic, but p_loo is ~1029.4, which is way too high.
+
+2. PP checks for all of these. Per discussion w/ Aldo, correct likelihood function is probably not too important here. 
+
+    + PP checks are all still under-predicting 1s and 2s, but getting the medium-large sizes correct. I'm pretty much reaching a point where I just don't care about these, and sexual reproduction of small ramets (which are likely clones of bigger plants anyway) is something I don't think will matter too much to population dynamics in the long run anyway. 
+
+3. Formal model comparison for month-explicit models
+
+    + WAIC:
+    
+        + T_max:
+        
+        + T_min:
+        
+        + Prec:
+
+    + LOO:
+    
+        + T_max:
+        
+        + T_min:
+        
+        + Prec:
+
+4. PP checks
+
+## Hurdle Models  
+
+Since the formalized attempts at making model comparisons for the flowers yielded a bunch of rubbish, I'm going to try combining flowering and flower_n models. These are hurdle models. Per Aldo's suggestion of:
+
+1. trying a sliding window and then realizing that's foolish without temporal replication, and then
+
+2. fitting regularized models. 
+
+    + These use t_min, t_max, and monthly precipitation values as predictors, rather than the biolcim variables (which are averaged). This will have a similar effect as a "sliding" window approach, but doesn't try to mess with different combinations. They make use of horseshoe priors to 0 out coefficients which aren't v important.
+    
+    + Kitchen sink models are disastrous for flower_n ~ ., hu ~ . They just don't converge, and take forever to run. Based on previous experience, I'm going to keep hu ~ log_size. 
+    
+    + flower_n ~ .
+
+3. THe hurdle models are a trainwreck. Switching back to separate models, and using 
