@@ -354,3 +354,81 @@ tiff(filename = 'Ana_Israel_IPM/Figures/Figure_3.tiff',
 dev.off()
 
 
+f_n_dat <- all_data %>% 
+  select(id, flower_n, flower_n_next) %>% 
+  gather(-id, key = "time", value = "value")
+
+size_dat <- all_data %>% 
+  select(id, log_size, log_size_next) %>% 
+  gather(-id, key = "time", value = "value")
+
+tot_size <- all_data %>% 
+  select(id, size, size_next) %>%
+  gather(-id, key = "time", value = "value") %>%
+  group_by(time) %>%
+  summarise(tot_size =  paste("Total area: ", 
+                              round(sum(value, na.rm = TRUE), 3),
+                              sep = ""))
+
+
+f_n_dat$time <- ifelse(f_n_dat$time == "flower_n", "t", "t + 1")
+size_dat$time <- ifelse(size_dat$time == "log_size", "t", "t + 1")
+tot_size$time <- ifelse(tot_size$time == "size", "t", "t + 1")
+
+
+f_n_hist <- ggplot(f_n_dat, aes(x = value)) + 
+  geom_histogram() + 
+  facet_wrap(~ time,
+             scales = "free_x") + 
+  labs(x = "Flower #", y = "Count") + 
+  theme_vr +
+  theme(axis.title = element_text(size = 16))
+
+size_2 <- size_dat %>%
+  group_by(time) %>% 
+  summarise(mean_value = mean(value, na.rm = TRUE),
+            min_val = paste("Minimum size: ",
+                            round(min(value, na.rm = TRUE), 3), 
+                            sep = ""),
+            max_val = paste("Maximum size: ",
+                            round(max(value, na.rm = TRUE), 3),
+                            sep = ""),
+            mean_txt = paste("Mean size: ", round(mean_value, 3), sep = ""))
+
+size_hist <- ggplot(size_dat, aes(x = value)) + 
+  geom_histogram() +
+  geom_vline(data = size_2,
+             aes(xintercept = mean_value), 
+             size = 1.25,
+             color = "red",
+             linetype = "dashed") + 
+  facet_wrap(~time) + 
+  labs(x = "Ln(Surface Area)", y = "Count") + 
+  theme_vr +
+  # theme(axis.title = element_text(size = 16))  +
+  geom_text(aes(x = -6, y = 23, label = tot_size), data = tot_size, hjust = 0) +
+  geom_text(aes(x = -6, y = 22, label = mean_txt), data = size_2, hjust = 0) +
+  geom_text(aes(x = -6, y = 21, label = min_val), data = size_2, hjust = 0) +
+  geom_text(aes(x = -6, y = 20, label = max_val), data = size_2, hjust = 0)
+
+tiff(filename = 'Ana_Israel_IPM/Figures/Figure_4.tiff',
+     height = 9,
+     width = 9,
+     units = 'in',
+     res = 300)
+  grid.arrange(f_n_hist,
+               size_hist,
+               nrow = 2, ncol = 1)
+
+dev.off()
+
+png(filename = 'Ana_Israel_IPM/Figures/Figure_4.png',
+     height = 9,
+     width = 9,
+     units = 'in',
+     res = 300)
+grid.arrange(f_n_hist,
+             size_hist,
+             nrow = 2, ncol = 1)
+
+dev.off()

@@ -24,5 +24,6 @@ Misc/*
 *.pptx
 *.jpg
 *.tif
+*.tiff
 *.xml
 repro_analysis/Data/*
