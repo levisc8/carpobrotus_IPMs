@@ -22,7 +22,8 @@ rm_ramets     <- read.csv('Data/t_2_omissions.csv',
 pops <- all_sites[all_sites$Demography == 1 &
                     all_sites$Polygon_checked == 1 &
                     all_sites$Polygon_2019_checked == 1 &
-                    all_sites$Notes == 'ready', 
+                    all_sites$Notes == 'ready' &
+                    all_sites$Country != 'Israel', 
                   c('Country', 'Site')]
 
 all_polygons_t_1 <- all_polygons_t_2 <- list()
@@ -186,9 +187,40 @@ all_ramets <- update_flower_col(all_ramets,
                     'P',
                     't_2')
   
+# For those that flowered twice but have differing flower colors,
+# use T+1 designations. I trust those a bit more.
+
+all_ramets <- mutate(all_ramets, id_pop = paste(id, population, sep = "_"))
+
+fl_col_diffs <- filter(all_ramets, 
+                       !is.na(flower_col) & !is.na(flower_col_next)) %>%
+  filter(flower_col != flower_col_next)
+
+fl_col_diffs$flower_col <- fl_col_diffs$flower_col_next
+
+
+# Now, replace the old ones w/ the new ones
+
+all_ramets <- filter(all_ramets,
+                     ! id_pop %in% fl_col_diffs$id_pop) %>% # remove one's we updated 
+  bind_rows(fl_col_diffs) %>%                               # add them back in
+  select(-id_pop)
+
+# Some had flowers at both times, but flower color at T was unidentifiable because
+# the petals had already dropped. In cases where we know flower color at T+1, 
+# we can use that to infer flower color at T
+
+
+all_ramets$flower_col[is.na(all_ramets$flower_col) &
+                        !is.na(all_ramets$flower_col_next) &
+                        !is.na(all_ramets$flower_n)] <- 
+  all_ramets$flower_col_next[is.na(all_ramets$flower_col) & 
+                               !is.na(all_ramets$flower_col_next) &
+                               !is.na(all_ramets$flower_n)]
 
 # Store data and send it to the RStudio server project folder (if running locally).
 # If not, then the line below automatically stores it on RSserver
+
 saveRDS(all_ramets, file = 'Data/all_ramets_di.rds')
 
 if(! grepl('sie-group-share', getwd())){

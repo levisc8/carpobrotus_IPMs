@@ -1,0 +1,146 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={Georeferencing in Q},
+            pdfauthor={Sam Levin},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\providecommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+
+  \title{Georeferencing in Q}
+    \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+    \author{Sam Levin}
+    \preauthor{\centering\large\emph}
+  \postauthor{\par}
+      \predate{\centering\large\emph}
+  \postdate{\par}
+    \date{5/6/2019}
+
+
+\begin{document}
+\maketitle
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Load in the TIFF from the first sampling in the Layers panel. This
+  will allow you to find reference points to snap the new TIFF to.
+\item
+  Open plugin manager (\emph{Plugins} -\textgreater{} \emph{Manage and
+  Install Plugins\ldots{}})
+\item
+  Start typing ``Georeferencer GDAL'' into the search bar
+\item
+  Once you see ``Georeferencer GDAL'' appear in the menu, check the box
+  next to it. Close the dialogue box
+\item
+  Select the \emph{Raster} dropdown and open the Georeferencer plugin
+\item
+  Click the \emph{Add Raster} button (top left corner) and select the
+  TIFF from the current year
+\item
+  In the settings menu, select \emph{Thin Plate Splines} from the
+  Transformation dropdown.
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Also experimenting with Helmert transformations.
+  \end{itemize}
+\item
+  Make a name for the output layer. This should be the site name, the
+  year, and the georeferencing method used (e.g.~TPS, Helmert, etc).
+\item
+  Find pixels that are clearly in both TIFFs, and mark it the
+  georeferencer.
+\item
+  A popup dialogue will appear, select the Find in Map Canvas option,
+  and click the corresponding point on the previous year's TIFF.
+\item
+  Repeat 9 and 10 as many times as possible.
+\item
+  Once you have created all of the georeferencing points, save them by
+  going to \emph{File} -\textgreater{} \emph{Save GCPs as\ldots{}}.
+
+  \begin{itemize}
+  \item
+    There is now a GCPs folder in the \emph{PhD\_Processed\_Data/}
+    subfolder. If the country/site does not already have its own folder,
+    create one.
+  \item
+    The naming convention for GCPs is \emph{site\_Year1\_Year2.points}.
+    Saving these means others can check our work or extend the work on
+    their own.
+  \end{itemize}
+\end{enumerate}
+
+
+\end{document}

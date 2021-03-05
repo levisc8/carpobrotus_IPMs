@@ -63,7 +63,7 @@ infile_data <- function(path, pop,
   log_breaks <- round(dim(temp)[1]/10, digits = -1)
   
   # sf::st_area has substantially better precision than QGIS's $area macro. 
-  # to overwrite computed sizes from QGIS. as.numeric converts it from
+  # overwrite computed sizes from QGIS. as.numeric converts it from
   # unit-type (m^2) to a simple numeric, as some dplyr verbs don't know
   # how to handle units
   
@@ -75,7 +75,7 @@ infile_data <- function(path, pop,
     dplyr::group_by(id) %>%
     dplyr::summarise(population = first(population),
               clone_of   = first(clone_of),
-              size       = sum(size),
+              size       = sum(size, na.rm = TRUE),
               flower_n   = sum(flower_n, na.rm = TRUE),
               flower_col = ifelse(!all(is.na(flower_col)),
                                   flower_col[which(!is.na(flower_col)[1])],
@@ -354,7 +354,7 @@ sourceCpp(file = 'R/Cpp/cpp_utils.cpp')
   msg <- paste(
     "\nAverage error for ", pop, 
     ' at time ', t_n, 
-    ' with ', ength(for_tru$dif),
+    ' with ', length(for_tru$dif),
     ' points is: ',
     mean(for_tru$dif),
     '\n'

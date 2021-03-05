@@ -21,7 +21,7 @@
 #
 # These models are density-INdependent (for now). I am still trying to come up
 # with something better than a mean-field approximation. Additionally, these 
-# polygons are necessarily individuals - some probably are all genetically identical,
+# polygons aren't necessarily individuals - some probably are all genetically identical,
 # but some are almost certainly not (despite being a single polygon).
 
 # Optionally, read in transformed data if skipping steps 2 + 3
@@ -101,28 +101,62 @@ saveRDS(brm_repro_list, file = 'Model_Fits/ramet_repro_list_brms.rds')
 # brm_repro_waic <- models$waic
 
 pdf("Model_Summaries/Trace_Plots/ramet_int_only_repro.pdf")
+
 plot(ramet_repro_int_only_brm,
      ask = FALSE)
+
+p <- pp_check(ramet_repro_int_only_brm,
+              type     = 'bars_grouped',
+              group    = 'population',
+              nsamples = 100L,
+              freq     = FALSE)
+
+print(p)
+
 dev.off()
 
 pdf('Model_Summaries/Trace_Plots/ramet_slope_int_random_repro.pdf')
 plot(ramet_repro_size_int_r_brm,
      ask = FALSE)
+
+p <- pp_check(ramet_repro_size_int_r_brm,
+              type     = 'bars_grouped',
+              group    = 'population',
+              nsamples = 100L,
+              freq     = FALSE)
+
+print(p)
 dev.off()
 
 pdf('Model_Summaries/Trace_Plots/ramet_uncor_slope_int_repro.pdf',
     width = 8,
     height = 8)
+
 plot(ramet_repro_slope_int_uncor_brm,
      ask = FALSE)
+
+p <- pp_check(ramet_repro_slope_int_uncor_brm,
+              type     = 'bars_grouped',
+              group    = 'population',
+              nsamples = 100L,
+              freq     = FALSE)
+print(p)
+
 dev.off()
 
 pdf("Model_Summaries/Trace_Plots/ramet_cor_slope_int_repro.pdf",
     width = 8,
     height = 8)
+
 plot(ramet_repro_slope_int_cor_brm,
      ask = FALSE)
 
+p <- pp_check(ramet_repro_slope_int_cor_brm,
+              type     = 'bars_grouped',
+              group    = 'population',
+              nsamples = 100L,
+              freq     = FALSE)
+print(p)
 dev.off()
 
 
@@ -157,16 +191,19 @@ ramet_flower_n_int_only_brm <- brm(flower_n ~ flower_col + (1|population),
                                    cores = getOption("mc.cores", 4L),
                                    save_model = 'Stan/flower_n_int_only.stan',
                                    save_dso = TRUE,
-                                   control = list(adapt_delta = 0.99))
+                                   control = list(adapt_delta = 0.99,
+                                                  max_treedepth = 12))
 
 # # size fixed, intercept varies across sites
-ramet_flower_n_size_int_r_brm <- brm(flower_n ~ log_size * flower_col + (1|population),
+ramet_flower_n_size_int_r_brm <- brm(flower_n ~ log_size * flower_col +
+                                       (1|population),
                                      data = flower_data,
                                      family = negbinomial(),
                                      cores = getOption("mc.cores", 4L),
                                      save_model = 'Stan/flower_n_size_fixed_int_varies.stan',
                                      save_dso = TRUE,
-                                     control = list(adapt_delta = 0.99))
+                                     control = list(adapt_delta = 0.99,
+                                                    max_treedepth = 12))
 
 # # slope and intercepts vary across sites, but are not correlated 
 ramet_flower_n_slope_int_uncor_brm <- brm(flower_n ~ log_size * flower_col +
@@ -176,7 +213,8 @@ ramet_flower_n_slope_int_uncor_brm <- brm(flower_n ~ log_size * flower_col +
                                           cores = getOption("mc.cores", 4L),
                                           save_model = 'Stan/flower_n_size_int_varies.stan',
                                           save_dso = TRUE,
-                                          control = list(adapt_delta = 0.99))
+                                          control = list(adapt_delta = 0.99,
+                                                         max_treedepth = 12))
 
 # # slope and intercepts vary across sites and are correlated.
 ramet_flower_n_slope_int_cor_brm <- brm(flower_n ~ log_size * flower_col + 
@@ -186,9 +224,8 @@ ramet_flower_n_slope_int_cor_brm <- brm(flower_n ~ log_size * flower_col +
                                         cores = getOption("mc.cores", 4L),
                                         save_model = 'Stan/flower_n_size_int_varies_cor.stan',
                                         save_dso = TRUE,
-                                        control = list(adapt_delta = 0.99))
-
-
+                                        control = list(adapt_delta = 0.99,
+                                                       max_treedepth = 12))
 brm_flower_n_list <- list(int_only = ramet_flower_n_int_only_brm,
                           size_int_r = ramet_flower_n_size_int_r_brm,
                           slope_int_uncor = ramet_flower_n_slope_int_uncor_brm,
@@ -212,27 +249,65 @@ saveRDS(brm_flower_n_list, file = 'Model_Fits/ramet_flower_list_brms.rds')
 # brm_flower_n_waic <- models$waic
 
 pdf("Model_Summaries/Trace_Plots/ramet_int_only_flower_n.pdf")
+
 plot(ramet_flower_n_int_only_brm,
      ask = FALSE)
+
+p <- pp_check(ramet_flower_n_int_only_brm,
+              type     = 'scatter_avg_grouped',
+              group    = 'population',
+              nsamples = 100L)
+
+print(p + geom_abline(slope = 1, intercept = 0))
+
 dev.off()
 
 pdf('Model_Summaries/Trace_Plots/ramet_slope_int_random_flower_n.pdf')
+
 plot(ramet_flower_n_size_int_r_brm,
      ask = FALSE)
+
+p <- pp_check(ramet_flower_n_size_int_r_brm,
+              type     = 'scatter_avg_grouped',
+              group    = 'population',
+              nsamples = 100L)
+
+print(p + geom_abline(slope = 1, intercept = 0))
+
 dev.off()
 
 pdf('Model_Summaries/Trace_Plots/ramet_uncor_slope_int_flower_n.pdf',
     width = 8,
     height = 8)
+
 plot(ramet_flower_n_slope_int_uncor_brm,
      ask = FALSE)
+
+p <- pp_check(ramet_flower_n_slope_int_uncor_brm,
+              type     = 'scatter_avg_grouped',
+              group    = 'population',
+              nsamples = 100L)
+
+print(p + geom_abline(slope = 1, intercept = 0))
+
+
 dev.off()
 
 pdf("Model_Summaries/Trace_Plots/ramet_cor_slope_int_flower_n.pdf",
     width = 8,
     height = 8)
+
 plot(ramet_flower_n_slope_int_cor_brm,
      ask = FALSE)
+
+p <- pp_check(ramet_flower_n_slope_int_cor_brm,
+              type     = 'scatter_avg_grouped',
+              group    = 'population',
+              nsamples = 100L)
+
+print(p + geom_abline(slope = 1, intercept = 0))
+
+
 
 dev.off()
 
@@ -258,9 +333,10 @@ sink()
 
 
 # Recruit size distribution model
-recruits <- filter(all_ramets, is.na(log_size) & !is.na(log_size_next))
+recruits <- filter(all_ramets, is.na(log_size) & id > 7999)
 
 recr_size_model <- brm(log_size_next ~ 1 + (1 | population),
+                       data = recruits,
                        family = gaussian(),
                        chains = 4L,
                        cores = getOption("mc.cores", 4L),

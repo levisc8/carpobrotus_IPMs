@@ -1,23 +1,29 @@
 # Prototype survival and growth hierarchical models
 
-surv_data <- filter(all_ramets, !is.na(alive))
-grow_data <- filter(all_ramets, isTRUE(alive == 1))
+surv_data <- filter(all_ramets, !is.na(alive) & !is.na(log_size))
+
+# Correct a typo from data entry from Rough Island, survival is 0 or 1, cannot be greater than 1!
+
+surv_data$alive[surv_data$alive > 1] <- 1
+
+grow_data <- filter(surv_data, alive == 1)
+
 
 # Survival -----
 # Intercept only! 
 
-surv_int_only <- brm(alive ~ 1 + (1 | population),
-                     data = surv_data,
-                     family = bernoulli(),
-                     chains = 4,
-                     cores = getOption("mc.cores", 4L),
-                     save_model = 'Stan/surv_int_only.stan',
-                     save_dso = TRUE,
-                     control = list(adapt_delta = 0.99))
+ramet_surv_int_only_brm <- brm(alive ~ 1 + (1 | population),
+                               data = surv_data,
+                               family = bernoulli(),
+                               chains = 4,
+                               cores = getOption("mc.cores", 4L),
+                               save_model = 'Stan/surv_int_only.stan',
+                               save_dso = TRUE,
+                               control = list(adapt_delta = 0.99))
 
 # # size fixed, intercept varies across sites
 
-ramet_surv_size_int_r_brm <- brm(alive ~ log_size + (1 | population),
+ramet_surv_size_int_r_brm <- brm(alive ~ log_size + (1|population),
                                  data = surv_data,
                                  family = bernoulli(),
                                  chains = 4,
@@ -41,7 +47,7 @@ ramet_surv_slope_int_uncor_brm <- brm(alive ~ log_size +
 # # slope and intercepts vary across sites and are correlated.
 
 ramet_surv_slope_int_cor_brm <- brm(alive ~ log_size + 
-                                      (log_size | population),
+                                      (log_size|population),
                                     data = surv_data,
                                     family = bernoulli(),
                                     chains = 4,
@@ -62,17 +68,28 @@ brm_surv_waic <- waic(ramet_surv_int_only_brm,
 
 brm_surv_list$waic <- brm_surv_waic
 
-saveRDS(brm_repro_list, file = 'Model_Fits/ramet_surv_list_brms.rds')
-
+saveRDS(brm_surv_list, file = 'Model_Fits/ramet_surv_list_brms.rds')
 
 pdf("Model_Summaries/Trace_Plots/ramet_int_only_surv.pdf")
 plot(ramet_surv_int_only_brm,
      ask = FALSE)
+p <- pp_check(ramet_surv_int_only_brm,
+              type = 'bars_grouped',
+              group = 'population',
+              nsamples = 100L,
+              freq = FALSE)
+print(p)
 dev.off()
 
 pdf('Model_Summaries/Trace_Plots/ramet_slope_int_random_surv.pdf')
 plot(ramet_surv_size_int_r_brm,
      ask = FALSE)
+p <- pp_check(ramet_surv_size_int_r_brm,
+              type = 'bars_grouped',
+              group = 'population',
+              nsamples = 100L,
+              freq = FALSE)
+print(p)
 dev.off()
 
 pdf('Model_Summaries/Trace_Plots/ramet_uncor_slope_int_surv.pdf',
@@ -80,6 +97,12 @@ pdf('Model_Summaries/Trace_Plots/ramet_uncor_slope_int_surv.pdf',
     height = 8)
 plot(ramet_surv_slope_int_uncor_brm,
      ask = FALSE)
+p <- pp_check(ramet_surv_slope_int_uncor_brm,
+              type = 'bars_grouped',
+              group = 'population',
+              nsamples = 100L,
+              freq = FALSE)
+print(p)
 dev.off()
 
 pdf("Model_Summaries/Trace_Plots/ramet_cor_slope_int_surv.pdf",
@@ -87,6 +110,12 @@ pdf("Model_Summaries/Trace_Plots/ramet_cor_slope_int_surv.pdf",
     height = 8)
 plot(ramet_surv_slope_int_cor_brm,
      ask = FALSE)
+p <- pp_check(ramet_surv_slope_int_cor_brm, 
+              type = 'bars_grouped',
+              group = 'population',
+              nsamples = 100L,
+              freq = FALSE)
+print(p)
 
 dev.off()
 
@@ -120,21 +149,21 @@ sink()
 
 # Intercept only! 
 
-grow_int_only <- brm(log_size_next ~ 1 + (1 | populgrow_datation),
-                     data = grow_data,
-                     family = bernoulli(),
-                     chains = 4,
-                     cores = getOption("mc.cores", 4L),
-                     save_model = 'Stan/grow_int_only.stan',
-                     save_dso = TRUE,
-                     control = list(adapt_delta = 0.99))
+ramet_grow_int_only_brm <- brm(log_size_next ~ 1 + (1 | population),
+                               data = grow_data,
+                               family = gaussian(),
+                               chains = 4,
+                               cores = getOption("mc.cores", 4L),
+                               save_model = 'Stan/grow_int_only.stan',
+                               save_dso = TRUE,
+                               control = list(adapt_delta = 0.99))
 
 # # size fixed, intercept varies across sites
 
 ramet_grow_size_int_r_brm <- brm(log_size_next ~ log_size + 
-                                   (1 | population),
+                                   (1|population),
                                  data = grow_data,
-                                 family = bernoulli(),
+                                 family = gaussian(),
                                  chains = 4,
                                  cores = getOption("mc.cores", 4L),
                                  save_model = 'Stan/grow_size_fixed_int_varies.stan',
@@ -146,7 +175,7 @@ ramet_grow_size_int_r_brm <- brm(log_size_next ~ log_size +
 ramet_grow_slope_int_uncor_brm <- brm(log_size_next ~ log_size +
                                         (log_size || population),
                                       data = grow_data,
-                                      family = bernoulli(),
+                                      family = gaussian(),
                                       chains = 4,
                                       cores = getOption("mc.cores", 4L),
                                       save_model = 'Stan/grow_size_int_varies.stan',
@@ -156,9 +185,9 @@ ramet_grow_slope_int_uncor_brm <- brm(log_size_next ~ log_size +
 # # slope and intercepts vary across sites and are correlated.
 
 ramet_grow_slope_int_cor_brm <- brm(log_size_next ~ log_size + 
-                                      (log_size | population),
+                                      (log_size|population),
                                     data = grow_data,
-                                    family = bernoulli(),
+                                    family = gaussian(),
                                     chains = 4,
                                     cores = getOption("mc.cores", 4L),
                                     save_model = 'Stan/grow_size_int_varies_cor.stan',
@@ -177,17 +206,27 @@ brm_grow_waic <- waic(ramet_grow_int_only_brm,
 
 brm_grow_list$waic <- brm_grow_waic
 
-saveRDS(brm_repro_list, file = 'Model_Fits/ramet_grow_list_brms.rds')
+saveRDS(brm_grow_list, file = 'Model_Fits/ramet_grow_list_brms.rds')
 
 
 pdf("Model_Summaries/Trace_Plots/ramet_int_only_grow.pdf")
 plot(ramet_grow_int_only_brm,
      ask = FALSE)
+p <- pp_check(ramet_grow_int_only_brm, 
+              type = 'scatter_avg_grouped',
+              group = 'population',
+              nsamples = 100L)
+print(p + geom_abline(slope = 1, intercept = 0))
 dev.off()
 
 pdf('Model_Summaries/Trace_Plots/ramet_slope_int_random_grow.pdf')
 plot(ramet_grow_size_int_r_brm,
      ask = FALSE)
+p <- pp_check(ramet_grow_size_int_r_brm, 
+              type = 'scatter_avg_grouped',
+              group = 'population',
+              nsamples = 100L)
+print(p + geom_abline(slope = 1, intercept = 0))
 dev.off()
 
 pdf('Model_Summaries/Trace_Plots/ramet_uncor_slope_int_grow.pdf',
@@ -195,6 +234,11 @@ pdf('Model_Summaries/Trace_Plots/ramet_uncor_slope_int_grow.pdf',
     height = 8)
 plot(ramet_grow_slope_int_uncor_brm,
      ask = FALSE)
+p <- pp_check(ramet_grow_slope_int_uncor_brm, 
+              type = 'scatter_avg_grouped',
+              group = 'population',
+              nsamples = 100L)
+print(p + geom_abline(slope = 1, intercept = 0))
 dev.off()
 
 pdf("Model_Summaries/Trace_Plots/ramet_cor_slope_int_grow.pdf",
@@ -202,7 +246,11 @@ pdf("Model_Summaries/Trace_Plots/ramet_cor_slope_int_grow.pdf",
     height = 8)
 plot(ramet_grow_slope_int_cor_brm,
      ask = FALSE)
-
+p <- pp_check(ramet_grow_slope_int_cor_brm, 
+              type = 'scatter_avg_grouped',
+              group = 'population',
+              nsamples = 100L)
+print(p + geom_abline(slope = 1, intercept = 0))
 dev.off()
 
 

@@ -1,0 +1,165 @@
+Intercept only, varies across populations
+
+ *********************
+
+ Family: bernoulli 
+  Links: mu = logit 
+Formula: alive ~ 1 + (1 | population) 
+   Data: surv_data (Number of observations: 3354) 
+Samples: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+         total post-warmup samples = 4000
+
+Group-Level Effects: 
+~population (Number of levels: 10) 
+              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sd(Intercept)     0.29      0.13     0.11     0.62 1.00      878     1274
+
+Population-Level Effects: 
+          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+Intercept     1.12      0.12     0.90     1.39 1.01      988     1147
+
+Samples were drawn using sampling(NUTS). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).
+
+
+*********************
+
+Slope fixed, intercept varies across populations
+
+*********************
+
+ Family: bernoulli 
+  Links: mu = logit 
+Formula: alive ~ log_size + (1 | population) 
+   Data: surv_data (Number of observations: 3354) 
+Samples: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+         total post-warmup samples = 4000
+
+Group-Level Effects: 
+~population (Number of levels: 10) 
+              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sd(Intercept)     0.51      0.19     0.23     0.98 1.00      810     1507
+
+Population-Level Effects: 
+          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+Intercept     2.88      0.22     2.44     3.30 1.00      858     1283
+log_size      0.73      0.04     0.67     0.80 1.00     2969     2983
+
+Samples were drawn using sampling(NUTS). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).
+
+
+*********************
+
+Slope and intercepts vary across sites,  but are not correlated
+
+*********************
+
+ Family: bernoulli 
+  Links: mu = logit 
+Formula: alive ~ log_size + (log_size || population) 
+   Data: surv_data (Number of observations: 3354) 
+Samples: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+         total post-warmup samples = 4000
+
+Group-Level Effects: 
+~population (Number of levels: 10) 
+              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sd(Intercept)     0.75      0.26     0.40     1.37 1.00     1667     2258
+sd(log_size)      0.31      0.11     0.16     0.59 1.00     1272     1678
+
+Population-Level Effects: 
+          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+Intercept     2.58      0.29     2.00     3.14 1.00     1348     2101
+log_size      0.60      0.11     0.37     0.81 1.00     1302     1656
+
+Samples were drawn using sampling(NUTS). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).
+
+
+*********************
+
+Slope and intercepts vary across sites,  and are correlated
+
+*********************
+
+ Family: bernoulli 
+  Links: mu = logit 
+Formula: alive ~ log_size + (log_size | population) 
+   Data: surv_data (Number of observations: 3354) 
+Samples: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+         total post-warmup samples = 4000
+
+Group-Level Effects: 
+~population (Number of levels: 10) 
+                        Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sd(Intercept)               0.77      0.25     0.44     1.37 1.00     1217     1460
+sd(log_size)                0.32      0.10     0.19     0.56 1.00     1145     1227
+cor(Intercept,log_size)     0.91      0.12     0.55     1.00 1.01     1250     2124
+
+Population-Level Effects: 
+          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+Intercept     2.56      0.29     2.00     3.09 1.00     1259     1714
+log_size      0.57      0.12     0.35     0.80 1.00     1354     1613
+
+Samples were drawn using sampling(NUTS). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).
+
+
+*********************
+
+WAIC Results
+
+Output of model 'ramet_surv_int_only_brm':
+
+Computed from 4000 by 3354 log-likelihood matrix
+
+          Estimate   SE
+elpd_waic  -1939.8 26.1
+p_waic         7.6  0.3
+waic        3879.6 52.2
+
+Output of model 'ramet_surv_size_int_r_brm':
+
+Computed from 4000 by 3354 log-likelihood matrix
+
+          Estimate   SE
+elpd_waic  -1632.2 31.1
+p_waic        11.1  0.6
+waic        3264.4 62.1
+
+Output of model 'ramet_surv_slope_int_uncor_brm':
+
+Computed from 4000 by 3354 log-likelihood matrix
+
+          Estimate   SE
+elpd_waic  -1600.1 31.2
+p_waic        17.9  1.1
+waic        3200.3 62.3
+
+1 (0.0%) p_waic estimates greater than 0.4. We recommend trying loo instead. 
+
+Output of model 'ramet_surv_slope_int_cor_brm':
+
+Computed from 4000 by 3354 log-likelihood matrix
+
+          Estimate   SE
+elpd_waic  -1598.5 31.2
+p_waic        15.9  1.0
+waic        3197.0 62.4
+
+1 (0.0%) p_waic estimates greater than 0.4. We recommend trying loo instead. 
+
+Model comparisons:
+                               elpd_diff se_diff
+ramet_surv_slope_int_cor_brm      0.0       0.0 
+ramet_surv_slope_int_uncor_brm   -1.6       1.8 
+ramet_surv_size_int_r_brm       -33.7       8.5 
+ramet_surv_int_only_brm        -341.3      24.0 
+
+
+End output
