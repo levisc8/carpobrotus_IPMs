@@ -12,7 +12,7 @@
 #$ -M levisc8@gmail.com
 
 # hard runtime
-#$ -l h_rt=200:00:00
+#$ -l h_rt=250:00:00
 
 # memory per core (hard limit)
 #$ -l h_vmem=8G

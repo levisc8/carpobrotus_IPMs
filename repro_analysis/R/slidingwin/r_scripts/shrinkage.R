@@ -102,7 +102,7 @@ f_n_data <- select(all_data, -repro)
 repr_data <- select(all_data, -flower_n)
 
 # if we have a quadratic model, then we want to set up the 
-# clim_var + I(clim_var)^2 for each one on the RHS of the formula
+# clim_var + I(clim_var^2) for each one on the RHS of the formula
 
 if(func == "quad") {
   
@@ -111,7 +111,7 @@ if(func == "quad") {
   
   base_form <- paste(clim, mon_base[ , 1], mon_base[ , 2], sep = "_")
   
-  sq_rhs    <- paste(base_form, paste("I(", base_form, ")^2"), sep = " + ") %>%
+  sq_rhs    <- paste(base_form, paste("I(", base_form, "^2)"), sep = " + ") %>%
     paste(collapse = " + ")
   
   repr_form <- paste("repro ~ log_size + ", sq_rhs, sep = "")

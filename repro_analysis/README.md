@@ -34,4 +34,25 @@ All contained in `R/` sub-folder:
     used estimate the range of climate the species experience globally,
     and show the coverage of our sampling.
 
-4.  TBD….
+4.  `04_null_models.R`: This generates models for `repro ~ log_size`
+    (Bernoulli) and `flower_n ~ log_size` (0-truncated Poisson). These
+    are used as base models to compare against the climate models.
+
+5.  `05_flower_models.R`: Contains code that can fit the
+    `repro/flower_n ~ log_size + clim_vars` models. This code is
+    technically runnable locally, but will take forever. See
+    `R/slidingwin/r_scripts/shrinkage.R` and
+    `R/slidingwin/submit_scripts/submit_shrinkage.sh` for cluster
+    runnable code. Additionally, generates model summaries, and MCMC
+    diagnostic plots + posterior predictive checks for all, which are
+    stored in `model_summaries/` and `Manuscript/Figures/` folders,
+    respectively.
+
+6.  `06_model_comparison.R`: Contains code to run WAIC + LOO-CV model
+    comparisons. Again, this code is technically runnable locally, but
+    will take forever. See `R/slidingwin/r_scripts/shrink_compare.R` and
+    `R/slidingwin/submit_scripts/submit_cv.sh` for cluster runnable
+    code.
+
+7.  `07_figures.R`: Creates figures for the publication’s main body and
+    appendix.
