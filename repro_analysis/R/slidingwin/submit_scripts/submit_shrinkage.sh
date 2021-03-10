@@ -1,42 +1,39 @@
 #!/bin/bash
-#$ -S /bin/bash
-#$ -wd /work/$USER
-#$ -o /work/$USER/$JOB_NAME-$JOB_ID.log
-#$ -j y
+#SBATCH --chdir /work/$USER
+#SBATCH -o /work/%u/%x-%j.out
 
-#Specify job name
-#$ -N shrinkageEstimation
+# Specify job name
+#SBATCH -J vitalRateModels
 
 # Email notifications
-#$ -m beas
-#$ -M levisc8@gmail.com
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=levisc8@gmail.com
 
 # hard runtime
-#$ -l h_rt=250:00:00
-
-# memory per core (hard limit)
-#$ -l h_vmem=8G
+#SBATCH -t 250:00:00
 
 # N_Cores
-#$ -pe smp 8
+#SBATCH -c 8
 
-#needed when submitting a non-parallel job
-#$ -binding linear:8
+# memory per core (hard limit)
+#SBATCH --mem-per-cpu=4G
+
+
 
 #create a single output directory per job
-output_dir="/work/$USER/$JOB_NAME-$JOB_ID"
+output_dir="/work/$USER/$SLURM_JOB_NAME-$SLURM_JOB_ID"
 mkdir -p "$output_dir"
 
 module load foss/2019b R/4.0.0
 
 climate=$1 
 func=$2 
-demo=$3 
-occ=$4 
-output="$output_dir"/${JOB_NAME}_${JOB_ID}_${climate}_${func}
+vital=$3
+demo=$4
+occ=$5
+output="$output_dir"/${SLURM_JOB_NAME}_${SLURM_JOB_ID}_${climate}_${func}
 
 mkdir -p "$output"/stan_code
 mkdir -p "$output"/models
-mkdir -p "$output"/figures
 
-Rscript "$HOME"/iceplant_shrinkage/shrinkage.R --climate="$climate" --func="$func" --demo="$demo" --occ="$occ" "$output"
+Rscript "$HOME"/iceplant_shrinkage/shrinkage.R --climate="$climate" --func="$func" --vital="$vital" --demo="$demo" --occ="$occ" "$output"
