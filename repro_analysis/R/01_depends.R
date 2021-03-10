@@ -16,8 +16,6 @@ library(fs)
 library(brms)
 library(rstan)
 library(gridExtra)
-library(actuar)
-library(bayesplot)
 
 # Helpers for model diagnostics
 

@@ -47,6 +47,7 @@ clean_occ <- read.csv("repro_analysis/Data/gbif/gbif_occ_clean_clim.csv",
   mutate(Site = NA_character_) %>%
   select(species,
          Site,
+         countryCode,
          decimalLongitude,
          decimalLatitude,
          mat:p_seas) %>%
@@ -54,6 +55,7 @@ clean_occ <- read.csv("repro_analysis/Data/gbif/gbif_occ_clean_clim.csv",
     c(
       "species",
       "site",
+      "country",
       "lon",
       "lat",
       "Mean_Annual_Temp_hist",
@@ -68,9 +70,18 @@ clean_occ <- read.csv("repro_analysis/Data/gbif/gbif_occ_clean_clim.csv",
 
 all_sites <- read.csv("repro_analysis/Data/all_sites_clim.csv",
                       stringsAsFactors = FALSE) %>%
-  mutate(species = "Carpobrotus spp.") %>%
+  mutate(species = "Carpobrotus spp.",
+         countryCode = case_when(
+           Country == "South_Africa" ~ "ZA",
+           Country == "Israel" ~ "IL",
+           Country == "New_Zealand" ~ "NZ",
+           Country == "USA" ~ "US",
+           Country == "Iberia" & Lon < -6 ~ "PT",
+           Country == "Iberia" & Lon > -5 ~ "ES"
+         )) %>%
   select(species, 
          Site,
+         countryCode,
          Lon,
          Lat,
          mat:p_seas) %>%
@@ -78,6 +89,7 @@ all_sites <- read.csv("repro_analysis/Data/all_sites_clim.csv",
     c(
       "species",
       "site",
+      "country",
       "lon",
       "lat",
       "Mean_Annual_Temp_hist",
@@ -89,6 +101,10 @@ all_sites <- read.csv("repro_analysis/Data/all_sites_clim.csv",
     )
   ) %>%
   mutate(Sampled = "Yes")
+
+all_data <- rbind(all_sites, clean_occ)
+
+write.csv(all_data, file = "repro_analysis/Data/all_gbif_occ_no_clim.csv")
 
 for_plot <- rbind(clean_occ, all_sites) %>%
   select(Mean_Annual_Temp_hist:Sampled)
@@ -243,9 +259,7 @@ dev.off()
 # p_seas  <- raster("repro_analysis/Data/weather/p_seas_2016-2018.tif")
 # 
 # # Finally, extract values for each computed variable layer X occurrence/field site
-# 
-# all_data <- rbind(clean_occ, all_sites)
-# 
+#  
 # coords <- cbind(all_data$lon,
 #                 all_data$lat)
 # 
