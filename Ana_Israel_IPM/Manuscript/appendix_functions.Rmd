@@ -33,13 +33,15 @@ source('Ana_Israel_IPM/R/07A_Figures_rmd.R')
 
 3. $P(z', z) = s(z) * g(z', z)$
 
-4. $F(z',z)  = p_r(z) * f_s(z) * f_d(z') * f_r$
+4. $F(z',z)  = p_r(z) * r_s(z) * r_d(z') * r_r$
+
+*NB: below, $f_g$ and $f_{r_d}$ denote truncated Gaussian probability density functions (with truncation interval $[L,U]$).*
 
 ### P(z',z)
 
-5. $Logit^{-1}(s(z)) = \beta_{0, s} + \beta_{1,s} * z$
+5. $Logit(s(z)) = \beta_{0, s} + \beta_{1,s} * z$
 
-6. $g(z',z) \sim Norm(\mu_g, \sigma_g)$
+6. $g(z',z) = f_g(z', \mu_g, \sigma_g)$
 
 7. $\mu_g = \beta_{0, g} + \beta_{1,g} * z$
 
@@ -47,11 +49,11 @@ source('Ana_Israel_IPM/R/07A_Figures_rmd.R')
 
 ### F(z', z)
 
-9. $Logit^{-1}(p_r(z)) = \beta_{0, p_r} + \beta_{1, p_r} * z$
+9. $Logit(p_r(z)) = \beta_{0, p_r} + \beta_{1, p_r} * z$
 
-10. $ln(f_s(z)) = \beta_{0, f_s} + \beta_{1, f_s} * z$
+10. $ln(r_s(z)) = \beta_{0, r_s} + \beta_{1, r_s} * z$
 
-11. $f_d(z') \sim Norm(\mu_{f_d}, \sigma_{f_d})$
+11. $r_d(z') = f_{r_d}(z', \mu_{r_d}, \sigma_{r_d})$
 
 ### Implementation rules
 
