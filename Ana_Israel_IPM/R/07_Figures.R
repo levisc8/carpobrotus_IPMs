@@ -232,7 +232,7 @@ lam_plot <- ggplot(lam_pred,
              linetype = 'dashed',
              size = 2)
 
-tiff(filename = 'Ana_Israel_IPM/Figures/Figure_2.tiff',
+tiff(filename = 'Ana_Israel_IPM/Figures/Figure_3.tiff',
     height = 5,
     width = 6,
     units = 'in',
@@ -254,7 +254,7 @@ k_sens_plot <- ggplot(all_sens) +
   geom_tile(aes(x = x, y = y, fill = value)) +
   geom_contour(aes(x = x, y = y, z = value),
                color = 'black',
-               size = 1.1) + 
+               size = 0.4) + 
   scale_fill_gradient("Sensitivity",
                       low = 'red',
                       high = 'yellow') +
@@ -283,7 +283,7 @@ k_elas_plot <- ggplot(all_elas) +
   geom_tile(aes(x = y, y = x, fill = value)) +
   geom_contour(aes(x = x, y = y, z = value),
                color = 'black',
-               size = 1.1)  + 
+               size = 0.4)  + 
   scale_fill_gradient("Elasticity",
                       low = 'red',
                       high = 'yellow') +
@@ -337,9 +337,9 @@ sub_kern_elas_plot <- ggplot(elas_plot) +
   scale_y_continuous('Elasticity') + 
   theme_vr
 
-tiff(filename = 'Ana_Israel_IPM/Figures/Figure_3.tiff',
-    height = 4,
-    width = 6,
+tiff(filename = 'Ana_Israel_IPM/Figures/Figure_4.tiff',
+    height = 6,
+    width = 8,
     units = 'in',
     res = 300)
 
@@ -352,6 +352,23 @@ tiff(filename = 'Ana_Israel_IPM/Figures/Figure_3.tiff',
                                       byrow = TRUE))
 
 dev.off()
+
+
+# population summary plots 
+
+theme_sum <- theme_bw() + 
+  theme( 
+    # Extras to theme_bw()
+   axis.text = element_text(size = 12),
+   axis.title = element_text(size = 14),
+   strip.text        = element_text(size = 12), # Increases plot label size
+   strip.background  = element_rect(fill = NA,
+                                    color = "black"),
+   legend.background = element_rect(fill = NA,  # Box for the legend 
+                                    color = 'black'),
+   legend.text       = element_text(size = 6),
+   legend.title      = element_text(size = 7)
+  )
 
 
 f_n_dat <- all_data %>% 
@@ -377,12 +394,13 @@ tot_size$time <- ifelse(tot_size$time == "size", "t", "t + 1")
 
 
 f_n_hist <- ggplot(f_n_dat, aes(x = value)) + 
-  geom_histogram() + 
+  geom_histogram(fill = NA, 
+                 color = "black", 
+                 size = 1.25) + 
   facet_wrap(~ time,
              scales = "free_x") + 
   labs(x = "Flower #", y = "Count") + 
-  theme_vr +
-  theme(axis.title = element_text(size = 16))
+  theme_sum 
 
 size_2 <- size_dat %>%
   group_by(time) %>% 
@@ -396,37 +414,42 @@ size_2 <- size_dat %>%
             mean_txt = paste("Mean size: ", round(mean_value, 3), sep = ""))
 
 size_hist <- ggplot(size_dat, aes(x = value)) + 
-  geom_histogram() +
+  geom_histogram(fill = NA, 
+                 color = "black", 
+                 size = 1.25,
+                 binwidth = 0.25) +
   geom_vline(data = size_2,
              aes(xintercept = mean_value), 
              size = 1.25,
              color = "red",
-             linetype = "dashed") + 
+             linetype = "longdash") + 
   facet_wrap(~time) + 
   labs(x = "Ln(Surface Area)", y = "Count") + 
-  theme_vr +
+  theme_sum + 
   # theme(axis.title = element_text(size = 16))  +
   geom_text(aes(x = -6, y = 23, label = tot_size), data = tot_size, hjust = 0) +
   geom_text(aes(x = -6, y = 22, label = mean_txt), data = size_2, hjust = 0) +
   geom_text(aes(x = -6, y = 21, label = min_val), data = size_2, hjust = 0) +
   geom_text(aes(x = -6, y = 20, label = max_val), data = size_2, hjust = 0)
 
-tiff(filename = 'Ana_Israel_IPM/Figures/Figure_4.tiff',
+tiff(filename = 'Ana_Israel_IPM/Figures/Figure_2.tiff',
      height = 9,
      width = 9,
      units = 'in',
      res = 300)
+
   grid.arrange(f_n_hist,
                size_hist,
                nrow = 2, ncol = 1)
 
 dev.off()
 
-png(filename = 'Ana_Israel_IPM/Figures/Figure_4.png',
+png(filename = 'Ana_Israel_IPM/Figures/Figure_2.png',
      height = 9,
      width = 9,
      units = 'in',
      res = 300)
+
 grid.arrange(f_n_hist,
              size_hist,
              nrow = 2, ncol = 1)
