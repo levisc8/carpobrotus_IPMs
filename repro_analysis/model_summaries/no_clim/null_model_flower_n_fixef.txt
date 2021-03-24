@@ -1,0 +1,15 @@
+ Family: poisson 
+  Links: mu = log 
+Formula: flower_n | trunc(lb = 1) ~ log_size 
+   Data: all_ramets (Number of observations: 2199) 
+Samples: 4 chains, each with iter = 4000; warmup = 2000; thin = 1;
+         total post-warmup samples = 8000
+
+Population-Level Effects: 
+          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+Intercept     1.30      0.01     1.28     1.32 1.00     1601     1602
+log_size      1.02      0.00     1.02     1.03 1.00     1682     2024
+
+Samples were drawn using sampling(NUTS). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).

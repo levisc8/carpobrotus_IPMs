@@ -6,16 +6,16 @@
   Links: mu = logit 
 Formula: repro ~ log_size + t_co_qu_rec * native 
    Data: all_ramets (Number of observations: 21141) 
-Samples: 4 chains, each with iter = 6000; warmup = 2000; thin = 1;
-         total post-warmup samples = 16000
+Samples: 4 chains, each with iter = 4000; warmup = 2000; thin = 1;
+         total post-warmup samples = 8000
 
 Population-Level Effects: 
                    Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-Intercept             -0.64      0.04    -0.72    -0.57 1.00    17109    11197
-log_size               0.97      0.02     0.94     1.01 1.00     7873     8529
-t_co_qu_rec           -0.38      0.03    -0.44    -0.31 1.00     9244     8787
-native                -1.42      0.32    -2.05    -0.80 1.00     6684     7844
-t_co_qu_rec:native     1.52      0.20     1.13     1.90 1.00     6590     7873
+Intercept             -0.65      0.04    -0.72    -0.57 1.00     9241     5225
+log_size               0.97      0.02     0.94     1.01 1.00     4282     5288
+t_co_qu_rec           -0.37      0.03    -0.44    -0.31 1.00     4843     4363
+native                -1.42      0.32    -2.05    -0.80 1.00     3537     3596
+t_co_qu_rec:native     1.52      0.20     1.12     1.92 1.00     3280     4026
 
 Samples were drawn using sampling(NUTS). For each parameter, Bulk_ESS
 and Tail_ESS are effective sample size measures, and Rhat is the potential
@@ -32,16 +32,16 @@ scale reduction factor on split chains (at convergence, Rhat = 1).
   Links: mu = logit 
 Formula: repro ~ log_size + map_rec * native 
    Data: all_ramets (Number of observations: 21141) 
-Samples: 4 chains, each with iter = 6000; warmup = 2000; thin = 1;
-         total post-warmup samples = 16000
+Samples: 4 chains, each with iter = 4000; warmup = 2000; thin = 1;
+         total post-warmup samples = 8000
 
 Population-Level Effects: 
                Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-Intercept         -0.63      0.04    -0.70    -0.56 1.00    14740    11873
-log_size           0.93      0.02     0.90     0.97 1.00     7640     8245
-map_rec           -0.13      0.03    -0.20    -0.07 1.00     9478     8897
-native             3.19      1.01     1.22     5.18 1.00     6358     7941
-map_rec:native     2.15      0.71     0.77     3.54 1.00     6351     8003
+Intercept         -0.63      0.04    -0.70    -0.56 1.00     7883     5384
+log_size           0.93      0.02     0.90     0.97 1.00     3761     3879
+map_rec           -0.13      0.03    -0.20    -0.07 1.00     4497     4278
+native             3.22      1.00     1.26     5.20 1.00     3227     3478
+map_rec:native     2.17      0.70     0.79     3.56 1.00     3199     3403
 
 Samples were drawn using sampling(NUTS). For each parameter, Bulk_ESS
 and Tail_ESS are effective sample size measures, and Rhat is the potential
@@ -58,16 +58,16 @@ scale reduction factor on split chains (at convergence, Rhat = 1).
   Links: mu = logit 
 Formula: repro ~ log_size + mat_rec * native 
    Data: all_ramets (Number of observations: 21141) 
-Samples: 4 chains, each with iter = 6000; warmup = 2000; thin = 1;
-         total post-warmup samples = 16000
+Samples: 4 chains, each with iter = 4000; warmup = 2000; thin = 1;
+         total post-warmup samples = 8000
 
 Population-Level Effects: 
                Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-Intercept         -0.54      0.04    -0.61    -0.47 1.00    16674    11368
-log_size           0.99      0.02     0.95     1.03 1.00     7507     8460
-mat_rec           -0.30      0.03    -0.36    -0.24 1.00     8477     8567
-native            -2.60      0.47    -3.53    -1.69 1.00     6179     8119
-mat_rec:native     3.00      0.44     2.15     3.86 1.00     6263     8254
+Intercept         -0.54      0.04    -0.61    -0.47 1.00     9013     5408
+log_size           0.99      0.02     0.95     1.03 1.00     4019     4159
+mat_rec           -0.30      0.03    -0.36    -0.24 1.00     4464     4269
+native            -2.60      0.48    -3.53    -1.69 1.00     3208     4217
+mat_rec:native     3.00      0.44     2.14     3.84 1.00     3208     4388
 
 Samples were drawn using sampling(NUTS). For each parameter, Bulk_ESS
 and Tail_ESS are effective sample size measures, and Rhat is the potential

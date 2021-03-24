@@ -1,0 +1,189 @@
+debug: type <- as_one_character(type)
+
+
+****************** Int only ************
+
+ Family: poisson 
+  Links: mu = log 
+Formula: flower_n | trunc(lb = 1) ~ 1 + (1 | population) 
+   Data: all_ramets (Number of observations: 2199) 
+Samples: 4 chains, each with iter = 6000; warmup = 2000; thin = 1;
+         total post-warmup samples = 16000
+
+Group-Level Effects: 
+~population (Number of levels: 21) 
+              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sd(Intercept)     1.70      0.32     1.21     2.48 1.00     1819     3626
+
+Population-Level Effects: 
+          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+Intercept     2.39      0.38     1.62     3.13 1.00     1921     2338
+
+Samples were drawn using sampling(NUTS). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).
+debug: if (!is.null(group)) {
+    group <- as_one_character(group)
+}
+
+
+************** End Int only ************
+
+debug: if (!is.null(x)) {
+    x <- as_one_character(x)
+}
+
+
+****************** random int   *******************
+
+ Family: poisson 
+  Links: mu = log 
+Formula: flower_n | trunc(lb = 1) ~ log_size + (1 | population) 
+   Data: all_ramets (Number of observations: 2199) 
+Samples: 4 chains, each with iter = 6000; warmup = 2000; thin = 1;
+         total post-warmup samples = 16000
+
+Group-Level Effects: 
+~population (Number of levels: 21) 
+              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sd(Intercept)     1.14      0.21     0.82     1.63 1.00     2129     3577
+
+Population-Level Effects: 
+          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+Intercept     0.81      0.26     0.31     1.32 1.00     2303     2690
+log_size      0.98      0.00     0.98     0.99 1.00    11281     9152
+
+Samples were drawn using sampling(NUTS). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).
+debug: resp <- validate_resp(resp, object, multiple = FALSE)
+
+
+************** End random int *********************
+
+debug: valid_types <- as.character(bayesplot::available_ppc(""))
+debug: valid_types <- sub("^ppc_", "", valid_types)
+
+
+****************** uncorrelated slopes ***********************
+
+ Family: poisson 
+  Links: mu = log 
+Formula: flower_n | trunc(lb = 1) ~ log_size + (log_size || population) 
+   Data: all_ramets (Number of observations: 2199) 
+Samples: 4 chains, each with iter = 6000; warmup = 2000; thin = 1;
+         total post-warmup samples = 16000
+
+Group-Level Effects: 
+~population (Number of levels: 21) 
+              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sd(Intercept)     1.04      0.20     0.73     1.49 1.00     4107     6854
+sd(log_size)      0.22      0.05     0.15     0.33 1.00     5048     8310
+
+Population-Level Effects: 
+          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+Intercept     0.97      0.24     0.49     1.42 1.00     2431     4109
+log_size      0.91      0.06     0.80     1.02 1.00     3708     5453
+
+Samples were drawn using sampling(NUTS). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).
+
+
+************** End uncorrelated slopes ***********************
+
+debug: if (!type %in% valid_types) {
+    stop2("Type '", type, "' is not a valid ppc type. ", "Valid types are:\n", 
+        collapse_comma(valid_types))
+}
+
+
+****************** correlated slopes ***********************
+
+ Family: poisson 
+  Links: mu = log 
+Formula: flower_n | trunc(lb = 1) ~ log_size + (log_size | population) 
+   Data: all_ramets (Number of observations: 2199) 
+Samples: 4 chains, each with iter = 6000; warmup = 2000; thin = 1;
+         total post-warmup samples = 16000
+
+Group-Level Effects: 
+~population (Number of levels: 21) 
+                        Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sd(Intercept)               1.06      0.20     0.75     1.54 1.00     5072     7931
+sd(log_size)                0.23      0.05     0.15     0.35 1.00     6086     8720
+cor(Intercept,log_size)     0.02      0.24    -0.45     0.47 1.00     5701     8489
+
+Population-Level Effects: 
+          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+Intercept     0.96      0.24     0.48     1.44 1.00     3496     5142
+log_size      0.91      0.06     0.80     1.02 1.00     5027     7334
+
+Samples were drawn using sampling(NUTS). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).
+
+
+************** End correlated slopes ***********************
+
+debug: ppc_fun <- get(paste0("ppc_", type), asNamespace("bayesplot"))
+debug: object <- restructure(object)
+
+
+****************** WAIC ***********************
+
+Output of model 'flower_n_mod_int':
+
+Computed from 16000 by 2199 log-likelihood matrix
+
+           Estimate      SE
+elpd_waic -107588.0 24070.3
+p_waic       6549.7  2568.9
+waic       215175.9 48140.5
+
+324 (14.7%) p_waic estimates greater than 0.4. We recommend trying loo instead. 
+
+Output of model 'flower_n_mod_ran_int':
+
+Computed from 16000 by 2199 log-likelihood matrix
+
+          Estimate     SE
+elpd_waic -16722.8 1677.9
+p_waic      1295.3  501.2
+waic       33445.7 3355.9
+
+141 (6.4%) p_waic estimates greater than 0.4. We recommend trying loo instead. 
+
+Output of model 'flower_n_mod_uncor':
+
+Computed from 16000 by 2199 log-likelihood matrix
+
+          Estimate     SE
+elpd_waic -16850.9 1838.6
+p_waic      1811.0  722.2
+waic       33701.7 3677.1
+
+197 (9.0%) p_waic estimates greater than 0.4. We recommend trying loo instead. 
+
+Output of model 'flower_n_mod_cor':
+
+Computed from 16000 by 2199 log-likelihood matrix
+
+          Estimate     SE
+elpd_waic -16860.4 1844.8
+p_waic      1837.7  735.3
+waic       33720.9 3689.7
+
+198 (9.0%) p_waic estimates greater than 0.4. We recommend trying loo instead. 
+
+Model comparisons:
+                     elpd_diff se_diff 
+flower_n_mod_ran_int      0.0       0.0
+flower_n_mod_uncor     -128.0     258.3
+flower_n_mod_cor       -137.6     265.5
+flower_n_mod_int     -90865.1   23349.2
+
+
+****************** end WAIC ***********************
+
+debug: stopifnot_resp(object, resp)

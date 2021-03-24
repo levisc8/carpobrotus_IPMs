@@ -110,8 +110,34 @@ Everything described below uses 0-trunc pois
 
     + These models have the same structure as above, but is an approach to investigate potential lagged effects that may be more physiologically explicit than mean based approaches
     
-    + running now... stay tuned
+    + Ok, so basically have to run w/ a subset of data for southern hemisphere because worldclim data only exist for 2010-2018, meaning places we initially sampled in 2019 won't have data until t-4:t-40 (and beyond). The subsetted model results are as follows:
     
+        + t_max: 
+            
+            + Linear: some possibly positive effect of t-1, but largest unambiguous effects are t-8, t-11, t-18, t-23.
+            
+            + quad: some lagged effects, but not much for t-1:4 
+    
+        + prec:
+        
+            + Linear: No effects in t-1:3, t-4 may be negative, but highest density around 0. some other highly skewed, but likely 0 effects further into the past.
+            
+            + quad: not much going on w t-1:4, but possibly some earlier effects.
+        
+        + t_min: 
+        
+            + Linear: t-1:3 appear to have potentially strong effects (though possibly also 0. Point is they are not as shrunken as the other coefficients). There are other lagged effects that may be important as well. 
+            
+            + quad: t-1:3 have heavily shrunken linear and non-linear coefficients. There are some lagged non-linear effects
+            
+6. Steps w/ regularized models
+
+    + Formal model comparison for subsetted data models. If the better model as selected by loo/kfold does not include any t-1:4 effects, then proceed w/ models for complete data set. Otherwise, re-consider analysis (i.e. maybe just go straight to IPMs if you can't use all of the lagged data anyway).
+        
+        
+        + Submitted formal model comparisons for 
+        
+        + Prec: picks quadratic model
 
 ### Non-linear models
 
@@ -186,4 +212,4 @@ Since the formalized attempts at making model comparisons for the flowers yielde
     
     + flower_n ~ .
 
-3. THe hurdle models are a trainwreck. Switching back to separate models, and using 
+3. The hurdle models are a trainwreck. Switching back to separate models.

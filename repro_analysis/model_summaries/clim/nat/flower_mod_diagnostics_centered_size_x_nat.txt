@@ -1,0 +1,75 @@
+
+
+****************** Temp Coldest Quarter ************
+
+Inference for Stan model: flower_n_0_trunc_mat.
+4 chains, each with iter=4000; warmup=2000; thin=1; 
+post-warmup draws per chain=2000, total post-warmup draws=8000.
+
+             mean se_mean    sd   2.5%   25%   50%   75% 97.5% n_eff Rhat
+b_Intercept  0.79    0.26 16.66 -32.93 -6.11  1.04  8.56 31.93  4116    1
+b[1]         0.94    0.00  0.01   0.91  0.93  0.94  0.94  0.96  6011    1
+b[2]        -1.94    0.00  0.27  -2.45 -2.12 -1.94 -1.76 -1.42  4380    1
+b[3]        -0.07    0.00  0.02  -0.11 -0.08 -0.07 -0.05 -0.02  6872    1
+b[4]        -0.10    0.00  0.04  -0.18 -0.13 -0.10 -0.08 -0.03  6254    1
+b[5]         1.14    0.00  0.16   0.83  1.03  1.14  1.25  1.45  4407    1
+shape        0.37    0.00  0.01   0.35  0.36  0.37  0.38  0.40  6235    1
+
+Samples were drawn using NUTS(diag_e) at Wed Dec 23 20:53:21 2020.
+For each parameter, n_eff is a crude measure of effective sample size,
+and Rhat is the potential scale reduction factor on split chains (at 
+convergence, Rhat=1).
+
+
+************** End Temp Coldest Quarter ************
+
+
+
+****************** Mean Precip   *******************
+
+Inference for Stan model: flower_n_0_trunc_mat.
+4 chains, each with iter=4000; warmup=2000; thin=1; 
+post-warmup draws per chain=2000, total post-warmup draws=8000.
+
+             mean se_mean    sd   2.5%   25%   50%   75% 97.5% n_eff Rhat
+b_Intercept  1.52    0.43 19.46 -31.86 -6.58  1.15  9.14 33.32  2075    1
+b[1]         0.94    0.00  0.01   0.91  0.93  0.94  0.95  0.96  6489    1
+b[2]         1.87    0.01  0.63   0.65  1.45  1.88  2.30  3.10  4365    1
+b[3]         0.00    0.00  0.03  -0.06 -0.02  0.00  0.03  0.07  7537    1
+b[4]        -0.13    0.00  0.04  -0.20 -0.15 -0.13 -0.10 -0.05  6158    1
+b[5]         1.43    0.01  0.44   0.55  1.13  1.43  1.73  2.30  4364    1
+shape        0.36    0.00  0.01   0.34  0.36  0.36  0.37  0.39  6596    1
+
+Samples were drawn using NUTS(diag_e) at Wed Dec 23 21:04:00 2020.
+For each parameter, n_eff is a crude measure of effective sample size,
+and Rhat is the potential scale reduction factor on split chains (at 
+convergence, Rhat=1).
+
+
+************** End Mean Precip *********************
+
+
+
+****************** Mean Temp ***********************
+
+Inference for Stan model: flower_n_0_trunc_mat.
+4 chains, each with iter=4000; warmup=2000; thin=1; 
+post-warmup draws per chain=2000, total post-warmup draws=8000.
+
+             mean se_mean    sd   2.5%   25%   50%   75% 97.5% n_eff Rhat
+b_Intercept  0.71    0.18 16.52 -32.10 -6.75  1.16  8.84 31.61  8329    1
+b[1]         0.94    0.00  0.01   0.91  0.93  0.94  0.94  0.96  5990    1
+b[2]        -3.10    0.01  0.38  -3.85 -3.35 -3.10 -2.85 -2.37  4015    1
+b[3]        -0.08    0.00  0.02  -0.12 -0.09 -0.08 -0.07 -0.04  6960    1
+b[4]        -0.12    0.00  0.04  -0.19 -0.14 -0.12 -0.09 -0.04  6148    1
+b[5]         2.70    0.01  0.33   2.05  2.47  2.69  2.91  3.36  4162    1
+shape        0.37    0.00  0.01   0.35  0.36  0.37  0.38  0.40  6721    1
+
+Samples were drawn using NUTS(diag_e) at Wed Dec 23 20:57:39 2020.
+For each parameter, n_eff is a crude measure of effective sample size,
+and Rhat is the potential scale reduction factor on split chains (at 
+convergence, Rhat=1).
+
+
+************** End Mean Temp ***********************
+
