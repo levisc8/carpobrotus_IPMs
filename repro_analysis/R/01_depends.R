@@ -9,6 +9,8 @@ library(dplyr)
 library(CoordinateCleaner)
 library(ggplot2)
 library(GGally)
+library(ggforce)
+library(bayesplot)
 library(glue)
 library(dismo)
 library(sf)
@@ -46,42 +48,55 @@ get_prob_rows <- function(model_obj, loo_obj, thresh) {
 
 # Horseshoe prior model helpers
 
-hs_diagnostic_plots <- function(clim, func) {
+hs_diagnostic_plots <- function(clim, vr, func) {
   
-  mod_path <- glue("repro_analysis/model_fits/shrink_mods/model_objects_{clim}_{func}.rds")
+  mod_path <- glue("repro_analysis/model_fits/shrink_mods/vr_model_{clim}_{vr}_{func}.rds")
   
-  vr_mod_list <- readRDS(mod_path)
+  vr_mod <- readRDS(mod_path)
   
-  repro_mod <- vr_mod_list$repro_mod
-  flower_n_mod <- vr_mod_list$flower_n_mod
+  out_path <- glue("repro_analysis/Manuscript/Figures/shrink_mod_{clim}_{vr}_{func}.pdf")
   
-  pdf(glue("repro_analysis/Manuscript/Figures/shrink_mod_{clim}_{func}.pdf"))
+  switch(vr,
+         "repro"    = .hs_repro_plot(vr_mod, out_path),
+         "flower_n" = .hs_flower_plot(vr_mod, out_path))
+
+  invisible(TRUE)
   
-  plot(repro_mod,
+}
+
+.hs_repro_plot <- function(model, out_path) {
+  
+  pdf(out_path)
+  plot(model,
        ask = FALSE)
   
   
-  p <- pp_check(repro_mod,
+  p <- pp_check(model,
                 type     = 'bars',
                 nsamples = 100L,
                 freq     = FALSE)
   
   print(p)
   
-  p <- pp_check(repro_mod,
+  p <- pp_check(model,
                 type     = 'dens_overlay',
                 nsamples = 100L)
   
   print(p)
   
+  dev.off()
+  invisible(TRUE)
   
+}
+
+.hs_flower_plot <- function(model, out_path) {
   
-  
-  plot(flower_n_mod,
+  pdf(out_path)
+  plot(model,
        ask = FALSE)
   
   
-  p <- pp_check(flower_n_mod,
+  p <- pp_check(model,
                 type     = 'bars',
                 nsamples = 100L,
                 freq     = FALSE) + 
@@ -89,7 +104,7 @@ hs_diagnostic_plots <- function(clim, func) {
   
   print(p)
   
-  p <- pp_check(flower_n_mod,
+  p <- pp_check(model,
                 type     = 'rootogram',
                 nsamples = 100L) 
   
@@ -98,7 +113,6 @@ hs_diagnostic_plots <- function(clim, func) {
   print(p + xlim(c(50, 5000)))
   
   dev.off()
-  
   invisible(TRUE)
   
 }
@@ -172,6 +186,184 @@ plot_raw_data <- function(data, preds, ...) {
                ncol = 1, nrow = 2,
                scales = "free_x")
   
+}
+
+
+pp_bars <- function(object, nsamples, group, freq = FALSE) {
+  
+  y <- object$data$flower_n
+  group <- object$data$population
+  yrep <- posterior_predict(object, nsamples = nsamples, group = group)
+  
+  pp_check_bars(y, yrep, group, freq = freq)
+  
+}
+
+pp_check_bars <- function (y, yrep, group, ..., facet_args = list(), prob = 0.9, 
+                           width = 0.9, size = 1, fatten = 3, freq = FALSE){
+
+  alpha <- (1 - prob)/2
+  probs <- sort(c(alpha, 0.5, 1 - alpha))
+  yrep_data <- bayesplot:::ppc_bars_yrep_data(y, yrep, probs, freq = freq, 
+                                              group = group)
+  .pp_check_bars(y_data = data.frame(y, group), yrep_data, grouped = TRUE, 
+            facet_args = facet_args, width = width, size = size, 
+            fatten = fatten, freq = freq)
+  
+}
+
+
+.pp_check_bars <- function (y_data, yrep_data, 
+                            facet_args = list(), grouped = FALSE, 
+                            width = 0.9, size = 1, fatten = 3, freq = TRUE) {
+  
+  for(i in 1:5) {
+  graph <- ggplot() + 
+    geom_bar(data = y_data,
+             mapping = if (freq) 
+               aes_(x = ~y, fill = "y")
+             else 
+               aes_(x = ~y, 
+                    y = ~..prop.., 
+                    fill = "y"), 
+             color = bayesplot:::get_color("lh"), 
+             width = width) + 
+    geom_pointrange(data = yrep_data,
+                    mapping = aes_(x = ~x, 
+                                   y = ~mid, ymin = ~lo,
+                                   ymax = ~hi,
+                                   color = "yrep"), 
+                    size = size, fatten = fatten) +
+    scale_fill_manual("", 
+                      values = bayesplot:::get_color("l")) + 
+    scale_color_manual("", values = bayesplot:::get_color("dh")) +
+    guides(color = guide_legend(order = 1), 
+           fill = guide_legend(order = 2)) + 
+    labs(x = NULL,
+         y = if (freq) 
+           "Count"
+         else 
+           "Proportion") +
+    ggforce::facet_wrap_paginate(
+      facets = vars(group),
+      nrow = 2,
+      ncol = 2,
+      page = i,
+      scales = "free_y") +
+    xlim(c(0, 50))
+  
+
+  print(graph)
+  
+  }
+  
+  w_y <- filter(y_data, group == "Whirinaki")
+  w_y_rep <- filter(yrep_data, group == "Whirinaki")
+  
+  graph <- ggplot() + 
+    geom_bar(data = w_y,
+             mapping = if (freq) 
+               aes_(x = ~y, fill = "y")
+             else 
+               aes_(x = ~y, 
+                    y = ~..prop.., 
+                    fill = "y"), 
+             color = bayesplot:::get_color("lh"), 
+             width = width) + 
+    geom_pointrange(data = w_y_rep,
+                    mapping = aes_(x = ~x, 
+                                   y = ~mid, ymin = ~lo,
+                                   ymax = ~hi,
+                                   color = "yrep"), 
+                    size = size, fatten = fatten) +
+    scale_fill_manual("", 
+                      values = bayesplot:::get_color("l")) + 
+    scale_color_manual("", values = bayesplot:::get_color("dh")) +
+    guides(color = guide_legend(order = 1), 
+           fill = guide_legend(order = 2)) + 
+    labs(x = NULL,
+         y = if (freq) 
+           "Count"
+         else 
+           "Proportion")  +
+    ggtitle("whirinaki")
+  
+  print(graph)
+}
+
+pp_dens <- function (object, group, nsamples = 100, 
+                     size = 0.25, alpha = 0.7, trim = FALSE, 
+                     bw = "nrd0", adjust = 1, kernel = "gaussian", 
+                     n_dens = 1024) {
+
+  y <- object$data$repro
+  group <- object$data$population
+  yrep <- posterior_predict(object, nsamples = nsamples, group = group)
+  data <- bayesplot::ppc_data(y, yrep, group = group)
+  
+  for(i in 1:5){
+    p_overlay <- ggplot(data) + 
+      aes_(x = ~value) + 
+      stat_density(aes_(group = ~rep_id, 
+                        color = "yrep"), 
+                   data = function(x)
+                     dplyr::filter(x, !.data$is_y),
+                   geom = "line", position = "identity", 
+                   size = size,
+                   alpha = alpha, 
+                   trim = trim,
+                   bw = bw, 
+                   adjust = adjust, 
+                   kernel = kernel,
+                   n = n_dens) + 
+      stat_density(aes_(color = "y"), 
+                   data = function(x) 
+                     dplyr::filter(x, .data$is_y),
+                   geom = "line", 
+                   position = "identity",
+                   lineend = "round", 
+                   size = 1, trim = trim, bw = bw,
+                   adjust = adjust, kernel = kernel, 
+                   n = n_dens) + 
+      ggforce::facet_wrap_paginate(
+        vars(group),
+        nrow = 2,
+        ncol = 2,
+        page = i,
+        scales = "free_y",
+      )
+    
+    print(p_overlay)
+  }
+  
+  data <- filter(data, group == "Whirinaki")
+  
+  p_overlay <- ggplot(data) + 
+    aes_(x = ~value) + 
+    stat_density(aes_(group = ~rep_id, 
+                      color = "yrep"), 
+                 data = function(x)
+                   dplyr::filter(x, !.data$is_y),
+                 geom = "line", position = "identity", 
+                 size = size,
+                 alpha = alpha, 
+                 trim = trim,
+                 bw = bw, 
+                 adjust = adjust, 
+                 kernel = kernel,
+                 n = n_dens) + 
+    stat_density(aes_(color = "y"), 
+                 data = function(x) 
+                   dplyr::filter(x, .data$is_y),
+                 geom = "line", 
+                 position = "identity",
+                 lineend = "round", 
+                 size = 1, trim = trim, bw = bw,
+                 adjust = adjust, kernel = kernel, 
+                 n = n_dens) +
+    ggtitle("whirinaki")
+  
+  print(p_overlay)
 }
 
 # The following functions are for reshaping the polygon data and converting it 
