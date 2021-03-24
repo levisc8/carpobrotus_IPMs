@@ -1,111 +1,131 @@
 ---
-output: word_document
+title: "Climate drivers of invasive plant reproduction XYZ"
+output:  
+  word_document:
+    toc: no
+    pandoc_args: ["-Fpandoc-crossref"]
+fig_caption: yes
 ---
-
 
 ## Introduction
 
-Mediterranean coastal dune systems are particularly threatened by the collective scourge of human-mediated habitat destruction, invasive species, and climate change. Species in the _Carpobrotus_ genus (Aizoaceae), specifically _Carpobrotus edulis_ and _Carpobrotus acinaciformis_, represent one the of the largest individual threats to this ecotype. _C edulis_ and _C. acinaciformis_  are native to South Africa, but have been introduced to five other continents and are considered invasive in at least one region of each one (CABI 2020). Introductions in the California and New Zealand represent substantially cooler and wetter climate than the South African climate they evolved in (Figure 1 occurrence ~ clim figure). Nevertheless, these _Carpobrotus._ species have established, spread, and come to dominate these areas (Vila et al. 2006, Santoro et al. 2012, Fried et al. 2014). 
+Invasive species are an increasing threat to global biodiversity blah blah blah
 
-A critical part of the invasion process is the ability to reproduce and spread at both local and regional scales. _C. edulis_ and _C. acinaciformis_ reproduce both sexually and asexually (Suehs et al. 2004). Reproduction through seed dispersal is critical during the spread phase of plant invasions, as it facilitates longer distance dispersal and establishment in new areas than vegetative reproduction can. Furthermore, cross-pollination with con-specifics enhances genetic diversity, which may be lacking due to founder effects in the invading population. _C. edulis_ and _C. acinaciformis_ have a highly flexible mating system, including the ability to produce apomictic seeds, self-pollination, and cross-pollination (Campoy et al. 2018), with _C. edulis_ showing more plasticity than _C. acinaciformis_ (Suehs et al. 2004). Furthermore, multiple species of mammals are known to consume and disperse seeds of these species, in some cases up to 800m from the parent plant (D'Antonio, Odion, & Tyler 1993, Vila & D'Antonio 1998, Bourgeois et al. 2005, Novoa et al. 2012). 
+## Introduction - Old
 
-Demographic processes are critical to invasions - successful invasions require individuals to survive, grow, and reproduce in their novel environments. Environmental variables are generally stochastic, and climate change is predicted to shift their distributions. In order to predict invasions under future climate scenarios, we need to show (i) whether climate affects species' vital rates and (ii) the direction of an effect if it is present. Recent work has shown thermal niche shifts in _Carpobrotus spp._ between the native to invasive range (Fenollosa & Bosch 2018), and  variation in seeds/fruit (Suehs et al 2004, Vila et al. 1998). Furthermore, there is a connection between flower density, pollen-mediated gene flow, and degree of hybridization/hybrid vigor in _C. edulis_ and _C. acinaciformis_ (Suehs et al. 2006).  However, the mean and variance of total reproductive potential, and the relationship of these quantities to climatic variables, is still an open question. We specifically focus on the vital rates underlying sexual reproduction - the probability of flowering and the number of flowers produced by flowering individuals. We test whether climate (and maybe native status??) drive differences in probability of flowering and average flower production across the native and invaded range, controlling for individual- and site-specific differences.
+Mediterranean coastal dune systems are particularly threatened by the collective scourge of human-mediated habitat destruction, invasive species, and climate change. Species in the *Carpobrotus* genus (Aizoaceae), specifically *Carpobrotus edulis* and *Carpobrotus acinaciformis*, represent one the of the largest individual threats to this ecotype. *C edulis* and *C. acinaciformis* are native to South Africa, but have been introduced to five other continents and are considered invasive in at least one region of each one (CABI 2020). Introductions in the California and New Zealand represent substantially cooler and wetter climate than the South African climate they evolved in (Figure 1 occurrence \~ clim figure). Nevertheless, these *Carpobrotus.* species have established, spread, and come to dominate these areas (Vila et al. 2006, Santoro et al. 2012, Fried et al. 2014).
 
-## Key questions
+A critical part of the invasion process is the ability to reproduce and spread at both local and regional scales. *C. edulis* and *C. acinaciformis* reproduce both sexually and asexually (Suehs et al. 2004). Reproduction through seed dispersal is critical during the spread phase of plant invasions, as it facilitates longer distance dispersal and establishment in new areas than vegetative reproduction can. Furthermore, cross-pollination with con-specifics enhances genetic diversity, which may be lacking due to founder effects in the invading population. *C. edulis* and *C. acinaciformis* have a highly flexible mating system, including the ability to produce apomictic seeds, self-pollination, and cross-pollination (Campoy et al. 2018), with *C. edulis* showing more plasticity than *C. acinaciformis* (Suehs et al. 2004). Furthermore, multiple species of mammals are known to consume and disperse seeds of these species, in some cases up to 800m from the parent plant (D'Antonio, Odion, & Tyler 1993, Vila & D'Antonio 1998, Bourgeois et al. 2005, Novoa et al. 2012).
 
-1. Patterns of iceplant flower production at global scale? Variance in iceplant reproduction at global scale? This is more of a comprehensive overview of its flower production, and possibly, its mature fruit and seed production. 
+Demographic processes are critical to invasions - successful invasions require individuals to survive, grow, and reproduce in their novel environments. Environmental variables are generally stochastic, and climate change is predicted to shift their distributions. In order to predict invasions under future climate scenarios, we need to show (i) whether climate affects species' vital rates and (ii) the direction of an effect if it is present. Recent work has shown thermal niche shifts in *Carpobrotus spp.* between the native to invasive range (Fenollosa & Bosch 2018), and variation in seeds/fruit (Suehs et al 2004, Vila et al. 1998). Furthermore, there is a connection between flower density, pollen-mediated gene flow, and degree of hybridization/hybrid vigor in *C. edulis* and *C. acinaciformis* (Suehs et al. 2006). However, the mean and variance of total reproductive potential, and the relationship of these quantities to climatic variables, is still an open question. We specifically focus on the vital rates underlying sexual reproduction - the probability of flowering and the number of flowers produced by flowering individuals. We test whether climate (and maybe native status??) drive differences in probability of flowering and average flower production across the native and invaded range, controlling for individual- and site-specific differences.
 
-    + Data: SA, NZ, ES/PT, IS, US
-    
-    + Proposed models:
- 
-      + `p_r_z ~ size + (size|site)` (probability of flowering)
-      
-        + $p_r(z) = (\alpha_{p_r} + \alpha_{i,p_r}) + (\beta_{p_r} + \beta_{i,p_r}) * z + e$, ($_i$ = site)
-      
-      + `f_s ~ size + (size|site)` (number of flowers)
-    
-        + $f_s(z) = (\alpha_{f_s} + \alpha_{i,f_s}) + (\beta_{f_s} + \beta_{i,f_s}) * z + e$, ($_i$ = site)
-      
-      + Can be combined to compute $\bar{\omega}(z) = p_b(z)p_rf_s(z)$ and $Var(\omega(z))$ ($\bar{\omega}(z)=$ average flower production as a function of size, conditional on flowering, and $p_r=$ recruitment probability (not sure if we really want to include this tbh)).
-    
-      + $Var(\omega(z)) = \sigma^2_b = \bar{\omega}(z) + \frac{1 - p_b(z)}{p_b(z)}\bar{\omega}(z)^2$ The variance in flower production conditional on flowering
-    
-2. Given the range of conditions we have data for, can we figure out whether they will reproduce more or less under future climate scenarios? If so, where? What are the implications for management?
+## Methods
 
-      + Data: Same as above plus WorldClim (for recent weather, Figure 2) and/or CHELSA (for less recent climate, Figure 1)
-  
-    + Proposed models: Meta-regressions (kind of like plant review). We use the $\beta s$ from the models in 1 as responses in model with climate predictor on $\beta_{i,p_r}, \beta_{i,f_s}$ (conceptually at least. I am not sure if this is statistically valid and really need to talk w/ Aldo/Sanne/someone in Rob's group about this setup).
-    
-        + without genetic data:
-      
-          + `beta_f_s ~ climate` (N = 21)
-        
-          + `beta_p_r ~ climate` (N = 21)
-      
-      + With genetic data:
-    
-          + `beta_f_s ~ climate + genes` (no interaction planned due to sample size (N = 20, no genetic data from Israeli population))
-        
-          + `beta_p_r ~ climate + genes` (no interaction planned due to sample size (N = 20, no genetic data from Israeli population))
-        
-        
-      + Climate variables:
-    
-        + My instinct is to download weather data and use the following:
-      
-          + A. mean temp
-          
-          + B. annual precip
-          
-          + C. temp seasonality
-          
-          + D. mean temp coldest month (or quarter, debating) (cool tolerance)
-          
-          + E. precip seasonality
-          
-        + Once we have these - we can either: 
-            
-          + 1. do env PCA and use 1-2 axes OR
-          
-          + 2. Fit models with all of the combinations, and look at predictive power.
-            
-            + Not a huge fan of the kitchen sink approach. Prefer 1 or a more literature-informed choice of variables.
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+
+library(fs)
+library(dplyr)
+
+fps <- dir_ls("../../Data/Genetics/")
+
+all_gen_data <- lapply(fps,
+                       function(x) read.csv(x)) %>%
+  do.call(what = "rbind", args = .)
+
+mu_fl_width <- mean(all_gen_data$Flw_wid_all, na.rm = TRUE)
+se_fl_width <- 
+  sd(all_gen_data$Flw_wid_all, na.rm = TRUE) /
+  sqrt(sum(!is.na(all_gen_data$Flw_wid_all)))
 
 
-![Climate coverage 1979-2013](Figures/clim_coverage_1979-2013.png)
+mu_ur_width <- mean(all_gen_data$Flw_wid_fill, na.rm = TRUE)
+se_ur_width <- 
+  sd(all_gen_data$Flw_wid_fill, na.rm = TRUE) /
+  sqrt(sum(!is.na(all_gen_data$Flw_wid_fill)))
 
-_Red triangles are our field sites, and black dots are GBIF records for Carpobrotus edulis, Carpobrotus acinaciformis, and Carpobrotus chilensis. Climate data is from CHELSA and is averaged over 1979-2013. Variables are mean annual temperature, temperature seasonality, mean temperature of coldest month, mean temperature of coldest quarter, mean annual precip, and precip seasonality. The upper triangle shows correlations between pairs of variables. I didn't really want that in the figure, but `ggpairs` does it by default and I haven't figured out how to turn it off. You can probably ignore that. The density plots on the diagonal show the density of points in each group. The pink is the density of GBIF occurrences for a given variable, and the green is the density of our field sites. I am not sure why those got different colors from the scatterplots, but again, I can't figure out how to change that._
+```
 
+### Data Collection
+
+We collected data on multiple *Carpobrotus* species throughout their global geographic and climate range from spring 2018 - spring 2019. Sites were selected based on population density and ability to get permission from local governing authorities (Table 1). *Carpobrotus spp.* grow via spreading outward, and so surface area is likely the most readily collectable measure to predict vital rates. Here, we describe the general methods to apply to all populations. Site-specific alterations/additions to the methodology are available in the ESM.
+
+We collected demographic data using drones to capture high-resolution imagery of populations. Areas sampled ranged from 0.5-4ha. At each site, the sampling area was delineated using DJI GroundStation Pro (SZ DJI Technology Co.) for iPad (Apple Inc.). This applications provides functionality for users to generate polygons over the area of interest and computes the optimal flight path given a desired orthomosaic resolution, degree of image overlap, and drone-specific camera parameters. We also placed multiple targets of known size throughout each sampling area so that we could ground truth our size estimates from the resulting orhtomosaics. We generated flight paths with resolutions between 2 and 5 mm/pixel in the resulting orthomosaics (Table 1). The average width of flowers in our data set is `r mu_fl_width` $\pm$ `r se_fl_width` cm, and unripe fruits is `r mu_ur_width`\$ \pm \$ `r se_ur_width` (SC Levin, unpublished data). We are therefore confident that these resolutions were adequate to capture reproductive effort. All imagery was collected with a -90$^\circ$ camera angle (nadir imagery).
+
+```{r table 1, echo = FALSE, warning = FALSE}
+
+all_sites <- read.csv("../Data/all_sites_clim.csv") %>%
+  select(Site, Lat, Lon) %>%
+  filter(!Site %in% c("Omaha", "Pt_Reyes", "Fort_Ord")) %>%
+  mutate(Lat = round(Lat, 2),
+         Lon = round(Lon, 2),
+         Res = NA_real_) %>%
+  setNames(c("Site", "Latitude", "Longitude", "Orthomosaic Resolution (mm)")) %>%
+  knitr::kable()
+
+
+print(all_sites)
+
+```
+
+Once flight plans were prepared and permission was obtained from both local governing authorities as well as any relevant air traffic control, flights were conducted with a DJI Phantom 4 Pro v1. Nearly all flights were operated automatically with DJI Ground Station Pro, but sometimes manual flights were needed to adjust for excess terrain variation (see ESM). Transects were flown across populations, usually between 10AM and 2PM local time to minimize shadows. Most flights were too long to be completed using a single battery. Generally, when the battery level reached 20%, the mission was paused to land the drone and swap batteries. We then used the "Resume Mission from Last Waypoint" functionality to continue image collection.
+
+We processed all images for a single population using Pix4DMapper (Pix4D SA, 2019). We generated georeferenced orthomosiac composite images. Using QGIS 3.4 (QGIS Development Team), we then created a polygon layer for each distinct *Carpobrotus* ramet, and a point layer to count the number of flowers and unripe fruits on each ramet. Additionally, we drew polygons around the each ground truth target we had placed in the population, and computed the ratio of $\frac{True Size}{Measured Size}$, which was used to re-scale the measured size for each *Carpobrotus* ramet.
+
+### Species occurrence and weather data
+
+We downloaded occurrence data for *Carpobrotus spp.* from GBIF on September 18, 2020. The search was restricted to records that had coordinates and no known geospatial issues (see ESM for full JSON API query). Once downloaded, we further cleaned the occurrence data using the `CoordinateCleaner` *R* package (Zizka et al. 2019). Specifically, we removed records which had coordinate uncertainty greater than 5km, as well as records from botanical gardens and national capitals, national centroids, and coordinates over oceans (island coordinates were still retained).
+
+Additionally, we downloaded gridded monthly weather data from WorldClim for 2010-2018 (Fick and Hijmans, 2017). We computed raster layers for mean annual temperature ($\mu_T$), temperature seasonality ($T_{seas}$), temperature coldest month ($T_{cm}$), temperature coldest quarter ($T_{cq}$), mean annual precipitation ($\mu_P$), and precipitation seasonality ($P_{seas}$) from 2016-2018 using the `biovars` function from the `dismo` *R* package (Hijmans et al. 2020). Once computed, we extracted values for each climate covariate for every retained GBIF occurrence point, as well as our field sites (Figure 1). Additionally, we extracted values for minimum temperature $T_{min}$, maximum temperature $T_{max}$, and precipitation at monthly timescales going from January 2016 - December 2018. These were used separately to test for lagged effects of climate variables on flowering probability and flower production.
+
+### Data analysis
+
+Generalized linear mixed effects models were first fit using the averaged WorldClim values and the natural logarithm of surface area as predictors, and flowering and number of flowers conditional on reproduction as responses (logit and log links, respectively). In addition to these models, we tested for lagged climate effects using the monthly data for temperature and precipitation values. Specifically, we fit models with monthly values of $T_{min}$, $T_{max}$, and total precipitation with horseshoe priors to regularize monthly coefficients that were not useful.
+
+The best models were selected using LOOIC and checked graphically using posterior predictive checks (ESM Figures XYZ). Once the best models were selected, we used the model predictions to compute the mean ($\bar\omega(z, \theta)$) and variance of flower number ($Var(\omega(z, \theta))$) (Eqs 1 & 2). Size of first flowering was computed as the size at which a ramet produced $\ge 1$ flower. 
+
+$$\bar\omega(z,\theta)) = p_f(z,\theta) * r_f(z,\theta).$$  {#eq:eqn1}
+
+$$Var(\omega(z,\theta)) = \bar\omega(z,\theta) + \frac{1 - p_f(z,\theta)}{p_f(z,\theta)}*\bar\omega(z,\theta).$$  {#eq:eqn2}
+
+#### IF we go SDM-ish direction:
+
+Model predictions were then used to generate maps of reproductive suitability as a function of climate. 
+
+#### If no SDM-ish direction: RESULTS
 
 ![Climate coverage 2016-2018](Figures/clim_coverage_2016-2018.png)
 
-_Red triangles are our field sites, and black dots are GBIF records for Carpobrotus edulis, Carpobrotus acinaciformis, and Carpobrotus chilensis. Weather data is from WorldClim and is averaged over 2016-2018. The point here is to understand how well we cover the recent climate distributions with our field sites. Variables are mean annual temperature (mat_rec), temperature seasonality (t_seas_rec), mean temperature of coldest month (t_co_mo_rec), mean temperature of coldest quarter (t_co_qu_rec), mean annual precip (map_rec), and precip seasonality (p_seas_rec). The upper triangle shows correlations between pairs of variables. I didn't really want that in the figure, but `ggpairs` does it by default and I haven't figured out how to turn it off. You can probably ignore that. The density plots on the diagonal show the density of points in each group. The pink is the density of GBIF occurrences for a given variable, and the green is the density of our field sites. I am not sure why those got different colors from the scatterplots, but again, I can't figure out how to change that._
-
+*Red triangles are our field sites, and black dots are GBIF records for Carpobrotus edulis, Carpobrotus acinaciformis, and Carpobrotus chilensis. Weather data is from WorldClim and is averaged over 2016-2018. The point here is to understand how well we cover the recent climate distributions with our field sites. Variables are mean annual temperature (mat_rec), temperature seasonality (t_seas_rec), mean temperature of coldest month (t_co_mo_rec), mean temperature of coldest quarter (t_co_qu_rec), mean annual precip (map_rec), and precip seasonality (p_seas_rec). The upper triangle shows correlations between pairs of variables. I didn't really want that in the figure, but `ggpairs` does it by default and I haven't figured out how to turn it off. You can probably ignore that. The density plots on the diagonal show the density of points in each group. The pink is the density of GBIF occurrences for a given variable, and the green is the density of our field sites. I am not sure why those got different colors from the scatterplots, but again, I can't figure out how to change that.*
 
 ## References
 
-Bourgeois K, Suehs CM,  Vidal E  & Médail F (2005). Invasional Meltdown Potential: Facilitation between Introduced Plants and Mammals on French Mediterranean Islands. _Ecoscience_ 12 (2): 248–256. DOI: 10.2980/i1195-6860-12-2-248.1.
+Bourgeois K, Suehs CM, Vidal E & Médail F (2005). Invasional Meltdown Potential: Facilitation between Introduced Plants and Mammals on French Mediterranean Islands. *Ecoscience* 12 (2): 248--256. DOI: 10.2980/i1195-6860-12-2-248.1.
 
-CABI blah blah blah - http://www.cabi.org/isc/datasheet/10648
+CABI blah blah blah - <http://www.cabi.org/isc/datasheet/10648>
 
-Campoy JG, Acosta ATR, Affre L, Barreiro R, Brundu G, Buisson E, _et al._ (2018) Monographs of invasive plants in Europe: _Carpobrotus_. _Botany Letters_ DOI: 10.1080/23818107.2018.1487884
+Campoy JG, Acosta ATR, Affre L, Barreiro R, Brundu G, Buisson E, *et al.* (2018) Monographs of invasive plants in Europe: *Carpobrotus*. *Botany Letters* DOI: 10.1080/23818107.2018.1487884
 
-D'Antonio CM, Odion DC, & Tyler CM (1993). Invasion of maritime chaparral by the introduced succulent _Carpobrotus edulis_. _Oecologia_ 95(1): 14-21. DOI: 10.1007/BF00649501
+D'Antonio CM, Odion DC, & Tyler CM (1993). Invasion of maritime chaparral by the introduced succulent *Carpobrotus edulis*. *Oecologia* 95(1): 14-21. DOI: 10.1007/BF00649501
 
-Fenollosa E & Munne-Bosch S (2018) Increased chilling tolerance of the invasive species _Carpobrotus edulis_ may explain its expansion across new territories. _Conservation Physiology_ 7: 1-15. DOI: 10.1093/conphys/coz075
+Fenollosa E & Munne-Bosch S (2018) Increased chilling tolerance of the invasive species *Carpobrotus edulis* may explain its expansion across new territories. *Conservation Physiology* 7: 1-15. DOI: 10.1093/conphys/coz075
 
-Fried G, Laitung B, Pierre C, Chague N, & Panetta FD (2014). Impact of Invasive plants in Mediterranean habitats: disentangling the effects of characteristic of invaders and recipient communities. _Biological Invasions_ 16(8): 1639-1658.
+Fick, S.E. and R.J. Hijmans, 2017. WorldClim 2: new 1km spatial resolution climate surfaces for global land areas. International Journal of Climatology 37 (12): 4302-4315.
 
-Novoa A, Gonzalez L, Moracova L, & Pysek P (2012). Effects of soil characteristics, allelopathy and frugivory on establishment of the invasive plant _Carpobrotus edulis_ and a co-occuring native, _Malcomia littorea_. _PLoS ONE_ 9(9): e53166.
+Fried G, Laitung B, Pierre C, Chague N, & Panetta FD (2014). Impact of Invasive plants in Mediterranean habitats: disentangling the effects of characteristic of invaders and recipient communities. *Biological Invasions* 16(8): 1639-1658.
 
-Santora R, Jucker T, Carranza M, & Acosta ATR (2012). Patterns of plant community assembly in invaded and non-invaded communities along a natural environmental gradient. _Journal of Vegetation Science_. 23(3): 483-494.
+Robert J. Hijmans, Steven Phillips, John Leathwick and Jane Elith (2020). dismo: Species Distribution Modeling. R package version 1.3-3. <https://CRAN.R-project.org/package=dismo>
 
-Suehs CM, Affre L, & Medail F (2004). Invasion dynamics of two alien _Carpobrotus_ (Aizoaceae) taxa on a Mediterranean island: II. reproductive strategies. _Heredity_ 92, 550-556.
+Novoa A, Gonzalez L, Moracova L, & Pysek P (2012). Effects of soil characteristics, allelopathy and frugivory on establishment of the invasive plant *Carpobrotus edulis* and a co-occuring native, *Malcomia littorea*. *PLoS ONE* 9(9): e53166.
 
-Vila M, Tessier M, Suehs CM, Brundu G, Carta L, Galanidis A, _et al._ (2006). Local and regional assessments of the impacts of plant invaders on vegetation structure and soil properties of Mediterranean islands. _Journal of Biogeography_ 33: 853-861. 
+Santora R, Jucker T, Carranza M, & Acosta ATR (2012). Patterns of plant community assembly in invaded and non-invaded communities along a natural environmental gradient. *Journal of Vegetation Science*. 23(3): 483-494.
 
-Vilà M, Weber E, & D’Antonio C. M. (1998). Flowering and mating system in hybridizing Carpobrotus (Aizoaceae) in coastal California. Canadian Journal of Botany, 76(7), 1165–1169. doi:10.1139/b98-130 
+Suehs CM, Affre L, & Medail F (2004). Invasion dynamics of two alien *Carpobrotus* (Aizoaceae) taxa on a Mediterranean island: II. reproductive strategies. *Heredity* 92, 550-556.
+
+Vila M, Tessier M, Suehs CM, Brundu G, Carta L, Galanidis A, *et al.* (2006). Local and regional assessments of the impacts of plant invaders on vegetation structure and soil properties of Mediterranean islands. *Journal of Biogeography* 33: 853-861.
+
+Vilà M, Weber E, & D'Antonio C. M. (1998). Flowering and mating system in hybridizing Carpobrotus (Aizoaceae) in coastal California. Canadian Journal of Botany, 76(7), 1165--1169. <doi:10.1139/b98-130>
+
+Zizka A, Silvestro D, Andermann T, Azevedo J, Duarte Ritter C, Edler D, Farooq H, Herdean A, Ariza M, Scharn R, Svanteson S, Wengstrom N, Zizka V, Antonelli A (2019). CoordinateCleaner: standardized cleaning of occurrence records from biological collection databases. Methods in Ecology and Evolution, 10. doi: 10.1111/2041-210X.13152, R package version 2.0-18
 
 ### Refs from Campoy to find
 
