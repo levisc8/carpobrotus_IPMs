@@ -1,9 +1,7 @@
 
 
 # Now we are ready to explore the data a bit! first, fit some
-# growth models, then plot the data to see how it looks. The data are not
-# completely digitized, so the survival model is really a place holder until
-# that process is completed. 
+# growth models, then plot the data to see how it looks.
 
 grow_mod_int  <- lm(log_size_next ~ 1,
                     data = all_data[!is.na(all_data$size_next) &
@@ -225,7 +223,7 @@ f_s_aic <- AIC(f_s_int, f_s_mod)
 print(f_s_aic)
 
 # compute approximate dispersion
-dev_ratio <- summary(f_s_mod)$null.deviance / summary(f_s_mod)$deviance
+dev_ratio <- summary(f_s_mod)$deviance / summary(f_s_mod)$df.residual
 
 print(dev_ratio)
 
