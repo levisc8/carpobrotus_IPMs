@@ -22,8 +22,7 @@ get_gg_legend<-function(plot){
 
 sourceCpp(file = 'Ana_Israel_IPM/Cpp/cpp_utils.cpp')
 
-# Top level wrappers for sensitivity and elasticity computations. Pseudo-generic,
-# but dispatches on arguments rather than classes
+# Top level wrappers for sensitivity and elasticity computations.
 
 sensitivity <- function(K, h, level = c('kernel', 'vr', 'param'),
                         ...) {
@@ -42,7 +41,7 @@ elasticity <- function(K, h, level = c('kernel', 'vr', 'param'),
 }
 
 
-# Sensitivity methods for kernel, vital rates, and parameters
+# Sensitivity for kernel, vital rates, and parameters
 .kernel_sens <- function(K, h) {
   w <- Re(eigen(K)$vectors[ , 1])
   v <- Re(eigen(t(K))$vectors[ , 1])
@@ -53,7 +52,7 @@ elasticity <- function(K, h, level = c('kernel', 'vr', 'param'),
 }
 
 
-# Elasticity methods for kernel, vital rates, and parameters
+# Elasticity for kernel, vital rates, and parameters
 
 .kernel_elas <- function(K, h) {
   
