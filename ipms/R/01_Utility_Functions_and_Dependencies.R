@@ -1,16 +1,21 @@
 # Dependencies
 library(sf) # Handle spatial data
+# library(s2)
 library(fs) # file manipulation
 library(stringr) # string manipulation
-library(ggplot2) # plotting 
+# library(ggplot2) # plotting
 library(dplyr) # data manipulation
-library(gridExtra) # plotting
+# library(gridExtra) # plotting
 library(glue) # string manipulation
 library(purrr)
-library(lme4)
-library(brms) # attempt to get fecundity models converging
-library(mgcv)
+# library(lme4)
+# library(brms) # attempt to get fecundity models converging
+# library(mgcv)
 library(Rcpp)
+
+# loading ggplot2 and gridExtra here causes RStudio to crash for some reason.
+# these are now loaded in 04_Data_Exploration.R, which for some reason
+# causes no such crashes(?????????)
 
 
 # Utilities for carpobrotus IPM pipeline
@@ -43,17 +48,24 @@ infile_data <- function(path, pop,
   sel_vars <- rlang::enquos(...)
   temp <- sf::st_read(path,
                       stringsAsFactors = FALSE)  %>%
-    .type_poly_fields()
+    .type_poly_fields() %>%
+    st_make_valid()
   
-  if(sf::st_crs(temp)$epsg != 4326) temp <- sf::st_transform(temp, 4326)
+  # if(sf::st_crs(temp)$epsg != 4326) temp <- sf::st_transform(temp, 4326)
   
   # Substitute merged ramet IDs so values can be recomputed 
   # C++ source is in R/Cpp/cpp_utils.cpp
   merged_ramets <- dplyr::filter(merged_ramets, population == pop)
   
-  temp$id <- merge_ramets(temp$id, 
-                          merged_ramets$absorbed_ramet,
-                          merged_ramets$big_ramet)
+  # temp$id <- merge_ramets(temp$id, 
+  #                         merged_ramets$absorbed_ramet,
+  #                         merged_ramets$big_ramet)
+  
+  for(i in merged_ramets$absorbed_ramet) {
+    
+    temp$id[temp$id == i] <- merged_ramets[merged_ramets$absorbed_ramet == i, "big_ramet"]
+    
+  }
   
   # Now do some initial data manipulation
   
@@ -80,10 +92,7 @@ infile_data <- function(path, pop,
               flower_col = ifelse(!all(is.na(flower_col)),
                                   flower_col[which(!is.na(flower_col)[1])],
                                   NA_character_)) %>%
-    dplyr::mutate(log_size = log(size)) %>%
-    dplyr::mutate(size_bin = cut(log_size, breaks = log_breaks)) %>%
-    dplyr::mutate(clean_bin = clean_bins(size_bin)) %>%
-    dplyr::select(-size_bin)
+    dplyr::mutate(log_size = log(size))
   
   # add in some additional info and make sure columns are correct
   
@@ -116,9 +125,10 @@ infile_data <- function(path, pop,
   sel_vars <- rlang::enquos(...)
   temp <- sf::st_read(path,
                   stringsAsFactors = FALSE) %>%
-    .type_poly_fields() 
+    .type_poly_fields() %>%
+    st_make_valid()
   
-  if(sf::st_crs(temp)$epsg != 4326) temp <- sf::st_transform(temp, 4326)
+  # if(sf::st_crs(temp)$epsg != 4326) temp <- sf::st_transform(temp, 4326)
   
   # Now do some initial data manipulation
   
@@ -151,10 +161,7 @@ infile_data <- function(path, pop,
                                   flower_col[which(!is.na(flower_col)[1])],
                                   NA_character_),
               alive = mean(alive, na.rm = TRUE)) %>%
-    dplyr::mutate(log_size = log(size)) %>%
-    dplyr::mutate(size_bin = cut(log_size, breaks = log_breaks)) %>%
-    dplyr::mutate(clean_bin = clean_bins(size_bin)) %>%
-    dplyr::select(-size_bin)
+    dplyr::mutate(log_size = log(size)) 
   
   # add in some additional info and make sure columns are correct
   
@@ -296,7 +303,7 @@ get_prob_rows <- function(model_obj, loo_obj, thresh) {
   
 }
 
-sourceCpp(file = 'R/Cpp/cpp_utils.cpp')
+sourceCpp(file = 'ipms/R/Cpp/cpp_utils.cpp')
 
 # Extras ------
 
@@ -380,9 +387,9 @@ update_flower_col <- function(data, pop, id, new_col, time) {
 
 # Initialize output directories
 
-if(!dir_exists('Model_Fits')) dir_create('Model_Fits')
-if(!dir_exists('Model_Summaries')) dir_create('Model_Summaries')
-if(!dir_exists('Model_Summaries/Trace_Plots')) dir_create('Model_Summaries/Plots')
-if(!dir_exists('Stan')) dir_create('Stan')
-if(!dir_exists('Figures')) dir_create('Figures')
+if(!dir_exists('ipms/Model_Fits'))                  dir_create('ipms/Model_Fits')
+if(!dir_exists('ipms/Model_Summaries'))             dir_create('ipms/Model_Summaries')
+if(!dir_exists('ipms/Model_Summaries/Trace_Plots')) dir_create('ipms/Model_Summaries/Plots')
+if(!dir_exists('ipms/Stan'))                        dir_create('ipms/Stan')
+if(!dir_exists('ipms/Figures'))                     dir_create('ipms/Figures')
 
