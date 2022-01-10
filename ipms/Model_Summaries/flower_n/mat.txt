@@ -1,0 +1,127 @@
+Size only
+
+ *********************
+
+ Family: negbinomial 
+  Links: mu = log; shape = identity 
+Formula: flower_n ~ log_size 
+   Data: data (Number of observations: 1093) 
+  Draws: 4 chains, each with iter = 1000; warmup = 0; thin = 1;
+         total post-warmup draws = 4000
+
+Population-Level Effects: 
+          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+Intercept     1.67      0.03     1.62     1.72 1.00     2560     1881
+log_size      0.65      0.02     0.62     0.68 1.00     2385     1997
+
+Family Specific Parameters: 
+      Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+shape     1.85      0.10     1.67     2.06 1.00     2527     2270
+
+Draws were sampled using sample(hmc). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).
+
+
+*********************
+
+Size + Climate 
+
+*********************
+
+ Family: negbinomial 
+  Links: mu = log; shape = identity 
+Formula: flower_n ~ log_size + mat_rec 
+   Data: data (Number of observations: 1093) 
+  Draws: 4 chains, each with iter = 1000; warmup = 0; thin = 1;
+         total post-warmup draws = 4000
+
+Population-Level Effects: 
+          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+Intercept     1.67      0.03     1.62     1.73 1.00     3434     2314
+log_size      0.65      0.02     0.62     0.68 1.00     3076     2540
+mat_rec      -0.03      0.02    -0.06     0.01 1.00     3558     2656
+
+Family Specific Parameters: 
+      Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+shape     1.86      0.10     1.67     2.07 1.00     3617     2648
+
+Draws were sampled using sample(hmc). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).
+
+
+*********************
+
+Size * Climate 
+
+*********************
+
+ Family: negbinomial 
+  Links: mu = log; shape = identity 
+Formula: flower_n ~ log_size * mat_rec 
+   Data: data (Number of observations: 1093) 
+  Draws: 4 chains, each with iter = 1000; warmup = 0; thin = 1;
+         total post-warmup draws = 4000
+
+Population-Level Effects: 
+                 Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+Intercept            1.68      0.03     1.62     1.73 1.00     3901     2828
+log_size             0.65      0.02     0.62     0.69 1.00     3957     3069
+mat_rec             -0.02      0.02    -0.06     0.01 1.00     3543     2319
+log_size:mat_rec    -0.02      0.01    -0.04     0.00 1.00     3997     2631
+
+Family Specific Parameters: 
+      Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+shape     1.86      0.10     1.67     2.07 1.00     4060     2866
+
+Draws were sampled using sample(hmc). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).
+
+
+*********************
+
+WAIC Results
+
+Output of model 'mod_1':
+
+Computed from 4000 by 1093 log-likelihood matrix
+
+          Estimate    SE
+elpd_waic  -2888.1  57.3
+p_waic         6.1   2.4
+waic        5776.1 114.7
+
+2 (0.2%) p_waic estimates greater than 0.4. We recommend trying loo instead. 
+
+Output of model 'mod_2':
+
+Computed from 4000 by 1093 log-likelihood matrix
+
+          Estimate    SE
+elpd_waic  -2888.7  57.8
+p_waic         8.0   2.8
+waic        5777.3 115.7
+
+2 (0.2%) p_waic estimates greater than 0.4. We recommend trying loo instead. 
+
+Output of model 'mod_3':
+
+Computed from 4000 by 1093 log-likelihood matrix
+
+          Estimate    SE
+elpd_waic  -2888.3  57.2
+p_waic         9.3   2.9
+waic        5776.5 114.4
+
+3 (0.3%) p_waic estimates greater than 0.4. We recommend trying loo instead. 
+
+Model comparisons:
+      elpd_diff se_diff
+mod_1  0.0       0.0   
+mod_3 -0.2       2.9   
+mod_2 -0.6       1.9   
+
+
+End output

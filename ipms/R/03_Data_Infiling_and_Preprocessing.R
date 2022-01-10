@@ -24,10 +24,13 @@ buried_ramets <- read.csv('ipms/Data/buried_ramets.csv',
                           stringsAsFactors = FALSE) %>%
   mutate(pop_id = paste(population, id, sep = "_"))
 
+clim <- read.csv("ipms/Data/all_gbif_field_sites.csv",
+                 stringsAsFactors = FALSE)
+
 pops <- all_sites[all_sites$Demography == 1 &
                     all_sites$Polygon_checked == 1 &
                     all_sites$Polygon_2019_checked == 1 &
-                    # all_sites$Site != "Melkboss" &
+                    all_sites$Site != "Lake_Ellsmere" &
                     all_sites$Notes == 'ready', # &
                     #all_sites$Country != 'Israel', 
                   c('Country', 'Site')] %>%
@@ -42,7 +45,7 @@ for(i in pops$Site) {
   
   debug_log <- fs::file_create(glue("ipms/debugging/{pop}.txt"))
   
-  sink(file = ,
+  sink(file = debug_log,
        type = c("output", "message"))
   
   # This will generate both ramet and genet level data frames for each population
@@ -95,66 +98,6 @@ for(i in pops$Site) {
 }
 
 out <- setNames(out, pops$Site)
-
-
-# no_polygons <- map(  
-#   pops$Site,
-#   function(pop, all_sites, all_gr_tr, merged_ramets) {
-#   sink(file = glue("ipms/debugging/{pop}_t_1.txt"),
-#        type = c("output", "message"))
-#     
-#     on.exit(sink())
-#     
-#    country <- all_sites$Country[all_sites$Site == pop]
-# 
-#   # This will generate both ramet and genet level data frames for each population
-#    temp <- infile_data(
-#      glue('ipms/Polygons/{country}/{pop}/Polygon_Final.shp'),
-#      pop,
-#      type = 'local_t_1',
-#      # Variables to keep
-#      population, id, clone_of,
-#      size, flower_n, flower_col,
-#      merged_ramets = merged_ramets
-#    ) %>%
-#      .ground_truth_data(
-#        gcps = all_gr_tr,
-#        pop = pop,
-#        time = 1) %>%
-#      filter(id < 22000)
-# 
-#    st_geometry(temp) <- NULL
-#    
-#    temp_t_2 <- infile_data(
-#      glue('ipms/Polygons/{country}/{pop}/Polygon_2019_Final.shp'),
-#      pop,
-#      type = 'local_t_2',
-#      population, id, clone_of,
-#      size, flower_n, flower_col, alive
-#    ) %>%
-#      .ground_truth_data(gcps = all_gr_tr,
-#                         pop = pop,
-#                         time = 2) %>%
-#      filter(id < 22000)
-#    # st_geometry(temp_t_2) <- NULL
-#    
-#    temp$country <- all_sites$Country[all_sites$Site == pop][1]
-#    temp_t_2$country <- all_sites$Country[all_sites$Site == pop][1]
-#    
-#    out <- full_join(temp,
-#                     temp_t_2,
-#                     by = c('population', 'id'))
-#    
-#    rm(temp, temp_t_2)
-#    
-#   return(out)
-#   },
-#   all_sites = all_sites,
-#   all_gr_tr = all_gr_tr, 
-#   merged_ramets = merged_ramets
-# ) %>%
-#   setNames(pops$Site)
-
 
 all_ramets <- do.call(rbind, out)
 
@@ -288,6 +231,29 @@ all_ramets$flower_col[is.na(all_ramets$flower_col) &
                                !is.na(all_ramets$flower_col_next) &
                                !is.na(all_ramets$flower_n)]
 
+
+# Climate -----
+
+all_vars <- names(clim)
+exclude  <- c("Sampled", "species", "site", "lon", "lat")
+
+use_vars <- setdiff(all_vars, exclude)
+
+for(i in use_vars) {
+  
+  clim[ , i] <- scale(clim[ , i],
+                      center = TRUE,
+                      scale = TRUE)
+}
+
+
+all_ramets <- clim %>%
+  filter(Sampled == "Yes") %>%
+  select(-c(Sampled, species, lon, lat)) %>%
+  filter(site %in% unique(all_ramets$population)) %>% 
+  right_join(all_ramets, by = c("site" = "population"))
+
+
 # Buried plants ------------ 
 # A number of plants were buried/covered by trees at T and exposed at T+1 (or vice versa), 
 # giving them unrealistic growth increments. We can't really use those for growth, as they'll
@@ -334,6 +300,7 @@ sdls    <- lapply(sdl_pts, st_read) %>%
 st_geometry(sdls) <- NULL
 
 sdl_surv <- read.csv("ipms/Data/sdl_plots.csv") %>%
-  right_join(sdls, by = "plot") %>%
-  summarise(surv = n()/sum(unique((n_sdl))))
+  right_join(sdls, by = "plot") 
+
+saveRDS(sdl_surv, "ipms/Data/seedlings.rds")
 

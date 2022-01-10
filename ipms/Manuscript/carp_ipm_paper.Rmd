@@ -1,0 +1,52 @@
+---
+output: word_document
+---
+
+Running title: climate and succulence as drivers of invasiveness in the Carpobrotus genus
+
+Target journal: Ecology Monographs(???)
+
+# Introduction
+
+Invasive species are a threat to ecosystems and economies across the globe (Pimentel et al. 2005, Vila et al. XXXX, recent papers on clim change X fire X invasions XXXX). Mediterranean dune ecosystems are particularly threatened because of their high endemic biodiversity, highly specific climate regimes, and economic and cultural importance to humans (more citations). blah blah blah 
+
+Climate change also threatens these biomes through shifting the mean, variance, and timing of temperature and precipitation (~2 gajillion citations). It is also increasing fire frequency in many Mediterranean-like regions, where native species exhibit differing degrees of fire tolerance (XXXX).
+
+*Carpobrotus edulis*, *C. acinaciformis*, *C. chilensis*, and their hybrids, are native to South Africa, but have spread to Mediterranean ecosystems around the world. In their native range, they are early successional species found in the post-fire fynbos. In their invaded range, they have moved closer to the coast, and tend to form dense mats over dunes, suppressing many competitors. 
+
+A particularly pressing question for managers is how to keep these populations from spreading to new areas as climate change may open up favorable niche space in previously inaccessible geographic spaces. Understanding this risk requires linking climate drivers to demographic rates. The *Carpobrotus spp.* lifecycle contains multiple vital rates that likely include lagged effects, as resource allocations happen across many ramets within a genet through the process of physiological integration, and the life history outcomes of these allocations can take many months or years to manifest (Campoy? or Roiloa? mid-2010s). Thus, lagged climate must also be considered when modeling this link (Evers et al. 2020). blah blah blah
+
+We ask: 
+
+1. Do carpobrotus spp. and their hybrids exhibit strong links between climate and demography?
+
+    + H0: No, other factors matter more (e.g. biotic interactions, human assistance)
+  
+    + H1: Yes! water limited (D'Antonio 1993), so escape from that will enhance growth rates. Wetter biomes will do better. Caveat: They're still better competitors for water than other natives in their invaded range, so this may not suppress $\lambda < 1$. And the occasional wet month is probably all they need to offset this given their succulence. 
+    
+>**Analysis**: Climate-explicit IPMs. Linear-/non-linear-mixed models for each vital rate (see Ye(? one of the papers ellner mentioned, forget lead author) 2018 + 2020 for more on why non-linear models matter here). I still haven't heard from Erola about seeds or Ana about genetics, so I have to assume seed parameters will come from literature for now. These are seeds/fruit, viability, germination, and germination -> to new seedling. We have info on new seedling -> "drone visible plant" transition from South Africa (but only South Africa!). I presume this transition won't matter anyway, but we'll see. 
+>
+>I think quantifying the relative importance of across native/non-native habitats will then lead to a random design LTRE across all sites, regardless of native/exotic designation. See **Analysis** for next Q for a different LTRE that I think is interesting as well. An alternative would be a functional ANOVA, which might allow us to look at site-specific size X climate interactions (I think? need to read more about those).
+    
+2. Given Q1, how do we best prioritize management of existing exotic populations?
+
+    + H2: I suspect we can't rely on a drying climate to do us any favors re: lowering $\lambda < 1$. We are likely to need more info on past fire regimes, which natives are tolerant of it, and recommend a biotic interactions approach to restoration that includes considerations of priority effects. 
+
+>**Analysis**: Aside from traditional sensitivity/elasticity approach, ideas for this include using LTREs native pops as controls and non-natives as treatments, and then do all comparisons for possible native/non-native pairs. Propagate uncertainty, blah blah blah. Based on my experience w/ these pops (i.e. native populations are pretty mellow, not trying to hurt anyone else), a retrospective analysis using these as baselines could reveal a bit more about why exotics are crazy than the traditional approach, and give us an opportunity to come up w/ better targeted interventions. In other words, "eradication may be unrealistic, but can we turn them into a native population at least?"
+    
+3. Given result of 1, do we need prioritized prevention in areas *C. spp.* not present or rare (e.g. Pac NW) for enhanced monitoring and prevention of establishment?
+    
+    + H3: Depends on anticipated direction of climate shift, but yes probably. 
+  
+> **Analysis**: More of an demographic distribution model approach approach based on climate suitability, but need to re-read review paper RSG sent on strengths and weaknesses of different "SDM-ish" approaches before settling on that. 
+
+
+# Methods
+
+This study was conducted across XXX sites spread across South Africa (native range), New Zealand (invaded), Portugal (invaded), and Israel (invaded). Sites in the Northern Hemisphere were sampled in sites in the Northern Hemisphere were sampled in March/April, and sites in the Southern Hemisphere were sampled in September/October each year so that plants were observed during their peak flowering period. Each site was selected based on degree of invasion, and the ability to sample without disturbing local flora and fauna. 
+
+We used drones to collect aerial imagery each population. The following methods are general - site specific modifications to this protocol are described in Table 1 and the ESM. We developed flight plans to map each population using DJI Ground Station Pro v2 (SZ DJI Technology Co.) for iPad (Apple Inc). We used the app to draw polygons over an area of interest, and then let the app compute the optimal flight path given our desired resolution. We selected a flight path that generated a resolution of 0.2 - 0.45 cm/pixel. This resulted in a range of 70-85% side  and front photo overlap. The average width of open flowers is 7.46 cm (+/- 0.008 S.E.) and unripe fruits was 2.32 cm (+/- 0.002 S.E.) across all populations (SC Levin, unpublished data), so this resolution is sufficient to allow us to mark the majority of both in the resulting maps (orthomosaics, see below for more details). Transects were flown with a DJI Phantom 4 Pro v1 (SZ DJI Technology Co.) along the lines of the flight plan generated by DJI GSP and images were recorded at 1.8 - 2m intervals. When batteries reached a critical level of power (i.e. ~20%), we landed the drone, switched the batteries out, and the flight was resumed from the last stopping point. 
+
+Once all images were captured after the first aerial survey, individual photos were processed into a single composite, georeferenced orthomosaic map using Pix4Dmapper (Pix4D SA, 2019). We drew individual polygons around contiguous *Carpobrotus* ramets, assigned each a unique ID number, and counted flowers using a point layer in QGIS (QGIS Development Team 2021). We repeated the process in 2019 by overlaying the 2019 map on the 2018 map and marking polygons for all surviving individuals as well as new recruits also in QGIS. Individual ramets that were not found again in our second aerial survey were assumed dead. Maps were aligned between the first and second surveys using the Georeferencer GDAL plugin (QGIS Development Team 2021) in QGIS because the georeferencing of the orthomosaics was only accurate to ~5m. This plugin allows users to manually find and mark common points on both images and set them as reference points for transformation between the old coordinate system (map coordinates of survey 2) and the new coordinate system (map coordinates of survey 1). We used the thin plate splines transformation for the coordinate systems and nearest neighbor resampling method. The reference points are available in the supplementary materials. In addition to drawing polygons around the individual plants, we drew polygons around targets of known sizes and computed the ratio of calculated areas under the polygon vs the known sizes. We then re-scaled all computed sizes of plants using this ratio (Table 1). 
+
+Once 

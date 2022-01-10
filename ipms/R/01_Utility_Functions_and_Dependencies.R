@@ -1,16 +1,17 @@
 # Dependencies
-library(sf) # Handle spatial data
+library(sf)        # Handle spatial data
 # library(s2)
-library(fs) # file manipulation
-library(stringr) # string manipulation
-# library(ggplot2) # plotting
-library(dplyr) # data manipulation
-# library(gridExtra) # plotting
-library(glue) # string manipulation
+library(fs)        # file manipulation
+library(stringr)   # string manipulation
+library(ggplot2)   # plotting
+library(dplyr)     # data manipulation
+library(gridExtra) # plotting
+library(tidyr)     # Climate data munging
+library(glue)      # string manipulation
 library(purrr)
 # library(lme4)
-# library(brms) # attempt to get fecundity models converging
-# library(mgcv)
+library(brms)      # attempt to get fecundity models converging
+library(mgcv)
 library(Rcpp)
 
 # loading ggplot2 and gridExtra here causes RStudio to crash for some reason.
@@ -382,6 +383,160 @@ update_flower_col <- function(data, pop, id, new_col, time) {
   data[data$population == pop & data$id == id, time_col] <- new_col
   
   return(data)
+  
+}
+
+check_outliers <- function(all_ramets, population, type) {
+  
+  switch(type,
+         "growth"  = check_growth_outliers(all_ramets, population),
+         "big_new" = check_big_new_outerliers(all_ramets, population))
+  
+}
+
+fit_vr_model <- function(data, vr, clim) {
+  
+  fam <- switch(
+    vr,
+    "repro"     = bernoulli(),
+    "flower_n"  = negbinomial(),
+    "alive"     = bernoulli(),
+    "size_next" = gaussian()
+  )
+  
+  form_1 <- as.formula(glue("{vr} ~ log_size"))
+  form_2 <- as.formula(glue("{vr} ~ log_size + {clim}"))
+  form_3 <- as.formula(glue("{vr} ~ log_size * {clim}"))
+  
+  be <- "cmdstanr"
+  
+  if(vr %in% c("flower_n")) {
+    inits <- "0"
+    
+  } else {
+    
+    inits <- "random"
+  }
+  
+  if(vr == "alive") vr <- "survival"
+  
+  # NB: Sigma has log link by default! Remember to exponentiate at IPM
+  # build time.
+  if(vr == "log_size_next") {
+    
+    sigma_form_1 <- sigma ~ log_size 
+    sigma_form_2 <- as.formula(glue("sigma ~ log_size + {clim}"))
+    sigma_form_3 <- as.formula(glue("sigma ~ log_size * {clim}"))
+    
+    form_1 <- bf(form_1, sigma_form_1)
+    form_2 <- bf(form_2, sigma_form_2)
+    form_3 <- bf(form_3, sigma_form_3)
+    
+    vr <- "growth"
+  }
+  
+  
+  message("Model 1: size only----------\n\n")
+  mod_1 <- brm(form_1,
+               data       = data,
+               family     = fam,
+               chains     = 4,    
+               backend    = be,
+               inits      = inits,
+               cores      = getOption("mc.cores", 4L),
+               save_model = glue('ipms/Stan/{vr}_{clim}_int_only.stan'),
+               control    = list(adapt_delta = 0.99,
+                                 max_treedepth = 15))
+  
+  message("\n\nModel 2: Size Plus climate-------\n\n")
+  
+  mod_2 <- brm(form_2,
+               data       = data,
+               family     = fam,
+               chains     = 4,    
+               backend    = be,
+               inits      = inits,
+               cores      = getOption("mc.cores", 4L),
+               save_model = glue('ipms/Stan/{vr}_{clim}_size_plus_clim.stan'),
+               control    = list(adapt_delta = 0.99,
+                                 max_treedepth = 15))
+  
+  message("\n\nModel 3: Size Times Climate------\n\n")
+  
+  mod_3 <- brm(form_3,
+               data       = data,
+               family     = fam,
+               chains     = 4,    
+               backend    = be,
+               inits      = inits,
+               cores      = getOption("mc.cores", 4L),
+               save_model = glue('ipms/Stan/{vr}_{clim}_size_times_clim.stan'),
+               control    = list(adapt_delta = 0.99,
+                                 max_treedepth = 15))
+
+  mod_waic <- waic(mod_1, mod_2, mod_3)
+  
+  out <- list(size_only       = mod_1,
+              size_plus_clim  = mod_2,
+              size_times_clim = mod_3,
+              waic            = mod_waic)
+  
+  return(out)
+
+  
+}
+
+plot_models <- function(mod_list, vr) {
+  
+  for(i in seq_along(mod_list)) {
+    
+    use_mod <- mod_list[[i]]
+    
+    file_nm <- names(mod_list)[i]
+    
+    pp_type <- switch(vr,
+                      "repro"     = "dens_overlay",
+                      "survival"  = "dens_overlay",
+                      "log_size_next" = "scatter_avg",
+                      "flower_n"  = "scatter_avg")
+    
+    if(vr == "log_size_next") vr <- "growth"
+    
+    pdf(glue("ipms/Model_Summaries/Trace_Plots/{vr}/{file_nm}.pdf"))
+    
+    for(j in 1:3) {
+      
+      plot(use_mod[[j]],
+           ask = FALSE)
+      
+      p <- pp_check(use_mod[[j]],
+                    type   = pp_type,
+                    ndraws = 100L)
+      
+      print(p)
+      
+    }
+    
+    dev.off()
+    
+    
+    sink(file = glue('ipms/Model_Summaries/{vr}/{file_nm}.txt')) 
+    cat('Size only\n\n *********************\n\n')
+    print(summary(use_mod[[1]]))
+    cat('\n\n*********************\n\nSize + Climate',
+        '\n\n*********************\n\n')
+    print(summary(use_mod[[2]]))
+    cat('\n\n*********************\n\nSize * Climate',
+        '\n\n*********************\n\n')
+    print(summary(use_mod[[3]]))
+    cat('\n\n*********************\n\nWAIC Results\n\n')
+    print(use_mod[[4]])
+    
+    cat('\n\nEnd output')
+    sink()
+    
+  }
+  
   
 }
 

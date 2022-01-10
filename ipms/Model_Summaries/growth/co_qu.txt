@@ -1,0 +1,127 @@
+Size only
+
+ *********************
+
+ Family: 0 NULL NULL 
+  Links: mu = identity; sigma = log 
+Formula: log_size_next ~ log_size 
+         sigma ~ log_size
+   Data: data (Number of observations: 4281) 
+  Draws: 4 chains, each with iter = 1000; warmup = 0; thin = 1;
+         total post-warmup draws = 4000
+
+Population-Level Effects: 
+                Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+Intercept          -0.20      0.02    -0.23    -0.17 1.00     4236     2671
+sigma_Intercept    -0.35      0.02    -0.39    -0.32 1.00     3244     2425
+log_size            1.01      0.01     1.00     1.03 1.00     2760     2488
+sigma_log_size     -0.09      0.01    -0.11    -0.08 1.00     3523     2732
+
+Draws were sampled using sample(hmc). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).
+
+
+*********************
+
+Size + Climate 
+
+*********************
+
+ Family: 0 NULL NULL 
+  Links: mu = identity; sigma = log 
+Formula: log_size_next ~ log_size + t_co_qu_rec 
+         sigma ~ log_size + t_co_qu_rec
+   Data: data (Number of observations: 4281) 
+  Draws: 4 chains, each with iter = 1000; warmup = 0; thin = 1;
+         total post-warmup draws = 4000
+
+Population-Level Effects: 
+                  Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+Intercept            -0.19      0.02    -0.22    -0.16 1.00     5863     3008
+sigma_Intercept      -0.36      0.02    -0.39    -0.33 1.00     4124     3091
+log_size              1.02      0.01     1.01     1.03 1.00     3668     2791
+t_co_qu_rec          -0.06      0.01    -0.09    -0.03 1.00     3927     2929
+sigma_log_size       -0.10      0.01    -0.11    -0.08 1.00     3810     3006
+sigma_t_co_qu_rec     0.00      0.01    -0.02     0.03 1.00     3926     2872
+
+Draws were sampled using sample(hmc). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).
+
+
+*********************
+
+Size * Climate 
+
+*********************
+
+ Family: 0 NULL NULL 
+  Links: mu = identity; sigma = log 
+Formula: log_size_next ~ log_size * t_co_qu_rec 
+         sigma ~ log_size * t_co_qu_rec
+   Data: data (Number of observations: 4281) 
+  Draws: 4 chains, each with iter = 1000; warmup = 0; thin = 1;
+         total post-warmup draws = 4000
+
+Population-Level Effects: 
+                           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+Intercept                     -0.18      0.02    -0.21    -0.15 1.00     4804     3126
+sigma_Intercept               -0.37      0.02    -0.40    -0.33 1.00     3906     2902
+log_size                       1.02      0.01     1.01     1.03 1.00     3291     2955
+t_co_qu_rec                   -0.09      0.02    -0.13    -0.06 1.00     2756     2906
+log_size:t_co_qu_rec          -0.02      0.01    -0.04    -0.01 1.00     2730     2846
+sigma_log_size                -0.10      0.01    -0.11    -0.09 1.00     3744     3083
+sigma_t_co_qu_rec             -0.02      0.02    -0.06     0.01 1.00     2158     2064
+sigma_log_size:t_co_qu_rec    -0.01      0.01    -0.03     0.00 1.00     2325     2399
+
+Draws were sampled using sample(hmc). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).
+
+
+*********************
+
+WAIC Results
+
+Output of model 'mod_1':
+
+Computed from 4000 by 4281 log-likelihood matrix
+
+          Estimate    SE
+elpd_waic  -5294.4  65.0
+p_waic         6.7   1.4
+waic       10588.8 130.0
+
+1 (0.0%) p_waic estimates greater than 0.4. We recommend trying loo instead. 
+
+Output of model 'mod_2':
+
+Computed from 4000 by 4281 log-likelihood matrix
+
+          Estimate    SE
+elpd_waic  -5288.3  64.9
+p_waic         9.3   1.5
+waic       10576.5 129.9
+
+1 (0.0%) p_waic estimates greater than 0.4. We recommend trying loo instead. 
+
+Output of model 'mod_3':
+
+Computed from 4000 by 4281 log-likelihood matrix
+
+          Estimate    SE
+elpd_waic  -5283.6  66.3
+p_waic        12.9   2.7
+waic       10567.1 132.6
+
+3 (0.1%) p_waic estimates greater than 0.4. We recommend trying loo instead. 
+
+Model comparisons:
+      elpd_diff se_diff
+mod_3   0.0       0.0  
+mod_2  -4.7       4.0  
+mod_1 -10.8       5.5  
+
+
+End output

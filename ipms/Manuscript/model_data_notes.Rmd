@@ -1,0 +1,48 @@
+---
+output: html_document
+---
+
+# Data Notes
+
+## Prelim plots
+
+- Lake Ellsmere
+
+    + WTF happened to these big plants? 
+    
+    > Candidates are some sort of plant control that happened between samples, or a big storm and saltwater inundation
+    
+  + Update w/ TMK 1/7/22: Drop this one
+  
+## Climate plots
+
+affected vital rate X climate combos (from exploratory plots `ipms/Figures/clim/`). Ignores historical variables (i.e. 1970-2003). I don't think we really care about these in the context of current fitness.
+
+    + Annual precip (2016-2018): `-` pr(repro) (heavy), `-` survival (light)
+    
+    + Annual temp (2016-2018): `+` pr(repro) (VVVVV heavy), `-` survival (light)
+    
+    + precip Seasonality (2016-2018): `+` pr(repro), `-` survival (heavy)
+    
+    + temp coldest month (2016-2018): `+` pr(repro) and survival (light-ish)
+    
+    + temp coldest quarter (2016-2018): ibid
+    
+    + temp seasonality (2016-2018): `+` pr(repro), `-` survival (heavy)
+    
+    
+    
+# Models
+
+Climate drivers of demography
+
+## Survival
+
+- Correlated intercept slope seems to do quite well, and cor ~ 0.7. WAIC says correlated/uncorrelated are ~ ==. Use both I guess?
+
+## Pr(flowering)
+
+
+# Disseration notes: 
+
+email isabel henson about appendices/copy+pasting published papers into dissertation.

@@ -1,0 +1,109 @@
+Size only
+
+ *********************
+
+ Family: bernoulli 
+  Links: mu = logit 
+Formula: repro ~ log_size 
+   Data: data (Number of observations: 6581) 
+  Draws: 4 chains, each with iter = 1000; warmup = 0; thin = 1;
+         total post-warmup draws = 4000
+
+Population-Level Effects: 
+          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+Intercept    -0.16      0.05    -0.26    -0.06 1.00     2529     2157
+log_size      0.98      0.03     0.92     1.04 1.00     1040     1524
+
+Draws were sampled using sample(hmc). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).
+
+
+*********************
+
+Size + Climate 
+
+*********************
+
+ Family: bernoulli 
+  Links: mu = logit 
+Formula: repro ~ log_size + t_co_qu_rec 
+   Data: data (Number of observations: 6581) 
+  Draws: 4 chains, each with iter = 1000; warmup = 0; thin = 1;
+         total post-warmup draws = 4000
+
+Population-Level Effects: 
+            Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+Intercept      -0.18      0.05    -0.28    -0.07 1.00     3095     2600
+log_size        0.97      0.03     0.92     1.03 1.00     1818     2063
+t_co_qu_rec     0.09      0.05     0.00     0.18 1.00     2219     2192
+
+Draws were sampled using sample(hmc). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).
+
+
+*********************
+
+Size * Climate 
+
+*********************
+
+ Family: bernoulli 
+  Links: mu = logit 
+Formula: repro ~ log_size * t_co_qu_rec 
+   Data: data (Number of observations: 6581) 
+  Draws: 4 chains, each with iter = 1000; warmup = 0; thin = 1;
+         total post-warmup draws = 4000
+
+Population-Level Effects: 
+                     Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+Intercept               -0.19      0.05    -0.29    -0.09 1.00     4251     3005
+log_size                 0.97      0.03     0.92     1.03 1.00     1948     2507
+t_co_qu_rec              0.18      0.06     0.07     0.30 1.00     2061     2432
+log_size:t_co_qu_rec     0.08      0.03     0.02     0.15 1.00     1985     2154
+
+Draws were sampled using sample(hmc). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).
+
+
+*********************
+
+WAIC Results
+
+Output of model 'mod_1':
+
+Computed from 4000 by 6581 log-likelihood matrix
+
+          Estimate   SE
+elpd_waic  -2041.9 47.2
+p_waic         2.0  0.1
+waic        4083.8 94.4
+
+Output of model 'mod_2':
+
+Computed from 4000 by 6581 log-likelihood matrix
+
+          Estimate   SE
+elpd_waic  -2040.9 47.2
+p_waic         3.1  0.1
+waic        4081.9 94.4
+
+Output of model 'mod_3':
+
+Computed from 4000 by 6581 log-likelihood matrix
+
+          Estimate   SE
+elpd_waic  -2038.6 47.4
+p_waic         4.0  0.2
+waic        4077.2 94.8
+
+Model comparisons:
+      elpd_diff se_diff
+mod_3  0.0       0.0   
+mod_2 -2.4       2.6   
+mod_1 -3.3       3.2   
+
+
+End output
