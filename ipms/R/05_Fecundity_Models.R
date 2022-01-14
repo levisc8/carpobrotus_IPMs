@@ -21,10 +21,12 @@
 # Optionally, read in transformed data if skipping steps 2 + 3
 # all_ramets <- readRDS('Data/all_ramets_di.rds')
 
-all_ramets <- readRDS("ipms/Data/all_ramets_di.rds")
+all_ramets <- readRDS("ipms/Data/all_ramets_di.rds") 
 
-repro_data <- filter(all_ramets, !is.na(repro) & !is.na(size))
-flower_data <- filter(all_ramets, !is.na(flower_n) & !is.na(size))
+repro_data <- filter(all_ramets, !is.na(repro) & !is.na(size)) %>%
+  filter(site != "Havatselet")
+flower_data <- filter(all_ramets, !is.na(flower_n) & !is.na(size)) %>%
+  filter(site != "Havatselet")
 
 # BRMS fits ------------------
 
@@ -40,10 +42,11 @@ brm_repro_list <- list(map = repro_map_list,
                        t_seas = repro_t_seas_list,
                        co_qu  = repro_t_co_q_list)
 
-saveRDS(brm_repro_list, file = 'ipms/Model_Fits/ramet_repro_list.rds')
-# brm_repro_list <- readRDS('Model_Fits/ramet_repro_list.rds')
+saveRDS(brm_repro_list, file = 'ipms/Model_Fits/ramet_repro_list_no_is.rds')
+# brm_repro_list <- readRDS('ipms/Model_Fits/ramet_repro_list.rds')
 
 plot_models(brm_repro_list, "repro")
+plot_preds(brm_repro_list, "repro")
 
 # Flower production models -----------------
 flower_n_map_list <- fit_vr_model(flower_data, "flower_n", "map_rec")
@@ -58,50 +61,52 @@ brm_flower_n_list <- list(map = flower_n_map_list,
                           t_seas = flower_n_t_seas_list,
                           co_qu  = flower_n_t_co_q_list)
 
-saveRDS(brm_flower_n_list, file = 'ipms/Model_Fits/aramet_flower_n_list.rds')
-# brm_flower_n_list <- readRDS('Model_Fits/ramet_flower_n_list.rds')
+saveRDS(brm_flower_n_list, file = 'ipms/Model_Fits/ramet_flower_n_list_no_is.rds')
+# brm_flower_n_list <- readRDS('ipms/Model_Fits/ramet_flower_n_list.rds')
 
 plot_models(brm_flower_n_list, "flower_n")
+plot_preds(brm_flower_n_list, "flower_n")
+
 # # Recruit size distribution model
-recruits <- readRDS("ipms/Data/seedlings.rds")
+# recruits <- readRDS("ipms/Data/seedlings.rds")
+# # 
+# recr_size_model <- brm(log_size_next ~ 1,
+#                        data = recruits,
+#                        family = gaussian(),
+#                        chains = 4L,
+#                        backend = "cmdstanr",
+#                        cores = getOption("mc.cores", 4L),
+#                        save_model = 'ipms/Stan/recr_size_model.stan',
+#                        control = list(adapt_delta = 0.99))
 # 
-recr_size_model <- brm(log_size_next ~ 1,
-                       data = recruits,
-                       family = gaussian(),
-                       chains = 4L,
-                       backend = "cmdstanr",
-                       cores = getOption("mc.cores", 4L),
-                       save_model = 'ipms/Stan/recr_size_model.stan',
-                       control = list(adapt_delta = 0.99))
-
-saveRDS(recr_size_model, file = "ipms/Model_Fits/recr_size_brm.rds")
-
-sink(file = 'ipms/Model_Summaries/recr_size_model.txt')
-cat('Intercept only, varies across populations\n\n *********************\n\n')
-print(summary(recr_size_model))
-cat('\n\nEnd output')
-sink()
-
-pars <- summary(recr_size_model)
-
-xx <- seq(min(recruits$log_size_next) - 1, 
-          max(recruits$log_size_next) + 1, 
-          length.out = 100)
-
-yy <- dnorm(xx, 
-            mean = unlist(pars$fixed[1]),
-            sd   = unlist(pars$spec_pars[1]))
-
-
-
-pdf("ipms/Model_Summaries/recr_size_model.pdf")
-
-# Create histogram w/ normal density overlay
-  hist(recruits$log_size_next, freq = FALSE, ylim = c(0, 0.8))
-  lines(xx, yy, col = "red", lty = 2)
-
-
-dev.off()
-
-
-# Finish fecundity model fitting
+# saveRDS(recr_size_model, file = "ipms/Model_Fits/recr_size_brm.rds")
+# 
+# sink(file = 'ipms/Model_Summaries/recr_size_model.txt')
+# cat('Intercept only, varies across populations\n\n *********************\n\n')
+# print(summary(recr_size_model))
+# cat('\n\nEnd output')
+# sink()
+# 
+# pars <- summary(recr_size_model)
+# 
+# xx <- seq(min(recruits$log_size_next) - 1, 
+#           max(recruits$log_size_next) + 1, 
+#           length.out = 100)
+# 
+# yy <- dnorm(xx, 
+#             mean = unlist(pars$fixed[1]),
+#             sd   = unlist(pars$spec_pars[1]))
+# 
+# 
+# 
+# pdf("ipms/Model_Summaries/recr_size_model.pdf")
+# 
+# # Create histogram w/ normal density overlay
+#   hist(recruits$log_size_next, freq = FALSE, ylim = c(0, 0.8))
+#   lines(xx, yy, col = "red", lty = 2)
+# 
+# 
+# dev.off()
+# 
+# 
+# # Finish fecundity model fitting

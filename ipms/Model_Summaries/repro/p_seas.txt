@@ -4,15 +4,20 @@ Size only
 
  Family: bernoulli 
   Links: mu = logit 
-Formula: repro ~ log_size 
+Formula: repro ~ log_size + (1 | site) 
    Data: data (Number of observations: 6581) 
   Draws: 4 chains, each with iter = 1000; warmup = 0; thin = 1;
          total post-warmup draws = 4000
 
+Group-Level Effects: 
+~site (Number of levels: 13) 
+              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sd(Intercept)     1.40      0.33     0.91     2.19 1.01      743     1063
+
 Population-Level Effects: 
           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-Intercept    -0.15      0.05    -0.25    -0.06 1.00     2495     2098
-log_size      0.98      0.03     0.93     1.04 1.00     1252     1598
+Intercept    -0.66      0.41    -1.47     0.16 1.01      609      967
+log_size      1.11      0.03     1.04     1.18 1.00     2161     2458
 
 Draws were sampled using sample(hmc). For each parameter, Bulk_ESS
 and Tail_ESS are effective sample size measures, and Rhat is the potential
@@ -27,16 +32,21 @@ Size + Climate
 
  Family: bernoulli 
   Links: mu = logit 
-Formula: repro ~ log_size + p_seas_rec 
+Formula: repro ~ log_size + p_seas_rec + (1 | site) 
    Data: data (Number of observations: 6581) 
   Draws: 4 chains, each with iter = 1000; warmup = 0; thin = 1;
          total post-warmup draws = 4000
 
+Group-Level Effects: 
+~site (Number of levels: 13) 
+              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sd(Intercept)     1.43      0.37     0.91     2.29 1.00      867     1519
+
 Population-Level Effects: 
            Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-Intercept     -0.11      0.05    -0.21    -0.01 1.00     3812     2758
-log_size       0.95      0.03     0.89     1.01 1.00     1918     2157
-p_seas_rec     0.19      0.03     0.13     0.25 1.00     2225     2121
+Intercept     -0.52      0.46    -1.42     0.39 1.00     1084     1266
+log_size       1.11      0.04     1.04     1.18 1.00     3045     2340
+p_seas_rec     0.27      0.40    -0.56     1.04 1.00     1200     1477
 
 Draws were sampled using sample(hmc). For each parameter, Bulk_ESS
 and Tail_ESS are effective sample size measures, and Rhat is the potential
@@ -51,17 +61,22 @@ Size * Climate
 
  Family: bernoulli 
   Links: mu = logit 
-Formula: repro ~ log_size * p_seas_rec 
+Formula: repro ~ log_size * p_seas_rec + (1 | site) 
    Data: data (Number of observations: 6581) 
   Draws: 4 chains, each with iter = 1000; warmup = 0; thin = 1;
          total post-warmup draws = 4000
 
+Group-Level Effects: 
+~site (Number of levels: 13) 
+              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sd(Intercept)     1.45      0.37     0.91     2.35 1.00      996     1236
+
 Population-Level Effects: 
                     Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-Intercept              -0.08      0.05    -0.19     0.02 1.00     3865     2979
-log_size                1.00      0.03     0.93     1.07 1.00     1553     1748
-p_seas_rec              0.26      0.04     0.18     0.34 1.00     2056     2157
-log_size:p_seas_rec     0.08      0.03     0.03     0.13 1.00     1714     2122
+Intercept              -0.51      0.47    -1.39     0.45 1.00     1142     1656
+log_size                1.11      0.04     1.04     1.19 1.00     2678     2483
+p_seas_rec              0.28      0.39    -0.48     1.05 1.00     1180     1625
+log_size:p_seas_rec     0.00      0.03    -0.05     0.06 1.00     3002     2663
 
 Draws were sampled using sample(hmc). For each parameter, Bulk_ESS
 and Tail_ESS are effective sample size measures, and Rhat is the potential
@@ -77,33 +92,33 @@ Output of model 'mod_1':
 Computed from 4000 by 6581 log-likelihood matrix
 
           Estimate   SE
-elpd_waic  -2041.8 47.2
-p_waic         1.9  0.1
-waic        4083.5 94.4
+elpd_waic  -1774.5 46.0
+p_waic        13.1  0.7
+waic        3549.1 92.0
 
 Output of model 'mod_2':
 
 Computed from 4000 by 6581 log-likelihood matrix
 
           Estimate   SE
-elpd_waic  -2026.0 47.4
-p_waic         3.0  0.1
-waic        4051.9 94.7
+elpd_waic  -1774.7 46.1
+p_waic        13.4  0.7
+waic        3549.5 92.1
 
 Output of model 'mod_3':
 
 Computed from 4000 by 6581 log-likelihood matrix
 
           Estimate   SE
-elpd_waic  -2022.6 47.3
-p_waic         4.0  0.2
-waic        4045.1 94.7
+elpd_waic  -1775.5 46.1
+p_waic        14.1  0.7
+waic        3551.1 92.1
 
 Model comparisons:
       elpd_diff se_diff
-mod_3   0.0       0.0  
-mod_2  -3.4       3.0  
-mod_1 -19.2       6.4  
+mod_1  0.0       0.0   
+mod_2 -0.2       0.1   
+mod_3 -1.0       0.2   
 
 
 End output

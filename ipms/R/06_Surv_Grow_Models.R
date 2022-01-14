@@ -2,14 +2,13 @@
 
 all_ramets <- readRDS("ipms/Data/all_ramets_di.rds")
 
-surv_data <- filter(all_ramets, !is.na(alive) & !is.na(log_size))
+surv_data <- filter(all_ramets, !is.na(alive) & !is.na(log_size) & site != "Havatselet")
 
 grow_data <- readRDS("ipms/Data/growth_data.rds") %>%
-  filter(!is.na(size) & !is.na(size_next) & alive == 1)
+  filter(!is.na(size) & !is.na(size_next) & alive == 1 & site != "Havatselet")
 
 
 # Survival -----
-# Intercept only!
 
 survival_map_list <- fit_vr_model(surv_data, "alive", "map_rec")
 survival_mat_list <- fit_vr_model(surv_data, "alive", "mat_rec")
@@ -23,11 +22,11 @@ brm_survival_list <- list(map = survival_map_list,
                           t_seas = survival_t_seas_list,
                           co_qu  = survival_t_co_q_list)
 
-saveRDS(brm_survival_list, file = 'ipms/Model_Fits/ramet_survival_list.rds')
-# brm_survival_list <- readRDS('Model_Fits/ramet_survival_list.rds')
+saveRDS(brm_survival_list, file = 'ipms/Model_Fits/ramet_survival_list_no_is.rds')
+# brm_survival_list <- readRDS('ipms/Model_Fits/ramet_survival_list.rds')
 
 plot_models(brm_survival_list, "survival")
-
+plot_preds(brm_survival_list, "survival")
 # Growth ----
 
 grow_map_list <- fit_vr_model(grow_data, "log_size_next", "map_rec")
@@ -42,7 +41,8 @@ brm_grow_list <- list(map = grow_map_list,
                        t_seas = grow_t_seas_list,
                        co_qu  = grow_t_co_q_list)
 
-saveRDS(brm_grow_list, file = 'ipms/Model_Fits/ramet_grow_list.rds')
-# brm_grow_list <- readRDS('Model_Fits/ramet_grow_list.rds')
+saveRDS(brm_grow_list, file = 'ipms/Model_Fits/ramet_grow_list_no_is.rds')
+# brm_grow_list <- readRDS('ipms/Model_Fits/ramet_grow_list.rds')
 
 plot_models(brm_grow_list, "log_size_next")
+plot_preds(brm_grow_list, "growth")

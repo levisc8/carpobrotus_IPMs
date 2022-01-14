@@ -404,9 +404,9 @@ fit_vr_model <- function(data, vr, clim) {
     "size_next" = gaussian()
   )
   
-  form_1 <- as.formula(glue("{vr} ~ log_size"))
-  form_2 <- as.formula(glue("{vr} ~ log_size + {clim}"))
-  form_3 <- as.formula(glue("{vr} ~ log_size * {clim}"))
+  form_1 <- as.formula(glue("{vr} ~ log_size + (1|site)"))
+  form_2 <- as.formula(glue("{vr} ~ log_size + {clim} + (1|site)"))
+  form_3 <- as.formula(glue("{vr} ~ log_size * {clim} + (1|site)"))
   
   be <- "cmdstanr"
   
@@ -424,9 +424,10 @@ fit_vr_model <- function(data, vr, clim) {
   # build time.
   if(vr == "log_size_next") {
     
-    sigma_form_1 <- sigma ~ log_size 
+    sigma_form_1 <- sigma ~ log_size
     sigma_form_2 <- as.formula(glue("sigma ~ log_size + {clim}"))
     sigma_form_3 <- as.formula(glue("sigma ~ log_size * {clim}"))
+    
     
     form_1 <- bf(form_1, sigma_form_1)
     form_2 <- bf(form_2, sigma_form_2)
@@ -488,30 +489,44 @@ fit_vr_model <- function(data, vr, clim) {
 
 plot_models <- function(mod_list, vr) {
   
+  pp_type <- switch(vr,
+                    "repro"         = "bars_grouped",
+                    "survival"      = "bars_grouped",
+                    "log_size_next" = "scatter_avg_grouped",
+                    "flower_n"      = "scatter_avg_grouped")
+  
+  
   for(i in seq_along(mod_list)) {
     
     use_mod <- mod_list[[i]]
     
     file_nm <- names(mod_list)[i]
     
-    pp_type <- switch(vr,
-                      "repro"     = "dens_overlay",
-                      "survival"  = "dens_overlay",
-                      "log_size_next" = "scatter_avg",
-                      "flower_n"  = "scatter_avg")
     
     if(vr == "log_size_next") vr <- "growth"
     
-    pdf(glue("ipms/Model_Summaries/Trace_Plots/{vr}/{file_nm}.pdf"))
+    pdf(glue("ipms/Model_Summaries/Trace_Plots/{vr}/{file_nm}_no_is.pdf"))
     
     for(j in 1:3) {
       
       plot(use_mod[[j]],
            ask = FALSE)
       
-      p <- pp_check(use_mod[[j]],
-                    type   = pp_type,
-                    ndraws = 100L)
+      if(vr %in% c("repro", "survival")){
+        
+        p <- pp_check(use_mod[[j]],
+                      type   = pp_type,
+                      group  = "site",
+                      freq   = FALSE,
+                      ndraws = 100L)
+      } else {
+        
+        p <- pp_check(use_mod[[j]],
+                      type   = pp_type,
+                      group  = "site",
+                      ndraws = 100L)
+        
+      }
       
       print(p)
       
@@ -520,7 +535,7 @@ plot_models <- function(mod_list, vr) {
     dev.off()
     
     
-    sink(file = glue('ipms/Model_Summaries/{vr}/{file_nm}.txt')) 
+    sink(file = glue('ipms/Model_Summaries/{vr}/{file_nm}_no_is.txt')) 
     cat('Size only\n\n *********************\n\n')
     print(summary(use_mod[[1]]))
     cat('\n\n*********************\n\nSize + Climate',
@@ -537,6 +552,76 @@ plot_models <- function(mod_list, vr) {
     
   }
   
+}
+
+plot_preds <- function(models, vr) {
+  
+  z <- c(models[[1]]$size_only$data$log_size,
+         models[[1]]$size_only$data$log_size_next)
+  site <- unique(models[[1]]$size_only$data$site)
+  
+  min_z <- min(z, na.rm = TRUE)
+  max_z <- max(z, na.rm = TRUE)
+  
+  pred_data <- data.frame(
+    log_size     = seq(min_z, max_z, length.out = 100),
+    mat_rec      = seq(-1.8, 2.3, length.out = 100),
+    map_rec      = seq(-1.32, 1, length.out = 100),
+    t_seas_rec   = seq(-1.45, 0.8, length.out = 100),
+    p_seas_rec   = seq(-1.9, 2.1, length.out = 100),
+    t_co_qu_rec  = seq(-1.04, 1.35, length.out = 100)
+  ) 
+  
+  all_data <- list()
+  
+  temp <- list()
+  
+  for(i in seq_along(site)) {
+    all_data[[i]] <- cbind(pred_data, site = site[i])
+  }
+  
+  pred_data <- do.call(rbind, all_data)
+  
+  all_pred <- for(i in seq_along(models)) {
+    
+    clim_nm <- names(models)[i]
+    use_mods <- models[[i]][1:3]
+    
+    preds <- lapply(use_mods,
+                    function(x, pred_data) {
+                      temp <- predict(x, newdata = pred_data)
+                      cbind(pred_data, temp)
+                    },
+                    pred_data = pred_data)
+    
+    for(j in seq_along(preds)) {
+      preds[[j]] <- as.data.frame(preds[[j]]) %>%
+        mutate(mod_type = names(preds)[j])
+    } 
+    
+    temp[[i]] <- do.call(rbind, preds) %>% 
+      mutate(clim = clim_nm)
+    
+  }
+  
+  all_data <- do.call(rbind, temp) %>%
+    filter(site %in% c("Melkboss", "Rough_Island", "Foxton", "Praia_de_Areao"))
+  
+  plt <- ggplot(all_data, 
+                aes(x = log_size,
+                    y = Estimate)) + 
+    geom_line(aes(linetype = mod_type, 
+                  color = site),
+              size = 1.2,
+              alpha = 0.6) + 
+    facet_wrap(~clim, 
+               scales = "free") +
+    theme_bw() +
+    scale_color_discrete(guide = "none")
+    
+  pdf(glue("ipms/Figures/vr_models/{vr}_model_predictions_no_is.pdf"))
+    print(plt)
+  dev.off()
   
 }
 

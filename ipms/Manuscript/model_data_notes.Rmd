@@ -1,48 +1,400 @@
 ---
-output: html_document
+output: word_document
+title: 'Carpobrotus IPM notes'
 ---
 
 # Data Notes
 
-## Prelim plots
+We have 13 sites with 6567 ramets that were found at $t$, and 4281 that were found again at $t+1$. I have not included density dependence. This is because due to the clonal nature of iceplants, and our drone sampling that can't distinguish genets, we do not know if a neighboring plant is competing or is the same plant. I don't think it would make sense to attempt a density dependent model in light of this. 
 
-- Lake Ellsmere
-
-    + WTF happened to these big plants? 
-    
-    > Candidates are some sort of plant control that happened between samples, or a big storm and saltwater inundation
-    
-  + Update w/ TMK 1/7/22: Drop this one
+> From personal observation, it does not seem that neighboring iceplants do much to inhibit each other anyway (think kilometers-long stretches of shore line in Portugal or California where you see literally nothing but iceplant). I feel comfortable excluding this from the overall analysis. 
   
 ## Climate plots
 
 affected vital rate X climate combos (from exploratory plots `ipms/Figures/clim/`). Ignores historical variables (i.e. 1970-2003). I don't think we really care about these in the context of current fitness.
 
-    + Annual precip (2016-2018): `-` pr(repro) (heavy), `-` survival (light)
+  + Mean Annual precip (2016-2018): `-` pr(repro) (heavy), `-` survival (light)
+  
+  + Mean Annual temp (2016-2018): `+` pr(repro) (VVVVV heavy), `-` survival (light)
+  
+  + precip Seasonality (2016-2018): `+` pr(repro), `-` survival (heavy)
+  
+  + temp coldest month (2016-2018): `+` pr(repro) and survival (light-ish)
+  
+  + temp coldest quarter (2016-2018): ibid
+  
+  + temp seasonality (2016-2018): `+` pr(repro), `-` survival (heavy)
     
-    + Annual temp (2016-2018): `+` pr(repro) (VVVVV heavy), `-` survival (light)
-    
-    + precip Seasonality (2016-2018): `+` pr(repro), `-` survival (heavy)
-    
-    + temp coldest month (2016-2018): `+` pr(repro) and survival (light-ish)
-    
-    + temp coldest quarter (2016-2018): ibid
-    
-    + temp seasonality (2016-2018): `+` pr(repro), `-` survival (heavy)
-    
-    
-    
-# Models
+# Vital Rate Models
 
-Climate drivers of demography
+Climate drivers of demography. $z,z'$ are `log(size)`, `log(size_next)`. $\theta$ is generically some climate variable. Currently, climate variables are all separate models because they're all pretty correlated (`t_seas_rec` seems to have that huge outlier which gives it low coefficients. seems pretty correlated w the others without that point).
 
-## Survival
+## Climate correlation plots and matrix 
 
-- Correlated intercept slope seems to do quite well, and cor ~ 0.7. WAIC says correlated/uncorrelated are ~ ==. Use both I guess?
+```{r, echo = FALSE, message = FALSE, warning = FALSE, fig.height = 8, fig.width = 8, dpi = 450}
+library(dplyr)
+library(brms)
 
-## Pr(flowering)
+x <- readRDS("../Data/all_ramets_di.rds")
 
+use <- x %>% 
+  select(mat_rec:p_seas_rec) %>%
+  distinct()
 
-# Disseration notes: 
+pairs(use)
+round(cor(use), 3)
 
-email isabel henson about appendices/copy+pasting published papers into dissertation.
+use_clim <- x %>%
+  select(site, mat_rec:p_seas_rec, log_size)
+
+```
+
+`mat_rec` = mean annual temp, `map_rec` = mean annual precip, `t_co_mo` = temp coldest month, `t_co_qu` = mean temp coldest quarter, `p_seas`/`t_seas` = precip/temp seasonality.
+
+## Model overview
+
+Model selection is WAIC, and fits are checked using posterior predictive checks. Fitting done w/ `brms` using `cmdstanr` back end. With the exception of recruit size, all model selection used the following three candidate models:
+
+1. `<vital_rate> ~ log_size + (1|site)`
+
+2. `<vital_rate> ~ log_size + <climate_var> + (1|site)` (no interaction)
+
+3. `<vital_rate> ~ log_size * <climate_var> + (1|site)` (has interaction)
+
+Model specific notes are below. 
+
+```{r echo = FALSE}
+library(ggplot2)
+
+plot_preds <- function(models, clim_data) {
+  
+  sites <- c("Melkboss", "Rough_Island", "Havatselet", "Praia_de_Areao")
+  
+  clim <- filter(clim_data, site %in% sites)
+  
+  use_clim <- clim_data %>%
+    select(-log_size) %>% 
+    group_by(site) %>% 
+    summarise(mat_rec     = unique(mat_rec),
+              map_rec     = unique(map_rec),
+              t_seas_rec  = unique(t_seas_rec),
+              p_seas_rec  = unique(p_seas_rec),
+              t_co_qu_rec = unique(t_co_qu_rec))
+  
+  z <- c(models[[1]]$size_only$data$log_size,
+         models[[1]]$size_only$data$log_size_next)
+  
+  min_z <- min(z, na.rm = TRUE)
+  max_z <- max(z, na.rm = TRUE)
+  
+  pred_data <- data.frame(
+    log_size = rep(seq(min_z, max_z, length.out = 100), 4),
+    site     = c(
+      rep(sites[1], 100),
+      rep(sites[2], 100),
+      rep(sites[3], 100),
+      rep(sites[4], 100)
+    )
+  ) %>%
+    left_join(use_clim, by = "site")
+  
+  temp <- list()
+  
+  for(i in seq_along(models)) {
+    
+    clim_nm <- names(models)[i]
+    use_mods <- models[[i]][1:3]
+    
+    preds <- lapply(use_mods,
+                    function(x, pred_data) {
+                      temp <- predict(x, newdata = pred_data)
+                      cbind(pred_data, temp)
+                    },
+                    pred_data = pred_data)
+    
+    for(j in seq_along(preds)) {
+      preds[[j]] <- as.data.frame(preds[[j]]) %>%
+        mutate(mod_type = names(preds)[j])
+    } 
+    
+    temp[[i]] <- do.call(rbind, preds) %>% 
+      mutate(clim = clim_nm)
+    
+  }
+  
+  all_data <- do.call(rbind, temp) 
+  
+  plt <- ggplot(all_data, 
+                aes(x = log_size,
+                    y = Estimate)) + 
+    geom_line(aes(linetype = mod_type, 
+                  color = site),
+              size = 1.2,
+              alpha = 0.6) + 
+    facet_wrap(~clim, 
+               scales = "free") +
+    ylab("Estimated Vital Rate Value") + 
+    theme_bw() #+
+    # scale_color_discrete(guide = "none")
+  
+  print(plt)
+}
+
+plot_coefs <- function(models) {
+  
+  all_coefs <- list()
+  for(i in seq_along(models)) {
+    
+    temp_coefs <- lapply(models[[i]][1:3],
+                         function(x){ 
+                           temp <- fixef(x) %>%
+                             as.data.frame() %>%
+                             mutate(par = rownames(.)) %>%
+                             filter(grepl("sigma", par)) %>%
+                             mutate(param = case_when(
+                               grepl("Intercept", par) ~ "Intercept",
+                               par == "sigma_log_size" ~ "Size",
+                               grepl(":", par) ~ "Interaction", 
+                               TRUE ~ "Climate"
+                             )) %>%
+                             as_tibble()
+                           
+                         })
+    
+    for(j in seq_along(temp_coefs)) {
+      
+      temp_coefs[[j]] <- mutate(temp_coefs[[j]],
+                                mod_type = names(temp_coefs)[j],
+                                clim = names(models)[i])
+    }
+    
+    all_coefs <- c(all_coefs, temp_coefs)
+    
+  }
+  
+  all_coefs <- do.call(rbind, all_coefs)
+  all_coefs$param <- ordered(all_coefs$param,
+                             levels = c("Intercept",
+                                        "Size", 
+                                        "Climate", 
+                                        "Interaction"))
+  
+  ggplot(all_coefs, aes(x = mod_type, y = Estimate)) + 
+    geom_point(aes(color = param), shape = 15, size = 1.2) + 
+    facet_wrap(~ clim) + theme_bw() + 
+    geom_hline(yintercept = 0) + 
+    geom_linerange(aes(ymin = Q2.5, ymax = Q97.5)) + 
+    coord_flip() +
+    scale_color_manual(
+      breaks = c("Intercept",
+                 "Size", 
+                 "Climate", 
+                 "Interaction"),
+      values = c("black", "red", "blue", "orange")
+      
+    )
+  
+  
+}
+
+```
+
+## Survival (bernoulli, n = 6567)
+
+- mean Precip
+
+  + Quantitatively, climate interaction is by far best, strong positive interaction, possibly 0 slope though point estimate is positive. Qualitatively, looks like the effect size is minimal, though there is a boost for the wee little ones at the native Melkboss. 
+
+- Mean temp
+
+  + Quantitatively, climate interaction by far best. Strong negative interaction, which dramatically reduces survival of biggest plants in Israel, but only small effects for smol plants elsewhere.  
+  
+- Precip seasonality
+
+  + climate interaction by far best. strong negative interaction, which dramatically reduces survival of biggest plants in Israel, but only small, if any, effects elsewhere. 
+  
+- temp seasonality
+
+  + climate interaction by far best. strong negative interaction and strong negative slope, which dramatically reduces survival of biggest plants in Israel, but seemingly no qualitative effect elsewhere.
+  
+- coldest quarter
+
+  + Quantitatively, climate interaction by far best. Strong negative interaction, but the 0-ish slope reduces the practical effect size to basically 0. The wee tots get a boost in Melkboss and take an L at Rough Island in New Zealand, but no real effect elsewhere.
+  
+**Overall impressions**: Big Carpobrotus actually doesn't like Israel all that much while smaller ones positively adore the Holy Land. While there are some boosts to smaller plants, especially at the native Melkboss, overall, unobserved site specific variability is having more effect than our examined climate drivers (even if those climate drivers do explain some variance). I think the next step is to investigate +/- 0.2 SD climate (i.e. not tooooo distant future climate) for our sites and see what the future may hold.
+
+**Probable functional form**: $s(z,\theta) = \frac{1}{1+e^{\beta_{0[i],s}} + \beta_{1,s} *z + \beta_{2,s} * \theta + \beta_{3,s} * z * \theta}$ where $\beta_{0[i]}$ refers to site-specific random intercepts.
+
+\newpage
+
+```{r echo = FALSE, warning = FALSE, message = FALSE, fig.height = 10, fig.width = 7.5, fig.cap = "Survival model predictions. Includes 4 sites (to demonstrate random intercept variability without over cluttering the graph), and show predictions for each model. If you can't see the short or long dashed lines, it's because the models are different enough and they're all making basically the same predictions. These predictions show climate held steady at the value the site experienced."}
+
+mod_list <- readRDS("../Model_Fits/ramet_survival_list.rds")
+
+plot_preds(mod_list, use_clim)
+
+```
+
+\newpage
+
+## Growth (Gaussian, Exp($\sigma$), n = 4281)
+
+> For all of these models, the size coefficients for the variance are negative. Sometimes the best model has a negative climate coefficient, sometimes not. See graphs for variance coefficient plots
+
+- Mean precip
+
+  + Climate interaction model is best. Positive relationship w climate. positive but probable 0 climate slope and definite positive interaction. Basically 0 qualitative effect size.
+  
+- Mean temp
+
+  + Climate interaction is best. slope estimate is 0, but interaction is positive.  Basically 0 qualitative effect size.
+  
+- Precip seasonality
+
+  + Climate interaction is best. The climate slope point estimate is positive but also likely 0, but the interaction term is negative. So in general all plants (might) grow more on average, but increased seasonality (definitely) reduces the average increment for big plants. However, basically 0 qualitative effect size.
+  
+- Temp seasonality
+
+  + climate  interaction is best but within WAIC margin of error. climate slope may be positive, but with wide posterior w/ mean very close to 0. interaction may be negative, but also wide posterior very w/ mean very close to 0. However,  Basically 0 qualitative effect size.
+  
+- coldest quarter
+
+  + Climate interaction is best. slope estimate is 0, but interaction is negative. However,  Basically 0 qualitative effect size.
+  
+**Overall impression**: This vital rate has way more site-specific variability than climtate-driven variability. Probably won't even bother tweaking this one, unless either TMK or RSG feels a strong desire to see what that looks like. The growth variance may show something interesting, but I'm still working out how to visualize that one in a more interesting way.
+
+**Probable functional form**: 
+
+1. $G(z'|z,\theta) = f_G(z'|mu_G(z,\theta), \sigma_G(z, \theta))$ ($f_G$ is Gaussian density function).
+
+2. $\mu_{G} = \beta_{0[i],G} + \beta_{1,G} * z + \beta_{2,G} * \theta + \beta_{3,G} * z * \theta$ where $\beta_{0[i]}$ refers to site-specific random intercepts.
+
+3. $\sigma_{G} = e^{\beta_{4,G} + \beta_{5,G} * z + \beta_{6,G} * \theta + \beta_{7,G} * z * \theta}$
+
+\newpage
+
+```{r echo = FALSE, warning = FALSE, message = FALSE, fig.height = 10, fig.width = 7.5, fig.cap = "Growth model predictions. Includes 4 sites (to demonstrate random intercept variability without over cluttering the graph), and show predictions for each model. If you can't see the short or long dashed lines, it's because the models are different enough and they're all making basically the same predictions.  These predictions show climate held steady at the value the site experienced. I think the next step is to investigate +/- 0.2 SD climate (i.e. not tooooo distant future climate)."}
+
+mod_list <- readRDS("../Model_Fits/ramet_grow_list.rds")
+
+plot_preds(mod_list, use_clim)
+
+```
+
+\newpage
+
+```{r echo = FALSE, warning = FALSE, message = FALSE, fig.height = 10, fig.width = 7.5, fig.cap = "Growth Model variance coefficients. Whiskers denote 2.5 and 97.5% quantiles from posterior distributions."}
+
+plot_coefs(mod_list)
+
+```
+
+## Flower Number (Negative binomial, n = 1093)
+
+- Mean Precip
+
+  + Interaction performs slightly better than other two, within margin of error. Climate slope is negative but overlapping 0, and interaction is positive (not overlapping 0).
+  
+- Mean Temp
+
+  + Interaction performs slightly better than other two, within margin of error. Climate slope is positive but overlapping 0, and interaction is negative (not overlapping 0).
+
+- Precip seasonality
+
+  + Interaction performs slightly better than other two, within margin of error. Climate slope is positive but overlapping 0, and interaction is negative (not overlapping 0).
+  
+- Temp seasonality
+
+  + All of these models are basically equivalent. No interaction model is slightly better, but within WAIC margin of error. Climate slope is negative but overlapping 0
+  
+- Temp Coldest quarter
+
+  + Interaction performs slightly better than other two, within margin of error. Climate slope is positive but overlapping 0, and interaction is negative (not overlapping 0).
+  
+**Overall impressions**: Mostly site-specific variability. I don't see much separation of the curves here. 
+
+**Probable IPM form**: $r_n(z) = e^{\beta_{0[i],r_n} + \beta_{1,r_n} * z}$ where $\beta_{0[i]}$ refers to site-specific random intercepts.
+\newpage
+
+```{r echo = FALSE, warning = FALSE, message = FALSE, fig.height = 10, fig.width = 7.5, fig.cap = "Flower model predictions. Includes 4 sites (to demonstrate random intercept variability without over cluttering the graph), and show predictions for each model. If you can't see the short or long dashed lines, it's because the models are different enough and they're all making basically the same predictions.  These predictions show climate held steady at the value the site experienced. I think the next step is to investigate +/- 0.2 SD climate (i.e. not tooooo distant future climate)."}
+
+mod_list <- readRDS("../Model_Fits/ramet_flower_n_list.rds")
+
+plot_preds(mod_list, use_clim)
+
+```
+
+\newpage
+
+## Pr(flowering) (Bernoulli, n = 6581)
+
+- Mean precip
+
+  + Interaction slightly preferred. Slope estimate is negative, but overlaps w/ 0, while interaction is positive and not overlapping w/ 0.
+  
+- mean temp
+
+  + All models equally likely. Climate slopes are positive and interaction is negative, but all overlap 0, so no effect supported by the model.
+  
+- Precip seasonality
+
+  + Size only model preferred
+  
+- Temp seasonality
+
+  + Interaction slightly preferred, but within margin of error of other models. Relationship is positive for both slope and interaction. Basically no qualitative effect.
+  
+- Temp coldest quarter
+
+  + Interaction slightly preferred, but within margin of error of other models. slope is positive, but likely 0, and interaction is negative and non-overlapping w/ 0
+  
+**Overall impressions**: Mostly site-specific variability. I don't see much separation of the curves here. 
+
+**Probable IPM form**: $r_p(z) = \frac{1}{1 + e^{\beta_{0[i],r_p} + \beta_{1,r_p * z} + \beta_{2, r_p} * \theta + \beta_{3,r_p} * z * \theta}}$ where $\beta_{0[i]}$ refers to site-specific random intercepts.
+
+\newpage
+
+```{r echo = FALSE, warning = FALSE, message = FALSE, fig.height = 10, fig.width = 7.5, fig.cap = "Pr(flowering) model predictions. Includes 4 sites (to demonstrate random intercept variability without over cluttering the graph), and show predictions for each model. If you can't see the short or long dashed lines, it's because the models are different enough and they're all making basically the same predictions.  These predictions show climate held steady at the value the site experienced. I think the next step is to investigate +/- 0.2 SD climate (i.e. not tooooo distant future climate)."}
+
+mod_list <- readRDS("../Model_Fits/ramet_repro_list.rds")
+
+plot_preds(mod_list, use_clim)
+
+```
+
+\newpage
+
+## Recruit size (n = 15)
+
+No climate effects here because we only have data from one site (Rooisand, South Africa. Native range)! Model looks fine as $r_d(z') = f_{r_d}(z'|\mu_{r_d}, \sigma_{r_d})$ (log scale), $f_{r_d}$ is Gaussian. 
+
+```{r echo = FALSE}
+
+mod <- readRDS("../Model_Fits/recr_size_brm.rds")
+
+summary(mod)
+
+```
+
+# Further analyses
+
+1. Re-fit models without Havatselet, because this outlier seems to be driving the interaction terms to non-0 values in the models (it's the only site that seems affected). 
+
+2. Wait and see what those look like.
+
+1. Combine into an IPM and investigate sensitivity to climate across complete lifecycle.
+
+  + will send update on how that's structured soon. Suspect will have 2 discrete stages (seedbank + "seedlings before visible to drone camera") and 1 continuous ("plants visible to drone camera"). Need to investigate seedbank stuff a bit more.
+
+2. Decompose into contributions of climate to current fitness. 
+
+3. I'm torn here:
+
+  + **A**: investigate climate-mediated tradeoff in P vs F?
+  
+  + **B**: make models stochastic and project wrt future climate (space vs time substitution. Need to fight w/ Aldo a bit on this one).
+  
+The direction of 3 probably depends on the results of 1+2. Need to discuss w/ RSG and TMK.
+
+That's all for now, folks!
+
