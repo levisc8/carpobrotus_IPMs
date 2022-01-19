@@ -21,53 +21,66 @@
 # Optionally, read in transformed data if skipping steps 2 + 3
 # all_ramets <- readRDS('Data/all_ramets_di.rds')
 
-all_ramets <- readRDS("ipms/Data/all_ramets_di.rds") 
+all_ramets <- readRDS("ipms/Data/all_ramets_di.rds") %>%
+  mutate(
+    native = case_when(
+      site %in% c("Melkboss",      "Vogelgat", 
+                  "St_Francis",    "Struisbaai",
+                  "Springfontein", "Rooisand")   ~ 1,
+      TRUE ~ 0
+    )
+  )
 
-repro_data <- filter(all_ramets, !is.na(repro) & !is.na(size)) %>%
-  filter(site != "Havatselet")
-flower_data <- filter(all_ramets, !is.na(flower_n) & !is.na(size)) %>%
-  filter(site != "Havatselet")
+repro_data <- filter(all_ramets, !is.na(repro) & !is.na(size)) #%>%
+  # filter(site != "Havatselet")
+flower_data <- filter(all_ramets, !is.na(flower_n) & !is.na(size)) #%>%
+  # filter(site != "Havatselet")
 
 # BRMS fits ------------------
 
-repro_map_list <- fit_vr_model(repro_data, "repro", "map_rec")
-repro_mat_list <- fit_vr_model(repro_data, "repro", "mat_rec")
-repro_p_seas_list <- fit_vr_model(repro_data, "repro", "p_seas_rec")
-repro_t_co_q_list <- fit_vr_model(repro_data, "repro", "t_co_qu_rec")
-repro_t_seas_list <- fit_vr_model(repro_data, "repro", "t_seas_rec")
+# repro_map_list <- fit_vr_model(repro_data, "repro", "map_rec")
+# repro_mat_list <- fit_vr_model(repro_data, "repro", "mat_rec")
+# repro_p_seas_list <- fit_vr_model(repro_data, "repro", "p_seas_rec")
+# repro_t_co_q_list <- fit_vr_model(repro_data, "repro", "t_co_qu_rec")
+# repro_t_seas_list <- fit_vr_model(repro_data, "repro", "t_seas_rec")
+# 
+# brm_repro_list <- list(map = repro_map_list,
+#                        mat = repro_mat_list,
+#                        p_seas = repro_p_seas_list,
+#                        t_seas = repro_t_seas_list,
+#                        co_qu  = repro_t_co_q_list)
 
-brm_repro_list <- list(map = repro_map_list,
-                       mat = repro_mat_list,
-                       p_seas = repro_p_seas_list,
-                       t_seas = repro_t_seas_list,
-                       co_qu  = repro_t_co_q_list)
+brm_repro_list <- list(native = fit_vr_model(repro_data, "repro", native = "yes"))
 
-saveRDS(brm_repro_list, file = 'ipms/Model_Fits/ramet_repro_list_no_is.rds')
+saveRDS(brm_repro_list, file = 'ipms/Model_Fits/ramet_repro_list_native.rds')
 # brm_repro_list <- readRDS('ipms/Model_Fits/ramet_repro_list.rds')
 
 plot_models(brm_repro_list, "repro")
-plot_preds(brm_repro_list, "repro")
+plot_preds(brm_repro_list, "repro_native", native = "yes")
 
 # Flower production models -----------------
-flower_n_map_list <- fit_vr_model(flower_data, "flower_n", "map_rec")
-flower_n_mat_list <- fit_vr_model(flower_data, "flower_n", "mat_rec")
-flower_n_p_seas_list <- fit_vr_model(flower_data, "flower_n", "p_seas_rec")
-flower_n_t_co_q_list <- fit_vr_model(flower_data, "flower_n", "t_co_qu_rec")
-flower_n_t_seas_list <- fit_vr_model(flower_data, "flower_n", "t_seas_rec")
+# flower_n_map_list <- fit_vr_model(flower_data, "flower_n", "map_rec")
+# flower_n_mat_list <- fit_vr_model(flower_data, "flower_n", "mat_rec")
+# flower_n_p_seas_list <- fit_vr_model(flower_data, "flower_n", "p_seas_rec")
+# flower_n_t_co_q_list <- fit_vr_model(flower_data, "flower_n", "t_co_qu_rec")
+# flower_n_t_seas_list <- fit_vr_model(flower_data, "flower_n", "t_seas_rec")
+# 
+# brm_flower_n_list <- list(map = flower_n_map_list,
+#                           mat = flower_n_mat_list,
+#                           p_seas = flower_n_p_seas_list,
+#                           t_seas = flower_n_t_seas_list,
+#                           co_qu  = flower_n_t_co_q_list)
 
-brm_flower_n_list <- list(map = flower_n_map_list,
-                          mat = flower_n_mat_list,
-                          p_seas = flower_n_p_seas_list,
-                          t_seas = flower_n_t_seas_list,
-                          co_qu  = flower_n_t_co_q_list)
+brm_flower_n_list <- list(native = fit_vr_model(flower_data, "flower_n", native = "yes"))
 
-saveRDS(brm_flower_n_list, file = 'ipms/Model_Fits/ramet_flower_n_list_no_is.rds')
+
+saveRDS(brm_flower_n_list, file = 'ipms/Model_Fits/ramet_flower_n_list_native.rds')
 # brm_flower_n_list <- readRDS('ipms/Model_Fits/ramet_flower_n_list.rds')
 
 plot_models(brm_flower_n_list, "flower_n")
-plot_preds(brm_flower_n_list, "flower_n")
+plot_preds(brm_flower_n_list, "flower_n_native", native = "yes")
 
-# # Recruit size distribution model
+# # Recruit size distribution model-----------
 # recruits <- readRDS("ipms/Data/seedlings.rds")
 # # 
 # recr_size_model <- brm(log_size_next ~ 1,

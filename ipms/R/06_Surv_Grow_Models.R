@@ -1,48 +1,69 @@
 # Prototype survival and growth hierarchical models
 
-all_ramets <- readRDS("ipms/Data/all_ramets_di.rds")
+all_ramets <- readRDS("ipms/Data/all_ramets_di.rds") %>%
+  mutate(
+    native = case_when(
+      site %in% c("Melkboss",      "Vogelgat", 
+                  "St_Francis",    "Struisbaai",
+                  "Springfontein", "Rooisand")   ~ 1,
+      TRUE ~ 0
+    )
+  )
 
-surv_data <- filter(all_ramets, !is.na(alive) & !is.na(log_size) & site != "Havatselet")
+surv_data <- filter(all_ramets, !is.na(alive) & !is.na(log_size))
 
 grow_data <- readRDS("ipms/Data/growth_data.rds") %>%
-  filter(!is.na(size) & !is.na(size_next) & alive == 1 & site != "Havatselet")
+  filter(!is.na(size) & !is.na(size_next) & alive == 1) %>% 
+  mutate(
+    native = case_when(
+      site %in% c("Melkboss",      "Vogelgat", 
+                  "St_Francis",    "Struisbaai",
+                  "Springfontein", "Rooisand")   ~ 1,
+      TRUE ~ 0
+    )
+  )
 
 
 # Survival -----
 
-survival_map_list <- fit_vr_model(surv_data, "alive", "map_rec")
-survival_mat_list <- fit_vr_model(surv_data, "alive", "mat_rec")
-survival_p_seas_list <- fit_vr_model(surv_data, "alive", "p_seas_rec")
-survival_t_co_q_list <- fit_vr_model(surv_data, "alive", "t_co_qu_rec")
-survival_t_seas_list <- fit_vr_model(surv_data, "alive", "t_seas_rec")
+# survival_map_list <- fit_vr_model(surv_data, "alive", "map_rec")
+# survival_mat_list <- fit_vr_model(surv_data, "alive", "mat_rec")
+# survival_p_seas_list <- fit_vr_model(surv_data, "alive", "p_seas_rec")
+# survival_t_co_q_list <- fit_vr_model(surv_data, "alive", "t_co_qu_rec")
+# survival_t_seas_list <- fit_vr_model(surv_data, "alive", "t_seas_rec")
+# 
+# brm_survival_list <- list(map = survival_map_list,
+#                           mat = survival_mat_list,
+#                           p_seas = survival_p_seas_list,
+#                           t_seas = survival_t_seas_list,
+#                           co_qu  = survival_t_co_q_list)
 
-brm_survival_list <- list(map = survival_map_list,
-                          mat = survival_mat_list,
-                          p_seas = survival_p_seas_list,
-                          t_seas = survival_t_seas_list,
-                          co_qu  = survival_t_co_q_list)
+brm_survival_list <- list(native = fit_vr_model(surv_data, "alive", native = "yes"))
 
-saveRDS(brm_survival_list, file = 'ipms/Model_Fits/ramet_survival_list_no_is.rds')
+saveRDS(brm_survival_list, file = 'ipms/Model_Fits/ramet_survival_list_native.rds')
 # brm_survival_list <- readRDS('ipms/Model_Fits/ramet_survival_list.rds')
 
 plot_models(brm_survival_list, "survival")
-plot_preds(brm_survival_list, "survival")
+plot_preds(brm_survival_list, "survival_native", native = "yes")
 # Growth ----
 
-grow_map_list <- fit_vr_model(grow_data, "log_size_next", "map_rec")
-grow_mat_list <- fit_vr_model(grow_data, "log_size_next", "mat_rec")
-grow_p_seas_list <- fit_vr_model(grow_data, "log_size_next", "p_seas_rec")
-grow_t_co_q_list <- fit_vr_model(grow_data, "log_size_next", "t_co_qu_rec")
-grow_t_seas_list <- fit_vr_model(grow_data, "log_size_next", "t_seas_rec")
+# grow_map_list <- fit_vr_model(grow_data, "log_size_next", "map_rec")
+# grow_mat_list <- fit_vr_model(grow_data, "log_size_next", "mat_rec")
+# grow_p_seas_list <- fit_vr_model(grow_data, "log_size_next", "p_seas_rec")
+# grow_t_co_q_list <- fit_vr_model(grow_data, "log_size_next", "t_co_qu_rec")
+# grow_t_seas_list <- fit_vr_model(grow_data, "log_size_next", "t_seas_rec")
+# 
+# brm_grow_list <- list(map = grow_map_list,
+#                        mat = grow_mat_list,
+#                        p_seas = grow_p_seas_list,
+#                        t_seas = grow_t_seas_list,
+#                        co_qu  = grow_t_co_q_list)
 
-brm_grow_list <- list(map = grow_map_list,
-                       mat = grow_mat_list,
-                       p_seas = grow_p_seas_list,
-                       t_seas = grow_t_seas_list,
-                       co_qu  = grow_t_co_q_list)
+brm_grow_list <- list(native = fit_vr_model(grow_data, "log_size_next", native = "yes"))
 
-saveRDS(brm_grow_list, file = 'ipms/Model_Fits/ramet_grow_list_no_is.rds')
+
+saveRDS(brm_grow_list, file = 'ipms/Model_Fits/ramet_grow_list_native.rds')
 # brm_grow_list <- readRDS('ipms/Model_Fits/ramet_grow_list.rds')
 
 plot_models(brm_grow_list, "log_size_next")
-plot_preds(brm_grow_list, "growth")
+plot_preds(brm_grow_list, "growth_native", native = "yes")

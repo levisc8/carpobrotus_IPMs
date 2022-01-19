@@ -1,6 +1,10 @@
 ---
-output: word_document
+output:
+  pdf_document: 
+    toc: true
+    toc_depth: 2
 title: 'Carpobrotus IPM notes'
+
 ---
 
 # Data Notes
@@ -25,7 +29,7 @@ affected vital rate X climate combos (from exploratory plots `ipms/Figures/clim/
   
   + temp seasonality (2016-2018): `+` pr(repro), `-` survival (heavy)
     
-# Vital Rate Models
+# Vital Rate Models - Climate
 
 Climate drivers of demography. $z,z'$ are `log(size)`, `log(size_next)`. $\theta$ is generically some climate variable. Currently, climate variables are all separate models because they're all pretty correlated (`t_seas_rec` seems to have that huge outlier which gives it low coefficients. seems pretty correlated w the others without that point).
 
@@ -66,9 +70,20 @@ Model specific notes are below.
 ```{r echo = FALSE}
 library(ggplot2)
 
-plot_preds <- function(models, clim_data) {
+plot_preds <- function(models, clim_data, has_is = "yes") {
   
-  sites <- c("Melkboss", "Rough_Island", "Havatselet", "Praia_de_Areao")
+  
+  
+  sites <- switch(has_is,
+                  "yes" = c("Melkboss", "Rough_Island", 
+                          "Havatselet", "Praia_de_Areao"),
+                  "no"  = c("Melkboss", "Rough_Island", 
+                            "Foxton", "Praia_de_Areao"))
+  
+  plt_title <- switch(has_is,
+                  "yes" = "Includes Israel",
+                  "no"  = "Excludes Israel")
+    
   
   clim <- filter(clim_data, site %in% sites)
   
@@ -134,8 +149,8 @@ plot_preds <- function(models, clim_data) {
     facet_wrap(~clim, 
                scales = "free") +
     ylab("Estimated Vital Rate Value") + 
-    theme_bw() #+
-    # scale_color_discrete(guide = "none")
+    theme_bw() +
+    ggtitle(plt_title)
   
   print(plt)
 }
@@ -298,7 +313,7 @@ plot_coefs(mod_list)
 - Mean Temp
 
   + Interaction performs slightly better than other two, within margin of error. Climate slope is positive but overlapping 0, and interaction is negative (not overlapping 0).
-
+  
 - Precip seasonality
 
   + Interaction performs slightly better than other two, within margin of error. Climate slope is positive but overlapping 0, and interaction is negative (not overlapping 0).
@@ -311,9 +326,10 @@ plot_coefs(mod_list)
 
   + Interaction performs slightly better than other two, within margin of error. Climate slope is positive but overlapping 0, and interaction is negative (not overlapping 0).
   
-**Overall impressions**: Mostly site-specific variability. I don't see much separation of the curves here. 
+**Overall impressions**: Mostly site-specific variability. I don't see much separation of the curves here. Furthermore, climate effect sizes are teeny tiny compared to plant size and site-specific variation - no real practical effect even if it is technically there. 
 
 **Probable IPM form**: $r_n(z) = e^{\beta_{0[i],r_n} + \beta_{1,r_n} * z}$ where $\beta_{0[i]}$ refers to site-specific random intercepts.
+
 \newpage
 
 ```{r echo = FALSE, warning = FALSE, message = FALSE, fig.height = 10, fig.width = 7.5, fig.cap = "Flower model predictions. Includes 4 sites (to demonstrate random intercept variability without over cluttering the graph), and show predictions for each model. If you can't see the short or long dashed lines, it's because the models are different enough and they're all making basically the same predictions.  These predictions show climate held steady at the value the site experienced. I think the next step is to investigate +/- 0.2 SD climate (i.e. not tooooo distant future climate)."}
@@ -332,22 +348,24 @@ plot_preds(mod_list, use_clim)
 
   + Interaction slightly preferred. Slope estimate is negative, but overlaps w/ 0, while interaction is positive and not overlapping w/ 0.
   
+
 - mean temp
 
   + All models equally likely. Climate slopes are positive and interaction is negative, but all overlap 0, so no effect supported by the model.
-  
-- Precip seasonality
+
+  - Precip seasonality
 
   + Size only model preferred
   
 - Temp seasonality
 
   + Interaction slightly preferred, but within margin of error of other models. Relationship is positive for both slope and interaction. Basically no qualitative effect.
-  
+
 - Temp coldest quarter
 
   + Interaction slightly preferred, but within margin of error of other models. slope is positive, but likely 0, and interaction is negative and non-overlapping w/ 0
-  
+
+
 **Overall impressions**: Mostly site-specific variability. I don't see much separation of the curves here. 
 
 **Probable IPM form**: $r_p(z) = \frac{1}{1 + e^{\beta_{0[i],r_p} + \beta_{1,r_p * z} + \beta_{2, r_p} * \theta + \beta_{3,r_p} * z * \theta}}$ where $\beta_{0[i]}$ refers to site-specific random intercepts.
@@ -376,25 +394,94 @@ summary(mod)
 
 ```
 
+\newpage
+
+# Native/Invasive models
+
+As with the climate models, model selection is WAIC, and fits are checked using posterior predictive checks. Fitting done w/ `brms` using `cmdstanr` back end. With the exception of recruit size, all model selection used the following three candidate models:
+
+1. `<vital_rate> ~ log_size + (1|site)`
+
+2. `<vital_rate> ~ log_size + native + (1|site)` (no interaction)
+
+3. `<vital_rate> ~ log_size * native + (1|site)` (has interaction)
+
+### Survival (bernoulli, n = 6567)
+
+The `size * native` interaction model is chose, and not within WAIC margin of error. The slope is positive, but with a good deal of uncertainty ($\beta_{nat} \sim N(1.04, 0.6)$). The interaction is positive and has a good deal less certainty ($\beta_{nat,z} \sim N(0.18, 0.05)$). So in general, plants do survive better in the native range. This is pretty unexpected. 
+
+```{r echo = FALSE}
+knitr::include_graphics(
+  "../Figures/vr_models/survival_native_model_predictions.pdf"
+)
+
+```
+
+### Growth (Gaussian, Exp($\sigma$), n = 4281)
+
+The `size * native` interaction model is preferred, and not within WAIC margin of error. THe slope estimate is negative, but with high uncertainty ($\beta_{nat} \sim N(-0.11, 0.2)$). The interaction coefficient is negative with less uncertainty ($\beta_{nat,z} \sim N(-.0.04, 0.02)$). The estimated magnitude is quite small, so is unlikely to have much effect. However, slower growth in the native range may provide hints as to differential dominance...
+
+The coefficients related to the growth variance are of interest in this. Nativity has a positive slope $\beta_{nat, \sigma} \sim N(0.2, 0.03)$, and the interaction coefficient for $\sigma$ is also positive. The slope for size is negative ($\beta_{z,\sigma} \sim N(-0.14, 0.01)$) but actually has a smaller magnitude than that for nativity. I suspet this could make a difference in the IPM. This implies more variable growth in the native range, and even more variable growth (or shrinakge) for larger plants in the native range. 
+
+```{r echo = FALSE}
+knitr::include_graphics(
+  "../Figures/vr_models/growth_native_model_predictions.pdf"
+)
+
+```
+
+## P-kernel notes
+
+Carpobrotus seems to survive better, but grow slower in the native range. This slower growth may be offset by greater variability in growth of larger plants. This may lead to real differences in population dynamics between native and invaded range. However, there does appear to be at least as much site-specific variability, and that variance may be more important.
+
+### Flower Number (Negative binomial, n = 1093)
+
+The `size **+** native` model is chosen, but within the WAIC margin of error. Plots show that site specific variation really is the main driver here. The interaction model does show a slightly negative interaction, but apparently doesn't have as much out of sample predictive power as the non-interaction model. The latter shows a slightly positive effect of nativity (point estimate), but the posterior is wide ($\beta_{nat} \sim N(0.13, 0.42)$). 
+
+I don't think we can reasonably argue plants make fewer flowers in the native range. 
+
+```{r echo = FALSE}
+
+knitr::include_graphics(
+  "../Figures/vr_models/flower_n_native_model_predictions.pdf"
+)
+
+
+```
+
+### Pr(flowering) (Bernoulli, n = 6581)
+
+The `size * native` interaction model is chose, and not within WAIC margin of error. The native slope estimate positive, but considerably uncertain ($\beta_{nat} \sim N(0.33, 0.92)$). The interaction is negative with far less uncertainty ($\beta_{nat,z} \sim N(-0.25, 0.07)$), so bigger plants are less likely to flower in the native range. 
+
+```{r echo = FALSE}
+knitr::include_graphics(
+  "../Figures/vr_models/repro_native_model_predictions.pdf"
+)
+
+```
+
+## F-kernel notes
+
+Bigger plants are less likely to flower, but those that do seem to produce as many flowers as their invasive counterparts. Whether or not this produces an appreciable effect w/r/t to population dynamics remains to be seen.
+
+However, there does appear to be at least as much site-specific variability, and that variance may be more important.
+
 # Further analyses
 
-1. Re-fit models without Havatselet, because this outlier seems to be driving the interaction terms to non-0 values in the models (it's the only site that seems affected). 
+1. Re-fit models without Havatselet, because this outlier seems to be driving the interaction terms to non-0 values in the models (it's the only site that seems affected).
 
-2. Wait and see what those look like.
+  + **Done**, makes no difference. Climate effect sizes seem to be dwarfed by plant size and site-specific variability. 
 
-1. Combine into an IPM and investigate sensitivity to climate across complete lifecycle.
+2. Nativity analysis
+
+  + There appear to be some differences here that are worth investigating. This needs to be IPM'd before anything conclusive can emerge though, so... next step!
+
+3. Combine into an IPM and investigate sensitivity to climate across complete lifecycle.
 
   + will send update on how that's structured soon. Suspect will have 2 discrete stages (seedbank + "seedlings before visible to drone camera") and 1 continuous ("plants visible to drone camera"). Need to investigate seedbank stuff a bit more.
 
-2. Decompose into contributions of climate to current fitness. 
+4. Decompose into contributions of nativity to current fitness. 
 
-3. I'm torn here:
-
-  + **A**: investigate climate-mediated tradeoff in P vs F?
-  
-  + **B**: make models stochastic and project wrt future climate (space vs time substitution. Need to fight w/ Aldo a bit on this one).
-  
-The direction of 3 probably depends on the results of 1+2. Need to discuss w/ RSG and TMK.
 
 That's all for now, folks!
 

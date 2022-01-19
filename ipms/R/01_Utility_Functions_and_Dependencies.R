@@ -1,6 +1,6 @@
 # Dependencies
 library(sf)        # Handle spatial data
-# library(s2)
+library(rlang)
 library(fs)        # file manipulation
 library(stringr)   # string manipulation
 library(ggplot2)   # plotting
@@ -9,8 +9,7 @@ library(gridExtra) # plotting
 library(tidyr)     # Climate data munging
 library(glue)      # string manipulation
 library(purrr)
-# library(lme4)
-library(brms)      # attempt to get fecundity models converging
+library(brms)      
 library(mgcv)
 library(Rcpp)
 
@@ -394,7 +393,109 @@ check_outliers <- function(all_ramets, population, type) {
   
 }
 
-fit_vr_model <- function(data, vr, clim) {
+# Model fitting and checking ---------------
+
+fit_vr_model <- function(data, vr, clim, native = "no") {
+  
+  switch(native,
+         "yes" = .fit_native_model(data, vr),
+         "no"  = .fit_clim_model(data, vr, clim))
+  
+}
+
+.fit_native_model <- function(data, vr) {
+  
+  fam <- switch(
+    vr,
+    "repro"     = bernoulli(),
+    "flower_n"  = negbinomial(),
+    "alive"     = bernoulli(),
+    "size_next" = gaussian()
+  )
+  
+  form_1 <- as.formula(glue("{vr} ~ log_size + (1 | site)"))
+  form_2 <- as.formula(glue("{vr} ~ log_size + native + (1 | site)"))
+  form_3 <- as.formula(glue("{vr} ~ log_size * native + (1 | site)"))
+  
+  be <- "cmdstanr"
+  
+  if(vr %in% c("flower_n")) {
+    inits <- "0"
+    
+  } else {
+    
+    inits <- "random"
+  }
+  
+  if(vr == "alive") vr <- "survival"
+  
+  # NB: Sigma has log link by default! Remember to exponentiate at IPM
+  # build time.
+  if(vr == "log_size_next") {
+    
+    sigma_form_1 <- sigma ~ log_size
+    sigma_form_2 <- sigma ~ log_size + native
+    sigma_form_3 <- sigma ~ log_size * native
+    
+    
+    form_1 <- bf(form_1, sigma_form_1)
+    form_2 <- bf(form_2, sigma_form_2)
+    form_3 <- bf(form_3, sigma_form_3)
+    
+    vr <- "growth"
+  }
+  
+  
+  message("Model 1: size only: Native----------\n\n")
+  mod_1 <- brm(form_1,
+               data       = data,
+               family     = fam,
+               chains     = 4,    
+               backend    = be,
+               inits      = inits,
+               cores      = getOption("mc.cores", 4L),
+               save_model = glue('ipms/Stan/{vr}_size_only_native.stan'),
+               control    = list(adapt_delta = 0.99,
+                                 max_treedepth = 15))
+  
+  message("\n\nModel 2: Size Plus Native-------\n\n")
+  
+  mod_2 <- brm(form_2,
+               data       = data,
+               family     = fam,
+               chains     = 4,    
+               backend    = be,
+               inits      = inits,
+               cores      = getOption("mc.cores", 4L),
+               save_model = glue('ipms/Stan/{vr}_size_plus_native.stan'),
+               control    = list(adapt_delta = 0.99,
+                                 max_treedepth = 15))
+  
+  message("\n\nModel 3: Size Times Native------\n\n")
+  
+  mod_3 <- brm(form_3,
+               data       = data,
+               family     = fam,
+               chains     = 4,    
+               backend    = be,
+               inits      = inits,
+               cores      = getOption("mc.cores", 4L),
+               save_model = glue('ipms/Stan/{vr}_size_times_native.stan'),
+               control    = list(adapt_delta = 0.99,
+                                 max_treedepth = 15))
+  
+  mod_waic <- waic(mod_1, mod_2, mod_3)
+  
+  out <- list(size_only         = mod_1,
+              size_plus_native  = mod_2,
+              size_times_native = mod_3,
+              waic              = mod_waic)
+  
+  return(out)
+}
+
+
+.fit_clim_model <- function(data, vr, clim) {
   
   fam <- switch(
     vr,
@@ -505,7 +606,7 @@ plot_models <- function(mod_list, vr) {
     
     if(vr == "log_size_next") vr <- "growth"
     
-    pdf(glue("ipms/Model_Summaries/Trace_Plots/{vr}/{file_nm}_no_is.pdf"))
+    pdf(glue("ipms/Model_Summaries/Trace_Plots/{vr}/{file_nm}.pdf"))
     
     for(j in 1:3) {
       
@@ -535,13 +636,13 @@ plot_models <- function(mod_list, vr) {
     dev.off()
     
     
-    sink(file = glue('ipms/Model_Summaries/{vr}/{file_nm}_no_is.txt')) 
+    sink(file = glue('ipms/Model_Summaries/{vr}/{file_nm}.txt')) 
     cat('Size only\n\n *********************\n\n')
     print(summary(use_mod[[1]]))
-    cat('\n\n*********************\n\nSize + Climate',
+    cat(glue('\n\n*********************\n\nSize + {file_nm}'),
         '\n\n*********************\n\n')
     print(summary(use_mod[[2]]))
-    cat('\n\n*********************\n\nSize * Climate',
+    cat(glue('\n\n*********************\n\nSize * {file_nm}'),
         '\n\n*********************\n\n')
     print(summary(use_mod[[3]]))
     cat('\n\n*********************\n\nWAIC Results\n\n')
@@ -554,14 +655,44 @@ plot_models <- function(mod_list, vr) {
   
 }
 
-plot_preds <- function(models, vr) {
+.pred_data <- function(native, min_z, max_z, site) {
   
-  z <- c(models[[1]]$size_only$data$log_size,
-         models[[1]]$size_only$data$log_size_next)
-  site <- unique(models[[1]]$size_only$data$site)
+  switch(native,
+         "no"  = .pred_clim_data(min_z, max_z, site),
+         "yes" = .pred_nat_data(min_z, max_z, site))
+}
+
+.pred_nat_data <- function(min_z, max_z, site) {
   
-  min_z <- min(z, na.rm = TRUE)
-  max_z <- max(z, na.rm = TRUE)
+  nat_data <- data.frame(
+    log_size = seq(min_z, max_z, length.out = 100),
+    native   = rep(1, 100)
+    
+  )
+  inv_data <- data.frame(
+      log_size = seq(min_z, max_z, length.out = 100),
+      native   = rep(0, 100)
+  )
+  
+  all_data <- list()
+  
+  for(i in seq_along(site)) {
+    
+    if(site[i] %in% c("Melkboss",      "Vogelgat", 
+                      "St_Francis",    "Struisbaai",
+                      "Springfontein", "Rooisand")) {
+      
+      all_data[[i]] <- cbind(nat_data, site = site[i])
+    } else {
+      all_data[[i]] <- cbind(inv_data, site = site[i])
+    }
+    
+  }
+  
+  do.call(rbind, all_data)
+}
+
+.pred_clim_data <- function(min_z, max_z, site) {
   
   pred_data <- data.frame(
     log_size     = seq(min_z, max_z, length.out = 100),
@@ -574,13 +705,25 @@ plot_preds <- function(models, vr) {
   
   all_data <- list()
   
-  temp <- list()
-  
   for(i in seq_along(site)) {
     all_data[[i]] <- cbind(pred_data, site = site[i])
   }
   
-  pred_data <- do.call(rbind, all_data)
+  do.call(rbind, all_data)
+}
+
+plot_preds <- function(models, vr, native = "no") {
+  
+  z <- c(models[[1]]$size_only$data$log_size,
+         models[[1]]$size_only$data$log_size_next)
+  site <- unique(models[[1]]$size_only$data$site)
+  
+  min_z <- min(z, na.rm = TRUE)
+  max_z <- max(z, na.rm = TRUE)
+  
+  pred_data <- .pred_data(native, min_z, max_z, site)
+  
+  temp <- list()
   
   all_pred <- for(i in seq_along(models)) {
     
@@ -604,22 +747,47 @@ plot_preds <- function(models, vr) {
     
   }
   
-  all_data <- do.call(rbind, temp) %>%
-    filter(site %in% c("Melkboss", "Rough_Island", "Foxton", "Praia_de_Areao"))
+  all_data <- do.call(rbind, temp) #%>%
+  
+  if(native == "no") {
+    all_data <- filter(site %in% c("Melkboss", "Rough_Island",
+                                   "Foxton", "Praia_de_Areao"))
+    
+    use_col <- quo(site)
+    use_line <- quo(mod_type)
+  } else {
+    
+    all_data <- mutate(all_data,
+                       native = case_when(
+                         native == 1 ~ "Native",
+                         TRUE ~ "Invasive"
+                       )) 
+    use_col <- quo(site)
+    use_line <- quo(native)
+  }
+  
+  
   
   plt <- ggplot(all_data, 
                 aes(x = log_size,
-                    y = Estimate)) + 
-    geom_line(aes(linetype = mod_type, 
-                  color = site),
+                    y = Estimate)) +
+    geom_line(aes(linetype = !! use_line, 
+                  color = !! use_col),
               size = 1.2,
-              alpha = 0.6) + 
-    facet_wrap(~clim, 
-               scales = "free") +
-    theme_bw() +
-    scale_color_discrete(guide = "none")
-    
-  pdf(glue("ipms/Figures/vr_models/{vr}_model_predictions_no_is.pdf"))
+              alpha = 0.6) +
+    theme_bw()
+  
+  if(native == "no") {
+    plt <- plt +
+      facet_wrap(~clim, 
+                 scales = "free") +
+      scale_color_discrete(guide = "none")
+  } else {
+    plt <- plt +
+      facet_wrap(~mod_type, scales = "free")
+  }
+
+  pdf(glue("ipms/Figures/vr_models/{vr}_model_predictions.pdf"))
     print(plt)
   dev.off()
   
