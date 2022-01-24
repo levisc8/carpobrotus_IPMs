@@ -241,17 +241,17 @@ plot_coefs <- function(models) {
 **Probable functional form**: $s(z,\theta) = \frac{1}{1+e^{\beta_{0[i],s}} + \beta_{1,s} *z + \beta_{2,s} * \theta + \beta_{3,s} * z * \theta}$ where $\beta_{0[i]}$ refers to site-specific random intercepts.
 
 \newpage
-
-```{r echo = FALSE, warning = FALSE, message = FALSE, fig.height = 10, fig.width = 7.5, fig.cap = "Survival model predictions. Includes 4 sites (to demonstrate random intercept variability without over cluttering the graph), and show predictions for each model. If you can't see the short or long dashed lines, it's because the models are different enough and they're all making basically the same predictions. These predictions show climate held steady at the value the site experienced."}
+```{r echo = FALSE, warning = FALSE, message = FALSE, fig.height = 9, fig.width = 6.5, fig.cap = "Survival model predictions. Includes 4 sites (to demonstrate random intercept variability without over cluttering the graph), and show predictions for each model. If you can't see the short or long dashed lines, it's because the models are different enough and they're all making basically the same predictions. These predictions show climate held steady at the value the site experienced."}
 
 mod_list <- readRDS("../Model_Fits/ramet_survival_list.rds")
 
 plot_preds(mod_list, use_clim)
 
 ```
-
 \newpage
 
+
+\newpage
 ## Growth (Gaussian, Exp($\sigma$), n = 4281)
 
 > For all of these models, the size coefficients for the variance are negative. Sometimes the best model has a negative climate coefficient, sometimes not. See graphs for variance coefficient plots
@@ -286,24 +286,26 @@ plot_preds(mod_list, use_clim)
 
 3. $\sigma_{G} = e^{\beta_{4,G} + \beta_{5,G} * z + \beta_{6,G} * \theta + \beta_{7,G} * z * \theta}$
 
+
 \newpage
 
-```{r echo = FALSE, warning = FALSE, message = FALSE, fig.height = 10, fig.width = 7.5, fig.cap = "Growth model predictions. Includes 4 sites (to demonstrate random intercept variability without over cluttering the graph), and show predictions for each model. If you can't see the short or long dashed lines, it's because the models are different enough and they're all making basically the same predictions.  These predictions show climate held steady at the value the site experienced. I think the next step is to investigate +/- 0.2 SD climate (i.e. not tooooo distant future climate)."}
+```{r echo = FALSE, warning = FALSE, message = FALSE, fig.height = 9, fig.width = 6.5, fig.cap = "Growth model predictions. Includes 4 sites (to demonstrate random intercept variability without over cluttering the graph), and show predictions for each model. If you can't see the short or long dashed lines, it's because the models are different enough and they're all making basically the same predictions.  These predictions show climate held steady at the value the site experienced. I think the next step is to investigate +/- 0.2 SD climate (i.e. not tooooo distant future climate)."}
 
 mod_list <- readRDS("../Model_Fits/ramet_grow_list.rds")
 
 plot_preds(mod_list, use_clim)
 
 ```
-
 \newpage
-
-```{r echo = FALSE, warning = FALSE, message = FALSE, fig.height = 10, fig.width = 7.5, fig.cap = "Growth Model variance coefficients. Whiskers denote 2.5 and 97.5% quantiles from posterior distributions."}
+\newpage
+```{r echo = FALSE, warning = FALSE, message = FALSE, fig.height = 9, fig.width = 6.5, fig.cap = "Growth Model variance coefficients. Whiskers denote 2.5 and 97.5% quantiles from posterior distributions."}
 
 plot_coefs(mod_list)
 
 ```
+\newpage
 
+\newpage
 ## Flower Number (Negative binomial, n = 1093)
 
 - Mean Precip
@@ -331,17 +333,16 @@ plot_coefs(mod_list)
 **Probable IPM form**: $r_n(z) = e^{\beta_{0[i],r_n} + \beta_{1,r_n} * z}$ where $\beta_{0[i]}$ refers to site-specific random intercepts.
 
 \newpage
-
-```{r echo = FALSE, warning = FALSE, message = FALSE, fig.height = 10, fig.width = 7.5, fig.cap = "Flower model predictions. Includes 4 sites (to demonstrate random intercept variability without over cluttering the graph), and show predictions for each model. If you can't see the short or long dashed lines, it's because the models are different enough and they're all making basically the same predictions.  These predictions show climate held steady at the value the site experienced. I think the next step is to investigate +/- 0.2 SD climate (i.e. not tooooo distant future climate)."}
+```{r echo = FALSE, warning = FALSE, message = FALSE, fig.height = 9, fig.width = 6.5, fig.cap = "Flower model predictions. Includes 4 sites (to demonstrate random intercept variability without over cluttering the graph), and show predictions for each model. If you can't see the short or long dashed lines, it's because the models are different enough and they're all making basically the same predictions.  These predictions show climate held steady at the value the site experienced. I think the next step is to investigate +/- 0.2 SD climate (i.e. not tooooo distant future climate)."}
 
 mod_list <- readRDS("../Model_Fits/ramet_flower_n_list.rds")
 
 plot_preds(mod_list, use_clim)
 
 ```
-
 \newpage
 
+\newpage
 ## Pr(flowering) (Bernoulli, n = 6581)
 
 - Mean precip
@@ -372,14 +373,14 @@ plot_preds(mod_list, use_clim)
 
 \newpage
 
-```{r echo = FALSE, warning = FALSE, message = FALSE, fig.height = 10, fig.width = 7.5, fig.cap = "Pr(flowering) model predictions. Includes 4 sites (to demonstrate random intercept variability without over cluttering the graph), and show predictions for each model. If you can't see the short or long dashed lines, it's because the models are different enough and they're all making basically the same predictions.  These predictions show climate held steady at the value the site experienced. I think the next step is to investigate +/- 0.2 SD climate (i.e. not tooooo distant future climate)."}
+```{r echo = FALSE, warning = FALSE, message = FALSE, fig.height = 9, fig.width = 6.5, fig.cap = "Pr(flowering) model predictions. Includes 4 sites (to demonstrate random intercept variability without over cluttering the graph), and show predictions for each model. If you can't see the short or long dashed lines, it's because the models are different enough and they're all making basically the same predictions.  These predictions show climate held steady at the value the site experienced. I think the next step is to investigate +/- 0.2 SD climate (i.e. not tooooo distant future climate)."}
 
 mod_list <- readRDS("../Model_Fits/ramet_repro_list.rds")
 
 plot_preds(mod_list, use_clim)
 
 ```
-
+\newpage
 \newpage
 
 ## Recruit size (n = 15)
@@ -436,7 +437,7 @@ Carpobrotus seems to survive better, but grow slower in the native range. This s
 
 ### Flower Number (Negative binomial, n = 1093)
 
-The `size **+** native` model is chosen, but within the WAIC margin of error. Plots show that site specific variation really is the main driver here. The interaction model does show a slightly negative interaction, but apparently doesn't have as much out of sample predictive power as the non-interaction model. The latter shows a slightly positive effect of nativity (point estimate), but the posterior is wide ($\beta_{nat} \sim N(0.13, 0.42)$). 
+The `size + native` model is chosen, but within the WAIC margin of error. Plots show that site specific variation really is the main driver here. The interaction model does show a slightly negative interaction, but apparently doesn't have as much out of sample predictive power as the non-interaction model. The latter shows a slightly positive effect of nativity (point estimate), but the posterior is wide ($\beta_{nat} \sim N(0.13, 0.42)$). 
 
 I don't think we can reasonably argue plants make fewer flowers in the native range. 
 
@@ -484,4 +485,90 @@ However, there does appear to be at least as much site-specific variability, and
 
 
 That's all for now, folks!
+
+## Rob meeting
+
+use some more environmental variables. Once you get a wider set, dimensional reduction, then use those axes in models with nativity.
+
+    + Keep interactions in this model meaningful. Nativity * size, axis 1 * size, axis 2 * size. Don't go 3-way interaction.
+
+Probably not worth diving into sliding windows with only 1 transition. That is going to be a shitshow, and unlikely to yield anything anyway since temporal replication is essential.
+
+## Tiffany meeting
+
+Take climate from year before for reproduction, and year of transition for survival growth. Then combine per Rob's suggestion and go forward from there. Those are the time frames that should affect it, ignoring potential lags in sliding window because that'll be a nightmare w/ only 1 transition. 
+
+- southern hemisphere: 
+
+    + repro: Sept 2017-2018
+    
+    + surv/grow: Sept 2018-2019
+    
+- PT:
+    
+    + repro: March 2018-2019
+    
+    + surv/grow: March 2019-2020
+    
+- IS: 
+    
+    + repro: April 2017-2018
+    
+    + surv/grow: April 2018-2019
+    
+## From both
+
+Retain nativity and keep looking for climate signal. Tiffany will be furious if I ditch that, so try some more stuff. Or just keep the negative signal in the dissertation to keep her happy. But don't quit!
+
+# Genetics stuff
+
+Spoke with Ana Novoa on January 20. Genetics data are analyzed and pretty much ready!
+
+**Big picture**:
+
+1. identified 3 main genetic clusters throughout the global range. They all appear in South Africa, and all have hybridized with each other to varying degrees in different populations. 
+
+2. Wanted to create hybrids from each cluster in the green house, but had problems getting seeds imported to CZ.
+
+    + Couldn't really do it. permitting issues w the EU
+    
+3. Germination data is mostly done, though missing some seeds from South Africa which are currently en route. The latter should be germinated/analyzed by May.
+
+    + I'm not going to wait for these data unless things are *really* different from population to population/genetic cluster to genetic cluster.
+    
+## Data
+
+
+### Genetics
+
+Used microsatellites. They're an older technique, but still valid apparently. The three clusters are roughly geographically grouped. 
+
+> Extracted whole genome, then extracted segment that had variability (microsatellite). Computed proportion of region belonging to each cluster for all individual samples. This variable is Dirichlet distributed w/ 3 options. Need to work out how to use that in IPMs/subsequent analyses. 
+
+Not really any correlation w/ traits collected in the field. Maybe some correlation w/ pop size structure though... need to check! 
+
+higher inbreeding, less heterozygosity in native range. Ana suggested there may be less pollination going on in native range, or that cloning is more common in invaded range (and founder populations were fairly heterozygous). That's an area for more study in the future (I think).  
+
+### Germination 
+
+various treatments based on seeds from populations in each cluster (e.g. humidity, pH). 
+
+have data from all clusters in some places, but not all populations. I think this is ok for us provided variance isn't excessive.
+
+
+## TO dos
+
+1. Get genetics and germ data from Ana.
+
+2. Stick those in an IPM/subsequent analysis
+
+3. also look for correlates of cluster/drone based trait data and send those back to Ana.
+
+**Potentially Required Coauthors to use this data:**
+
+genetics data: Ana must be included, Jaco Le Roux, Dave Richardson. 
+
+germination data: Ana must be included, and two postdocs in Petr Pysek's group. 
+
+
 
