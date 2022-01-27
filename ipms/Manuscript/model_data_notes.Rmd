@@ -520,6 +520,14 @@ Take climate from year before for reproduction, and year of transition for survi
 
 Retain nativity and keep looking for climate signal. Tiffany will be furious if I ditch that, so try some more stuff. Or just keep the negative signal in the dissertation to keep her happy. But don't quit!
 
+## Climate issues
+
+- WorldClim cuts off at end of 2018
+
+- CHELSA cuts off at end of 2019.
+    
+  + This is annoying, but I think I'll try to see what happens w/o January-March 2020. Then again, RNOAA may have weather station data to supplement these, except that we don't have this info for every site. SO the anomaly for these two sites across each month would have to be computed w/r/t some other data set that doesn't exactly match, entailing a whole bunch of other assumptions. 
+
 # Genetics stuff
 
 Spoke with Ana Novoa on January 20. Genetics data are analyzed and pretty much ready!

@@ -17,8 +17,6 @@
 *.shp
 *.shx
 Ana_Israel_IPM/Manuscript/*_cache
-Polygons/*
-Model_Fits/*
 Misc/*
 *.rds
 *.pptx
@@ -27,3 +25,6 @@ Misc/*
 *.tiff
 *.xml
 repro_analysis/Data/*
+*.nc4
+*.netrc
+*.urs_cookies

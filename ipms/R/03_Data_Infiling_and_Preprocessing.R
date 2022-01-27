@@ -59,7 +59,7 @@ for(i in pops$Site) {
     size, flower_n, flower_col,
     merged_ramets = merged_ramets
   ) %>%
-    .ground_truth_data(
+    ground_truth_data(
       gcps = all_gr_tr,
       pop = pop,
       time = 1) %>%
@@ -74,7 +74,7 @@ for(i in pops$Site) {
     population, id, clone_of,
     size, flower_n, flower_col, alive
   ) %>%
-    .ground_truth_data(gcps = all_gr_tr,
+    ground_truth_data(gcps = all_gr_tr,
                        pop = pop,
                        time = 2) %>%
     filter(id < 22000)
