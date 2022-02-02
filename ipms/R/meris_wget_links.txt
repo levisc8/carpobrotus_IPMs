@@ -1,4 +1,0 @@
-
-https://goldsmr4.gesdisc.eosdis.nasa.gov/data/MERRA2_MONTHLY/M2TMNXFLX.5.12.4/2018/MERRA2_400.tavgM_2d_flx_Nx.201811.nc4
-
-

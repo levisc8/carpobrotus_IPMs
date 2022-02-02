@@ -25,8 +25,6 @@ get_prob_rows <- function(model_obj, loo_obj, thresh) {
   
 }
 
-sourceCpp(file = 'ipms/R/Cpp/cpp_utils.cpp')
-
 # Extras ------
 
 # Correct data types from QGIS polygons for use in C++ merge_ramets/calc_surv
