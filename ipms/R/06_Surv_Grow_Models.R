@@ -26,44 +26,127 @@ grow_data <- readRDS("ipms/Data/growth_data.rds") %>%
 
 # Survival -----
 
-# survival_map_list <- fit_vr_model(surv_data, "alive", "map_rec")
-# survival_mat_list <- fit_vr_model(surv_data, "alive", "mat_rec")
-# survival_p_seas_list <- fit_vr_model(surv_data, "alive", "p_seas_rec")
-# survival_t_co_q_list <- fit_vr_model(surv_data, "alive", "t_co_qu_rec")
-# survival_t_seas_list <- fit_vr_model(surv_data, "alive", "t_seas_rec")
+
+
+# brm_survival_list <- list(clim_krig = fit_vr_model(surv_data, "alive"))
 # 
-# brm_survival_list <- list(map = survival_map_list,
-#                           mat = survival_mat_list,
-#                           p_seas = survival_p_seas_list,
-#                           t_seas = survival_t_seas_list,
-#                           co_qu  = survival_t_co_q_list)
+# saveRDS(brm_survival_list, file = 'ipms/Model_Fits/ramet_survival_list_krig_gam.rds')
+# brm_survival_list <- readRDS('ipms/Model_Fits/ramet_survival_list_krig_gam.rds')
+# 
+# plot_models(brm_survival_list, "survival")
+# plot_preds(brm_survival_list, "survival_native", native = "yes")
 
-brm_survival_list <- list(native = fit_vr_model(surv_data, "alive", native = "yes"))
-
-saveRDS(brm_survival_list, file = 'ipms/Model_Fits/ramet_survival_list_native.rds')
-# brm_survival_list <- readRDS('ipms/Model_Fits/ramet_survival_list.rds')
-
-plot_models(brm_survival_list, "survival")
-plot_preds(brm_survival_list, "survival_native", native = "yes")
 # Growth ----
 
-# grow_map_list <- fit_vr_model(grow_data, "log_size_next", "map_rec")
-# grow_mat_list <- fit_vr_model(grow_data, "log_size_next", "mat_rec")
-# grow_p_seas_list <- fit_vr_model(grow_data, "log_size_next", "p_seas_rec")
-# grow_t_co_q_list <- fit_vr_model(grow_data, "log_size_next", "t_co_qu_rec")
-# grow_t_seas_list <- fit_vr_model(grow_data, "log_size_next", "t_seas_rec")
+# brm_grow_list <- list(clim_krig = fit_vr_model(grow_data, "log_size_next"))
 # 
-# brm_grow_list <- list(map = grow_map_list,
-#                        mat = grow_mat_list,
-#                        p_seas = grow_p_seas_list,
-#                        t_seas = grow_t_seas_list,
-#                        co_qu  = grow_t_co_q_list)
+# saveRDS(brm_grow_list, file = 'ipms/Model_Fits/ramet_growth_list_krig_gam.rds')
+# brm_grow_list <- readRDS('ipms/Model_Fits/ramet_growth_list_krig_gam.rds')
+# 
+# plot_models(brm_grow_list, "log_size_next")
+# plot_preds(brm_grow_list, "growth_native", native = "yes")
 
-brm_grow_list <- list(native = fit_vr_model(grow_data, "log_size_next", native = "yes"))
+surv_gam_list <- readRDS('ipms/Model_Fits/ramet_survival_list_krig_gam.rds')
+surv_lin_list <- readRDS('ipms/Model_Fits/ramet_survival_list_krig.rds')
+
+# surv_test_model <- brm(
+#   alive ~ log_size + 
+#     s(temp_dry_t, bs = "cs", k = 4) + 
+#     temp_wet_t * log_size + 
+#     prec_dry_t * log_size + 
+#     prec_wet_t * log_size + 
+#     sw2_dry_t * log_size + 
+#     sw2_wet_t * log_size + 
+#     sw1_dry_t * log_size + 
+#     sw1_wet_t * log_size +
+#     (1 | site),
+#   data = surv_data,
+#   family = bernoulli(),
+#   chains     = 4,    
+#   backend    = "cmdstanr",
+#   inits      = "random",
+#   cores      = getOption("mc.cores", 4L),
+#   save_model = "ipms/Stan/lin_gam_mix_survival.stan",
+#   control    = list(adapt_delta = 0.999,
+#                     max_treedepth = 15))
+
+# saveRDS(surv_test_model, "ipms/Model_Fits/surv_lin_gam_mix.rds")
+surv_test_model <- readRDS("ipms/Model_Fits/surv_lin_gam_mix.rds")
+
+surv_waic <- waic(surv_test_model,
+                  surv_lin_list$clim_krig$times_sw2_seas,
+                  surv_lin_list$clim_krig$times_sw1_seas)
 
 
-saveRDS(brm_grow_list, file = 'ipms/Model_Fits/ramet_grow_list_native.rds')
-# brm_grow_list <- readRDS('ipms/Model_Fits/ramet_grow_list.rds')
 
-plot_models(brm_grow_list, "log_size_next")
-plot_preds(brm_grow_list, "growth_native", native = "yes")
+grow_3 <- bf(
+  log_size_next ~ log_size + 
+    mean_temp_t * log_size + 
+    seas_temp_t * log_size + 
+    t2(total_prec_t, log_size, bs = "cs", k = 4) + 
+    t2(seas_prec_t, log_size, bs = "cs", k = 4) + 
+    mean_sw3_t * log_size + 
+    s(seas_sw3_t, bs = "cs", k = 4) +
+    (1 | site),
+  sigma ~ log_size + 
+    mean_temp_t +
+    seas_temp_t +
+    seas_prec_t +
+    seas_sw3_t +
+    (1|site)
+)
+
+grow_2_1 <- bf(
+  log_size_next ~ log_size + 
+    mean_temp_t * log_size + 
+    t2(seas_temp_t, log_size, bs = "cs", k = 4) + 
+    t2(total_prec_t, log_size, bs = "cs", k = 4) + 
+    t2(seas_prec_t, log_size, bs = "cs", k = 4) + 
+    s(mean_sw2_t, bs = "cs", k = 4) + 
+    seas_sw2_t * log_size + 
+    s(mean_sw1_t, bs = "cs", k = 4) + 
+    seas_sw1_t * log_size +
+    (1 | site),
+  sigma ~ log_size + (1 | site)
+)
+
+# grow_3_test_model <- brm(
+#   grow_3,
+#   data = grow_data,
+#   family = gaussian(),
+#   chains     = 4,    
+#   backend    = "cmdstanr",
+#   inits      = "random",
+#   cores      = getOption("mc.cores", 4L),
+#   save_model = "ipms/Stan/lin_gam_mix_growth_3.stan",
+#   control    = list(adapt_delta = 0.999,
+#                     max_treedepth = 15))
+
+# grow_2_1_test_model <- brm(
+#   grow_2_1,
+#   data = grow_data,
+#   family = gaussian(),
+#   chains     = 4,    
+#   backend    = "cmdstanr",
+#   inits      = "random",
+#   cores      = getOption("mc.cores", 4L),
+#   save_model = "ipms/Stan/lin_gam_mix_growth_2_1.stan",
+#   control    = list(adapt_delta = 0.999,
+#                     max_treedepth = 15))
+# 
+# saveRDS(grow_2_1_test_model, "ipms/Model_Fits/grow_2_1_lin_gam_mix.rds")
+# saveRDS(grow_3_test_model, "ipms/Model_Fits/grow_3_lin_gam_mix.rds")
+
+grow_gam_list <- readRDS('ipms/Model_Fits/ramet_growth_list_krig_gam.rds')
+grow_lin_list <- readRDS('ipms/Model_Fits/ramet_growth_list_krig.rds')
+grow_2_1_test_model <- readRDS("ipms/Model_Fits/grow_2_1_lin_gam_mix.rds")
+grow_3_test_model <- readRDS("ipms/Model_Fits/grow_3_lin_gam_mix.rds")
+
+grow_waic <- waic(grow_3_test_model, 
+                  grow_2_1_test_model,
+                  grow_gam_list$clim_krig$times_sw1_ann,
+                  grow_gam_list$clim_krig$times_sw2_ann,
+                  grow_gam_list$clim_krig$times_sw3_ann)
+
+surv_waic
+grow_waic

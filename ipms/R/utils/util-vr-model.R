@@ -1,34 +1,5 @@
 
-
-# Find observations w/ pareto-K's above a certain threshold value from LOO object
-find_prob_obs <- function(loo_obj, thresh) {
-  
-  return(which(loo_obj$diagnostics$pareto_k > thresh))
-  
-}
-
-# Get exact row IDs for a data set who's pareto-k values are above a
-# certain threshold
-get_prob_rows <- function(model_obj, loo_obj, thresh) {
-  
-  stopifnot(length(model_obj) == length(loo_obj))
-  
-  # index of values for the model_obj@frame slot
-  data_ind <- lapply(loo_obj, FUN = find_prob_obs, thresh = thresh)
-  
-  
-  out <- lapply(seq_len(length(model_obj)), function(x) {
-    model_obj[[x]]$data[data_ind[[x]], ]
-  })
-  
-  return(out)
-  
-}
-
-# Extras ------
-
 # Correct data types from QGIS polygons for use in C++ merge_ramets/calc_surv
-
 
 check_outliers <- function(all_ramets, population, type) {
   
@@ -40,13 +11,15 @@ check_outliers <- function(all_ramets, population, type) {
 
 # Model fitting and checking ---------------
 
-fit_vr_model <- function(data, vr, clim, native = "no") {
-  
-  switch(native,
-         "yes" = .fit_native_model(data, vr),
-         "no"  = .fit_clim_model(data, vr, clim))
+fit_vr_model <- function(data, vr) {
+
+  .fit_native_model(data, vr)
   
 }
+
+# TODO: Add climate to this. 
+# Will create PCA w/ mean/max temp, temp in growing season, prec, soil water.
+# will also see if bare vars make a difference.
 
 .fit_native_model <- function(data, vr) {
   
@@ -55,16 +28,19 @@ fit_vr_model <- function(data, vr, clim, native = "no") {
     "repro"     = bernoulli(),
     "flower_n"  = negbinomial(),
     "alive"     = bernoulli(),
-    "size_next" = gaussian()
+    "log_size_next" = gaussian()
   )
   
-  form_1 <- as.formula(glue("{vr} ~ log_size + (1 | site)"))
-  form_2 <- as.formula(glue("{vr} ~ log_size + native + (1 | site)"))
-  form_3 <- as.formula(glue("{vr} ~ log_size * native + (1 | site)"))
+  seas_forms <- .make_bfs(vr, "seas")
+  ann_forms  <- .make_bfs(vr, "ann")
+  
+  # Drop duplicate native-only formula
+  all_forms <- c(seas_forms, ann_forms[2:length(ann_forms)])
   
   be <- "cmdstanr"
   
   if(vr %in% c("flower_n")) {
+    
     inits <- "0"
     
   } else {
@@ -74,162 +50,251 @@ fit_vr_model <- function(data, vr, clim, native = "no") {
   
   if(vr == "alive") vr <- "survival"
   
-  # NB: Sigma has log link by default! Remember to exponentiate at IPM
-  # build time.
-  if(vr == "log_size_next") {
+  if(vr == "log_size_next") vr <- "growth"
+  
+  
+  
+  out <- list()
+  
+  for(i in seq_along(all_forms)) {
     
-    sigma_form_1 <- sigma ~ log_size
-    sigma_form_2 <- sigma ~ log_size + native
-    sigma_form_3 <- sigma ~ log_size * native
+    rds_fp <- glue("ipms/Model_Fits/gams/{vr}/{names(all_forms)[i]}.rds")
     
+    if(file_exists(rds_fp)) {
+      
+      out[[i]] <- readRDS(rds_fp)
+      names(out)[i] <- names(all_forms)[i]
+      message(glue("Skipping Model {i} for {vr}: already modeled :))"))
+      next
+      
+    }
     
-    form_1 <- bf(form_1, sigma_form_1)
-    form_2 <- bf(form_2, sigma_form_2)
-    form_3 <- bf(form_3, sigma_form_3)
+    # Save gam stan code
+    if(i == 2) {
+      mod_fp <- glue('ipms/Stan/{vr}_gam_seas_krig_data.stan')
+    } else if (i == 8) {
+      mod_fp <- glue('ipms/Stan/{vr}_gam_ann_krig_data.stan')
+    } else {
+      mod_fp <- NULL
+    }
+    message(glue("Model {i} for {vr}: {names(all_forms)[i]}----------\n\n"))
     
-    vr <- "growth"
+    out[[i]] <- brm(all_forms[[i]],
+                    data       = data,
+                    family     = fam,
+                    chains     = 4,    
+                    backend    = be,
+                    inits      = inits,
+                    cores      = getOption("mc.cores", 4L),
+                    save_model = mod_fp,
+                    control    = list(adapt_delta = 0.999,
+                                      max_treedepth = 15))
+    names(out)[i] <- names(all_forms)[i]
+    
+    saveRDS(out[[i]],
+            file = rds_fp)
+    
   }
+ 
+  mod_waic <- waic(out[[1]],
+                   out[[2]],
+                   out[[3]],
+                   out[[4]],
+                   out[[5]],
+                   out[[6]],
+                   out[[7]],
+                   out[[8]],
+                   out[[9]],
+                   out[[10]],
+                   out[[11]],
+                   out[[12]],
+                   out[[13]],
+                   model_names = names(out))
   
-  
-  message("Model 1: size only: Native----------\n\n")
-  mod_1 <- brm(form_1,
-               data       = data,
-               family     = fam,
-               chains     = 4,    
-               backend    = be,
-               inits      = inits,
-               cores      = getOption("mc.cores", 4L),
-               save_model = glue('ipms/Stan/{vr}_size_only_native.stan'),
-               control    = list(adapt_delta = 0.99,
-                                 max_treedepth = 15))
-  
-  message("\n\nModel 2: Size Plus Native-------\n\n")
-  
-  mod_2 <- brm(form_2,
-               data       = data,
-               family     = fam,
-               chains     = 4,    
-               backend    = be,
-               inits      = inits,
-               cores      = getOption("mc.cores", 4L),
-               save_model = glue('ipms/Stan/{vr}_size_plus_native.stan'),
-               control    = list(adapt_delta = 0.99,
-                                 max_treedepth = 15))
-  
-  message("\n\nModel 3: Size Times Native------\n\n")
-  
-  mod_3 <- brm(form_3,
-               data       = data,
-               family     = fam,
-               chains     = 4,    
-               backend    = be,
-               inits      = inits,
-               cores      = getOption("mc.cores", 4L),
-               save_model = glue('ipms/Stan/{vr}_size_times_native.stan'),
-               control    = list(adapt_delta = 0.99,
-                                 max_treedepth = 15))
-  
-  mod_waic <- waic(mod_1, mod_2, mod_3)
-  
-  out <- list(size_only         = mod_1,
-              size_plus_native  = mod_2,
-              size_times_native = mod_3,
-              waic              = mod_waic)
+  out <- c(out, mod_waic = mod_waic)
   
   return(out)
 }
 
 
-.fit_clim_model <- function(data, vr, clim) {
+.make_bfs <- function(vr, clim) {
   
-  fam <- switch(
+  seas_clim_vars <- c("temp_dry", "temp_wet", 
+                      "prec_dry", "prec_wet")
+  ann_clim_vars  <- c("mean_temp", "seas_temp",
+                      "total_prec", "seas_prec")
+  
+  seas_sw1_vars  <- c(seas_clim_vars,  
+                      "sw1_dry","sw1_wet")
+  
+  ann_sw1_vars   <-  c(ann_clim_vars,
+                       "mean_sw1", "seas_sw1")
+  
+  seas_sw2_vars  <- c(seas_clim_vars,  
+                      "sw2_dry","sw2_wet")
+  
+  ann_sw2_vars   <-  c(ann_clim_vars,
+                       "mean_sw2", "seas_sw2")
+  
+  seas_sw3_vars  <- c(seas_clim_vars,  
+                      "sw3_dry","sw3_wet")
+  
+  ann_sw3_vars   <-  c(ann_clim_vars,
+                       "mean_sw3", "seas_sw3")
+  
+  # *_t_1 = *_(t minus 1)
+  # *_t   = *_(time of sample start) repro + flower_n are lagged by a year
+  # because we use vr(t) ~ size (t) to estimate the relationship, and so weather
+  # that would matter to it is from the previous year. growth/survival are
+  # conditional on the weather from the transition itself, as those are
+  # evaluated at t+1.
+  
+  pc_1_terms <- switch(
     vr,
-    "repro"     = bernoulli(),
-    "flower_n"  = negbinomial(),
-    "alive"     = bernoulli(),
-    "size_next" = gaussian()
+    "repro" = ,
+    "flower_n" = switch(
+      clim,
+      "seas" = paste0(seas_sw1_vars, "_t_1"),
+      "ann"  = paste0(ann_sw1_vars, "_t_1")
+    ),
+    "alive" = ,
+    "log_size_next" = switch(
+      clim,
+      "seas" = paste0(seas_sw1_vars, "_t"),
+      "ann"  = paste0(ann_sw1_vars, "_t")
+    )
   )
   
-  form_1 <- as.formula(glue("{vr} ~ log_size + (1|site)"))
-  form_2 <- as.formula(glue("{vr} ~ log_size + {clim} + (1|site)"))
-  form_3 <- as.formula(glue("{vr} ~ log_size * {clim} + (1|site)"))
+  pc_1_add_term <- paste(
+    paste0(
+      "s(", pc_1_terms, ", k = 4, bs = 'cs')"), 
+    collapse = " + ")
+  pc_1_int_term <- paste(
+      paste0(
+        "t2(", pc_1_terms, ", log_size, k = 4, bs = 'cs')"
+      ),
+    collapse = " + "
+  )
   
-  be <- "cmdstanr"
+  pc_2_terms <- switch(
+    vr,
+    "repro" = ,
+    "flower_n" = switch(
+      clim,
+      "seas" = paste0(seas_sw2_vars, "_t_1"),
+      "ann"  = paste0(ann_sw2_vars, "_t_1")
+    ),
+    "alive" = ,
+    "log_size_next" = switch(
+      clim,
+      "seas" = paste0(seas_sw2_vars, "_t"),
+      "ann"  = paste0(ann_sw2_vars, "_t")
+    )
+  )
   
-  if(vr %in% c("flower_n")) {
-    inits <- "0"
-    
-  } else {
-    
-    inits <- "random"
-  }
+  pc_2_add_term <- paste(
+    paste0(
+      "s(", pc_2_terms, ", k = 4, bs = 'cs')"
+      ),
+    collapse = " + ")
+  pc_2_int_term <- paste(
+    paste0(
+      "t2(", pc_2_terms, ", log_size, k = 4, bs = 'cs')"
+    ),   
+    collapse = " + "
+  )
   
-  if(vr == "alive") vr <- "survival"
+  pc_3_terms <- switch(
+    vr,
+    "repro" = ,
+    "flower_n" = switch(
+      clim,
+      "seas" = paste0(seas_sw3_vars, "_t_1"),
+      "ann"  = paste0(ann_sw3_vars, "_t_1")
+    ),
+    "alive" = ,
+    "log_size_next" = switch(
+      clim,
+      "seas" = paste0(seas_sw3_vars, "_t"),
+      "ann"  = paste0(ann_sw3_vars, "_t")
+    )
+  )
   
-  # NB: Sigma has log link by default! Remember to exponentiate at IPM
-  # build time.
+  pc_3_add_term <- paste(
+    paste0(
+      "s(", pc_3_terms, ", k = 4, bs = 'cs')"
+    ),
+    collapse = " + ")
+  pc_3_int_term <- paste(
+    paste0(
+      "t2(", pc_3_terms, ", log_size, k = 4, bs = 'cs')"
+    ),    collapse = " + "
+  )
+  
+  native_only <- as.formula(glue("{vr} ~ log_size + native + (1 | site)"))
+  add_sw1     <- as.formula(glue("{vr} ~ log_size + {pc_1_add_term} + native + (1 | site)"))
+  times_sw1   <- as.formula(glue("{vr} ~ log_size + {pc_1_int_term} + native + (1 | site)"))
+  add_sw2     <- as.formula(glue("{vr} ~ log_size + {pc_2_add_term} + native + (1 | site)"))
+  times_sw2   <- as.formula(glue("{vr} ~ log_size + {pc_2_int_term} + native + (1 | site)"))
+  add_sw3     <- as.formula(glue("{vr} ~ log_size + {pc_3_add_term} + native + (1 | site)"))
+  times_sw3   <- as.formula(glue("{vr} ~ log_size + {pc_3_int_term} + native + (1 | site)"))
+  
   if(vr == "log_size_next") {
     
-    sigma_form_1 <- sigma ~ log_size
-    sigma_form_2 <- as.formula(glue("sigma ~ log_size + {clim}"))
-    sigma_form_3 <- as.formula(glue("sigma ~ log_size * {clim}"))
+    sig_1_add_term <- paste(pc_1_terms, collapse = " + ")
+    sig_2_add_term <- paste(pc_2_terms, collapse = " + ")
+    sig_3_add_term <- paste(pc_3_terms, collapse = " + ")
+    
+
+    sigma_form <- as.formula(
+      glue(
+        "sigma ~ log_size + native + (1 | site)"
+      )
+    )
+    
+    sigma_1_form <- as.formula(
+      glue(
+        "sigma ~ log_size + {sig_1_add_term} + native + (1 | site)"
+      )
+    )
+    
+    sigma_2_form <- as.formula(
+      glue(
+        "sigma ~ log_size + {sig_2_add_term} + native + (1 | site)"
+      )
+    )
+    
+    sigma_3_form <- as.formula(
+      glue(
+        "sigma ~ log_size + {sig_3_add_term} + native + (1 | site)"
+      )
+    )
     
     
-    form_1 <- bf(form_1, sigma_form_1)
-    form_2 <- bf(form_2, sigma_form_2)
-    form_3 <- bf(form_3, sigma_form_3)
+    native_only <- bf(native_only, sigma_form)
+    add_sw1     <- bf(add_sw1, sigma_1_form)
+    times_sw1   <- bf(times_sw1, sigma_1_form)
+    add_sw2     <- bf(add_sw2, sigma_2_form)
+    times_sw2   <- bf(times_sw2, sigma_2_form)
+    add_sw3     <- bf(add_sw3, sigma_3_form)
+    times_sw3   <- bf(times_sw3, sigma_3_form)
     
-    vr <- "growth"
   }
   
+  base_nms <- c("add_sw1", "times_sw1", 
+                "add_sw2", "times_sw2",
+                "add_Sw3", "times_sw3")
   
-  message("Model 1: size only----------\n\n")
-  mod_1 <- brm(form_1,
-               data       = data,
-               family     = fam,
-               chains     = 4,    
-               backend    = be,
-               inits      = inits,
-               cores      = getOption("mc.cores", 4L),
-               save_model = glue('ipms/Stan/{vr}_{clim}_int_only.stan'),
-               control    = list(adapt_delta = 0.99,
-                                 max_treedepth = 15))
+  out_nms <- c("native_only", glue("{base_nms}_{clim}"))
   
-  message("\n\nModel 2: Size Plus climate-------\n\n")
-  
-  mod_2 <- brm(form_2,
-               data       = data,
-               family     = fam,
-               chains     = 4,    
-               backend    = be,
-               inits      = inits,
-               cores      = getOption("mc.cores", 4L),
-               save_model = glue('ipms/Stan/{vr}_{clim}_size_plus_clim.stan'),
-               control    = list(adapt_delta = 0.99,
-                                 max_treedepth = 15))
-  
-  message("\n\nModel 3: Size Times Climate------\n\n")
-  
-  mod_3 <- brm(form_3,
-               data       = data,
-               family     = fam,
-               chains     = 4,    
-               backend    = be,
-               inits      = inits,
-               cores      = getOption("mc.cores", 4L),
-               save_model = glue('ipms/Stan/{vr}_{clim}_size_times_clim.stan'),
-               control    = list(adapt_delta = 0.99,
-                                 max_treedepth = 15))
-  
-  mod_waic <- waic(mod_1, mod_2, mod_3)
-  
-  out <- list(size_only       = mod_1,
-              size_plus_clim  = mod_2,
-              size_times_clim = mod_3,
-              waic            = mod_waic)
+  out <- list(native_only,
+              add_sw1, times_sw1,
+              add_sw2, times_sw2, 
+              add_sw3, times_sw3) %>%
+    setNames(out_nms)
   
   return(out)
   
   
+  
 }
-

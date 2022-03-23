@@ -38,47 +38,23 @@ flower_data <- filter(all_ramets, !is.na(flower_n) & !is.na(size)) #%>%
 
 # BRMS fits ------------------
 
-# repro_map_list <- fit_vr_model(repro_data, "repro", "map_rec")
-# repro_mat_list <- fit_vr_model(repro_data, "repro", "mat_rec")
-# repro_p_seas_list <- fit_vr_model(repro_data, "repro", "p_seas_rec")
-# repro_t_co_q_list <- fit_vr_model(repro_data, "repro", "t_co_qu_rec")
-# repro_t_seas_list <- fit_vr_model(repro_data, "repro", "t_seas_rec")
-# 
-# brm_repro_list <- list(map = repro_map_list,
-#                        mat = repro_mat_list,
-#                        p_seas = repro_p_seas_list,
-#                        t_seas = repro_t_seas_list,
-#                        co_qu  = repro_t_co_q_list)
+# brm_repro_list <- list(krig_clim = fit_vr_model(repro_data, "repro"))
 
-brm_repro_list <- list(native = fit_vr_model(repro_data, "repro", native = "yes"))
+# saveRDS(brm_repro_list, file = 'ipms/Model_Fits/ramet_repro_list_krig_gam.rds')
+# brm_repro_list <- readRDS('ipms/Model_Fits/ramet_repro_list_krig_gam.rds')
 
-saveRDS(brm_repro_list, file = 'ipms/Model_Fits/ramet_repro_list_native.rds')
-# brm_repro_list <- readRDS('ipms/Model_Fits/ramet_repro_list.rds')
-
-plot_models(brm_repro_list, "repro")
-plot_preds(brm_repro_list, "repro_native", native = "yes")
+# plot_models(brm_repro_list, "repro")
+# plot_preds(brm_repro_list, "repro_native", native = "yes")
 
 # Flower production models -----------------
-# flower_n_map_list <- fit_vr_model(flower_data, "flower_n", "map_rec")
-# flower_n_mat_list <- fit_vr_model(flower_data, "flower_n", "mat_rec")
-# flower_n_p_seas_list <- fit_vr_model(flower_data, "flower_n", "p_seas_rec")
-# flower_n_t_co_q_list <- fit_vr_model(flower_data, "flower_n", "t_co_qu_rec")
-# flower_n_t_seas_list <- fit_vr_model(flower_data, "flower_n", "t_seas_rec")
+
+# brm_flower_n_list <- list(krig_clim = fit_vr_model(flower_data, "flower_n"))
 # 
-# brm_flower_n_list <- list(map = flower_n_map_list,
-#                           mat = flower_n_mat_list,
-#                           p_seas = flower_n_p_seas_list,
-#                           t_seas = flower_n_t_seas_list,
-#                           co_qu  = flower_n_t_co_q_list)
-
-brm_flower_n_list <- list(native = fit_vr_model(flower_data, "flower_n", native = "yes"))
-
-
-saveRDS(brm_flower_n_list, file = 'ipms/Model_Fits/ramet_flower_n_list_native.rds')
-# brm_flower_n_list <- readRDS('ipms/Model_Fits/ramet_flower_n_list.rds')
-
-plot_models(brm_flower_n_list, "flower_n")
-plot_preds(brm_flower_n_list, "flower_n_native", native = "yes")
+# saveRDS(brm_flower_n_list, file = 'ipms/Model_Fits/ramet_flower_n_list_krig_gam.rds')
+# brm_flower_n_list <- readRDS('ipms/Model_Fits/ramet_flower_n_list_krig_gam.rds')
+# 
+# plot_models(brm_flower_n_list, "flower_n")
+# plot_preds(brm_flower_n_list, "flower_n_native", native = "yes")
 
 # # Recruit size distribution model-----------
 # recruits <- readRDS("ipms/Data/seedlings.rds")
@@ -120,6 +96,64 @@ plot_preds(brm_flower_n_list, "flower_n_native", native = "yes")
 # 
 # 
 # dev.off()
+
+# Test against final models from GAM/linear fits 
+
+repr_gam_list <- readRDS('ipms/Model_Fits/ramet_repro_list_krig_gam.rds')
+repr_lin_list <- readRDS('ipms/Model_Fits/ramet_repro_list_krig.rds')
 # 
+# repr_test_model <- brm(
+#   repro ~ log_size + 
+#     s(mean_temp_t_1, bs = "cs", k = 4) +
+#     seas_temp_t_1 * log_size +
+#     s(total_prec_t_1, bs = "cs", k = 4) + 
+#     seas_prec_t_1 * log_size +
+#     mean_sw2_t_1 * log_size + 
+#     seas_sw2_t_1 * log_size +
+#     (1 | site),
+#   data = repro_data,
+#   family = bernoulli(),
+#   chains     = 4,    
+#   backend    = "cmdstanr",
+#   inits      = "random",
+#   cores      = getOption("mc.cores", 4L),
+#   save_model = "ipms/Stan/lin_gam_mix_repro.stan",
+#   control    = list(adapt_delta = 0.999,
+#                     max_treedepth = 15))
+
+# saveRDS(repr_test_model, "ipms/Model_Fits/repro_lin_gam_mix.rds")
+repr_test_model <- readRDS("ipms/Model_Fits/repro_lin_gam_mix.rds")
+
+
+flow_gam_list <- readRDS('ipms/Model_Fits/ramet_flower_n_list_krig_gam.rds')
+flow_lin_list <- readRDS('ipms/Model_Fits/ramet_flower_n_list_krig.rds')
 # 
+# flow_test_model <- brm(
+#   flower_n ~ log_size + 
+#     temp_dry_t_1 * log_size +
+#     temp_wet_t_1 * log_size +
+#     t2(prec_dry_t_1, log_size, bs = "cs", k = 4) + 
+#     t2(prec_wet_t_1, log_size, bs = "cs", k = 4) + 
+#     sw2_dry_t_1 * log_size + 
+#     sw2_wet_t_1 * log_size + 
+#     (1 | site),
+#   data = flower_data,
+#   family = negbinomial(),
+#   chains     = 4,    
+#   backend    = "cmdstanr",
+#   inits      = "0",
+#   cores      = getOption("mc.cores", 4L),
+#   save_model = "ipms/Stan/lin_gam_mix_flower_n.stan",
+#   control    = list(adapt_delta = 0.999,
+#                     max_treedepth = 15))
+
+# saveRDS(flow_test_model, "ipms/Model_Fits/flower_n_lin_gam_mix.rds")
+flow_test_model <- readRDS("ipms/Model_Fits/flower_n_lin_gam_mix.rds")
+
+repr_waic <- waic(repr_lin_list$krig_clim$times_sw2_ann, repr_test_model)
+flow_waic <- waic(flow_test_model, flow_gam_list$krig_clim$times_sw2_seas)
+
+repr_waic
+flow_waic
+
 # # Finish fecundity model fitting

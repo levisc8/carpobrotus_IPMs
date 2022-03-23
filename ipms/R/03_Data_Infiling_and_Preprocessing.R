@@ -24,7 +24,7 @@ buried_ramets <- read.csv('ipms/Data/buried_ramets.csv',
                           stringsAsFactors = FALSE) %>%
   mutate(pop_id = paste(population, id, sep = "_"))
 
-clim <- read.csv("ipms/Data/all_gbif_field_sites.csv",
+clim <- read.csv("ipms/Data/all_kriged_field_sites.csv",
                  stringsAsFactors = FALSE)
 
 pops <- all_sites[all_sites$Demography == 1 &
@@ -36,224 +36,197 @@ pops <- all_sites[all_sites$Demography == 1 &
                   c('Country', 'Site')] %>%
   arrange(Site)
 
-out <- list()
-
-for(i in pops$Site) {
-  
-  pop <- i
-  country <- pops$Country[pops$Site == i]
-  
-  debug_log <- fs::file_create(glue("ipms/debugging/{pop}.txt"))
-  
-  sink(file = debug_log,
-       type = c("output", "message"))
-  
-  # This will generate both ramet and genet level data frames for each population
-  
-  temp <- infile_data(
-    glue('ipms/Polygons/{country}/{pop}/Polygon_Final.shp'),
-    pop,
-    type = 'local_t_1',
-    # Variables to keep
-    population, id, clone_of,
-    size, flower_n, flower_col,
-    merged_ramets = merged_ramets
-  ) %>%
-    ground_truth_data(
-      gcps = all_gr_tr,
-      pop = pop,
-      time = 1) %>%
-    filter(id < 22000)
-  
-  st_geometry(temp) <- NULL
-  
-  temp_t_2 <- infile_data(
-    glue('ipms/Polygons/{country}/{pop}/Polygon_2019_Final.shp'),
-    pop,
-    type = 'local_t_2',
-    population, id, clone_of,
-    size, flower_n, flower_col, alive
-  ) %>%
-    ground_truth_data(gcps = all_gr_tr,
-                       pop = pop,
-                       time = 2) %>%
-    filter(id < 22000)
-  # st_geometry(temp_t_2) <- NULL
-  
-  temp$country <- all_sites$Country[all_sites$Site == pop][1]
-  temp_t_2$country <- all_sites$Country[all_sites$Site == pop][1]
-  
-
-  out <- c(
-    out, 
-    list(full_join(temp,
-                   temp_t_2,
-                   by = c('population', 'id'))
-    )
-  )
-
-  rm(temp, temp_t_2)
-  
-  sink()
-}
-
-out <- setNames(out, pops$Site)
-
-all_ramets <- do.call(rbind, out)
-
-# Correct survival for clones/new recruits and a data entry error
-
-all_ramets$alive[is.na(all_ramets$size)] <- NA_integer_
-all_ramets$alive[all_ramets$alive == 2]  <- 1L
-
-# Fix some inconsistency in the classification of hybrids from QGIS
-
-all_ramets$flower_col.x[grepl('Y_P', 
-                              all_ramets$flower_col.x, 
-                              ignore.case = TRUE)] <- 'P_Y'
-all_ramets$flower_col.y[grepl('Y_P', 
-                              all_ramets$flower_col.y, 
-                              ignore.case = TRUE)] <- 'P_Y'
-
-# A few plants that flowered didn't have enough visual information at 
-# time T to ID flower color. Some had flower colors at T+1, so those are easy.
-# For the others, I'm going to use P for St. Francis, P_Y for Springfontein, 
-# Vogelgat, and Whirinaki
-
-all_ramets <- all_ramets %>%
-  select(id, population, clone_of.y, size.x, flower_n.x, flower_col.x,
-         log_size.x, repro.x, size.y, flower_n.y, flower_col.y, alive,
-         log_size.y, repro.y, country.y) %>%
-  setNames(
-    c(
-      'id', 'population', 'clone_of',
-      'size', 'flower_n', 'flower_col',
-      'log_size', 'repro', 'size_next', 
-      'flower_n_next', 'flower_col_next',
-      'alive', 'log_size_next', 'repro_next',
-      'country'
-    )
-  )
-  
-
-# If they had a size at t_1 but do not at t_2 and they weren't recorded in 
-# t_2_omissions, then we are assuming they are dead. New recruits won't have
-# a size at t_1, but have a size at t_2, and so they shouldn't be included in 
-# in this
-
-all_ramets$alive[!is.na(all_ramets$log_size) & 
-                   is.na(all_ramets$log_size_next)] <- 0
-
-# A few plants that flowered didn't have enough visual information at 
-# time T to ID flower color. Some had flower colors at T+1, so those are easy.
-# For the others, I'm going to use P for St. Francis, P_Y for Springfontein, 
-# Vogelgat, and Whirinaki
-
-all_ramets <- update_flower_col(all_ramets, 
-                                "Struisbaai",
-                                66,
-                                "P",
-                                't_1') %>%
-  update_flower_col('Vogelgat',
-                    1,
-                    'P_Y',
-                    't_1') %>%
-  update_flower_col('Vogelgat',
-                    1,
-                    'P_Y',
-                    't_2') %>%
-  update_flower_col('Springfontein',
-                    44,
-                    'P_Y',
-                    't_1') %>%
-  update_flower_col('St_Francis',
-                    110,
-                    'P',
-                    't_1') %>%
-  update_flower_col('St_Francis',
-                    110,
-                    'P',
-                    't_2') %>%
-  update_flower_col('Rough_Island',
-                    54,
-                    'P_Y',
-                    't_1') %>%
-  update_flower_col('Rough_Island',
-                    262,
-                    'P_Y',
-                    't_1') %>%
-  update_flower_col('Rough_Island',
-                    290,
-                    'P',
-                    't_1') %>%
-  update_flower_col('Whirinaki',
-                    142,
-                    'P',
-                    't_1') %>%
-  update_flower_col('Whirinaki',
-                    147,
-                    'P',
-                    't_1') %>%
-  update_flower_col('Struisbaai',
-                    72,
-                    'P',
-                    't_2')
-  
-# For those that flowered twice but have differing flower colors,
-# use T+1 designations. I trust those a bit more.
-
-all_ramets <- mutate(all_ramets, id_pop = paste(id, population, sep = "_"))
-
-fl_col_diffs <- filter(all_ramets, 
-                       !is.na(flower_col) & !is.na(flower_col_next)) %>%
-  filter(flower_col != flower_col_next)
-
-fl_col_diffs$flower_col <- fl_col_diffs$flower_col_next
-
-
-# Now, replace the old ones w/ the new ones
-
-all_ramets <- filter(all_ramets,
-                     ! id_pop %in% fl_col_diffs$id_pop) %>% # remove one's we updated 
-  bind_rows(fl_col_diffs) %>%                               # add them back in
-  select(-id_pop)
-
-
-# Some had flowers at both times, but flower color at T was unidentifiable because
-# the petals had already dropped. In cases where we know flower color at T+1, 
-# we can use that to infer flower color at T
-
-
-all_ramets$flower_col[is.na(all_ramets$flower_col) &
-                        !is.na(all_ramets$flower_col_next) &
-                        !is.na(all_ramets$flower_n)] <- 
-  all_ramets$flower_col_next[is.na(all_ramets$flower_col) & 
-                               !is.na(all_ramets$flower_col_next) &
-                               !is.na(all_ramets$flower_n)]
-
-
-# Climate -----
-
-all_vars <- names(clim)
-exclude  <- c("Sampled", "species", "site", "lon", "lat")
-
-use_vars <- setdiff(all_vars, exclude)
-
-for(i in use_vars) {
-  
-  clim[ , i] <- scale(clim[ , i],
-                      center = TRUE,
-                      scale = TRUE)
-}
-
-
-all_ramets <- clim %>%
-  filter(Sampled == "Yes") %>%
-  select(-c(Sampled, species, lon, lat)) %>%
-  filter(site %in% unique(all_ramets$population)) %>% 
-  right_join(all_ramets, by = c("site" = "population"))
-
-
+# out <- list()
+# 
+# for(i in pops$Site) {
+#   
+#   pop <- i
+#   country <- pops$Country[pops$Site == i]
+#   
+#   # This will generate both ramet and genet level data frames for each population
+#   
+#   temp <- infile_data(
+#     glue('ipms/Polygons/{country}/{pop}/Polygon_Final.shp'),
+#     pop,
+#     type = 'local_t_1',
+#     # Variables to keep
+#     population, id, clone_of,
+#     size, flower_n, flower_col,
+#     merged_ramets = merged_ramets
+#   ) %>%
+#     ground_truth_data(
+#       gcps = all_gr_tr,
+#       pop = pop,
+#       time = 1) %>%
+#     filter(id < 22000)
+#   
+#   st_geometry(temp) <- NULL
+#   
+#   temp_t_2 <- infile_data(
+#     glue('ipms/Polygons/{country}/{pop}/Polygon_2019_Final.shp'),
+#     pop,
+#     type = 'local_t_2',
+#     population, id, clone_of,
+#     size, flower_n, flower_col, alive
+#   ) %>%
+#     ground_truth_data(gcps = all_gr_tr,
+#                        pop = pop,
+#                        time = 2) %>%
+#     filter(id < 22000)
+#   # st_geometry(temp_t_2) <- NULL
+#   
+#   temp$country <- all_sites$Country[all_sites$Site == pop][1]
+#   temp_t_2$country <- all_sites$Country[all_sites$Site == pop][1]
+#   
+# 
+#   out <- c(
+#     out, 
+#     list(full_join(temp,
+#                    temp_t_2,
+#                    by = c('population', 'id'))
+#     )
+#   )
+# 
+#   rm(temp, temp_t_2)
+#   
+# }
+# 
+# out <- setNames(out, pops$Site)
+# 
+# all_ramets <- do.call(rbind, out)
+# 
+# # Correct survival for clones/new recruits and a data entry error
+# 
+# all_ramets$alive[is.na(all_ramets$size)] <- NA_integer_
+# all_ramets$alive[all_ramets$alive == 2]  <- 1L
+# 
+# # Fix some inconsistency in the classification of hybrids from QGIS
+# 
+# all_ramets$flower_col.x[grepl('Y_P', 
+#                               all_ramets$flower_col.x, 
+#                               ignore.case = TRUE)] <- 'P_Y'
+# all_ramets$flower_col.y[grepl('Y_P', 
+#                               all_ramets$flower_col.y, 
+#                               ignore.case = TRUE)] <- 'P_Y'
+# 
+# # A few plants that flowered didn't have enough visual information at 
+# # time T to ID flower color. Some had flower colors at T+1, so those are easy.
+# # For the others, I'm going to use P for St. Francis, P_Y for Springfontein, 
+# # Vogelgat, and Whirinaki
+# 
+# all_ramets <- all_ramets %>%
+#   select(id, population, clone_of.y, size.x, flower_n.x, flower_col.x,
+#          log_size.x, repro.x, size.y, flower_n.y, flower_col.y, alive,
+#          log_size.y, repro.y, country.y) %>%
+#   setNames(
+#     c(
+#       'id', 'population', 'clone_of',
+#       'size', 'flower_n', 'flower_col',
+#       'log_size', 'repro', 'size_next', 
+#       'flower_n_next', 'flower_col_next',
+#       'alive', 'log_size_next', 'repro_next',
+#       'country'
+#     )
+#   )
+#   
+# 
+# # If they had a size at t_1 but do not at t_2 and they weren't recorded in 
+# # t_2_omissions, then we are assuming they are dead. New recruits won't have
+# # a size at t_1, but have a size at t_2, and so they shouldn't be included in 
+# # in this
+# 
+# all_ramets$alive[!is.na(all_ramets$log_size) & 
+#                    is.na(all_ramets$log_size_next)] <- 0
+# 
+# # A few plants that flowered didn't have enough visual information at 
+# # time T to ID flower color. Some had flower colors at T+1, so those are easy.
+# # For the others, I'm going to use P for St. Francis, P_Y for Springfontein, 
+# # Vogelgat, and Whirinaki
+# 
+# all_ramets <- update_flower_col(all_ramets, 
+#                                 "Struisbaai",
+#                                 66,
+#                                 "P",
+#                                 't_1') %>%
+#   update_flower_col('Vogelgat',
+#                     1,
+#                     'P_Y',
+#                     't_1') %>%
+#   update_flower_col('Vogelgat',
+#                     1,
+#                     'P_Y',
+#                     't_2') %>%
+#   update_flower_col('Springfontein',
+#                     44,
+#                     'P_Y',
+#                     't_1') %>%
+#   update_flower_col('St_Francis',
+#                     110,
+#                     'P',
+#                     't_1') %>%
+#   update_flower_col('St_Francis',
+#                     110,
+#                     'P',
+#                     't_2') %>%
+#   update_flower_col('Rough_Island',
+#                     54,
+#                     'P_Y',
+#                     't_1') %>%
+#   update_flower_col('Rough_Island',
+#                     262,
+#                     'P_Y',
+#                     't_1') %>%
+#   update_flower_col('Rough_Island',
+#                     290,
+#                     'P',
+#                     't_1') %>%
+#   update_flower_col('Whirinaki',
+#                     142,
+#                     'P',
+#                     't_1') %>%
+#   update_flower_col('Whirinaki',
+#                     147,
+#                     'P',
+#                     't_1') %>%
+#   update_flower_col('Struisbaai',
+#                     72,
+#                     'P',
+#                     't_2')
+#   
+# # For those that flowered twice but have differing flower colors,
+# # use T+1 designations. I trust those a bit more.
+# 
+# all_ramets <- mutate(all_ramets, id_pop = paste(id, population, sep = "_"))
+# 
+# fl_col_diffs <- filter(all_ramets, 
+#                        !is.na(flower_col) & !is.na(flower_col_next)) %>%
+#   filter(flower_col != flower_col_next)
+# 
+# fl_col_diffs$flower_col <- fl_col_diffs$flower_col_next
+# 
+# 
+# # Now, replace the old ones w/ the new ones
+# 
+# all_ramets <- filter(all_ramets,
+#                      ! id_pop %in% fl_col_diffs$id_pop) %>% # remove one's we updated 
+#   bind_rows(fl_col_diffs) %>%                               # add them back in
+#   select(-id_pop)
+# 
+# 
+# # Some had flowers at both times, but flower color at T was unidentifiable because
+# # the petals had already dropped. In cases where we know flower color at T+1, 
+# # we can use that to infer flower color at T
+# 
+# 
+# all_ramets$flower_col[is.na(all_ramets$flower_col) &
+#                         !is.na(all_ramets$flower_col_next) &
+#                         !is.na(all_ramets$flower_n)] <- 
+#   all_ramets$flower_col_next[is.na(all_ramets$flower_col) & 
+#                                !is.na(all_ramets$flower_col_next) &
+#                                !is.na(all_ramets$flower_n)]
+# 
+# 
+# 
 # Buried plants ------------ 
 # A number of plants were buried/covered by trees at T and exposed at T+1 (or vice versa), 
 # giving them unrealistic growth increments. We can't really use those for growth, as they'll
@@ -275,13 +248,34 @@ all_ramets <- clim %>%
 #   filter(col != "normal") %>%
 #   select(-(incr:col))
 
-grow_data <- all_ramets %>%
-  mutate(pop_id = paste(population, id, sep = "_")) %>%
-  filter(!pop_id %in% buried_ramets$pop_id) %>%
-  mutate(flower_n_grow = ifelse(is.na(flower_n), 0, flower_n)) %>%
-  select(-pop_id)
+# grow_data <- all_ramets %>%
+#   mutate(pop_id = paste(population, id, sep = "_")) %>%
+#   filter(!pop_id %in% buried_ramets$pop_id) %>%
+#   mutate(flower_n_grow = ifelse(is.na(flower_n), 0, flower_n)) %>%
+#   select(-pop_id)
 
 # Store data
+
+# Climate -----
+# This modifies the pieces that are already created by the above. it inserts
+# the kriged data from 01_Climate_Data_Download.R. This replaces previous
+# attempts w/ chelsa climatologies.
+
+all_ramets <- readRDS("ipms/Data/all_ramets_di.rds") %>% 
+  select(-c(Mean_Annual_Temp_hist:p_seas_rec))
+
+grow_data <- readRDS("ipms/Data/growth_data.rds") %>% 
+  select(-c(Mean_Annual_Temp_hist:p_seas_rec))
+
+all_ramets <- clim %>%
+  select(-c(species, lon:ID)) %>%
+  right_join(all_ramets, by = "site")
+
+grow_data <- clim %>%
+  select(-c(species, lon:ID)) %>%
+  right_join(grow_data, by = "site")
+
+
 
 saveRDS(all_ramets, file = 'ipms/Data/all_ramets_di.rds')
 saveRDS(grow_data, file  = 'ipms/Data/growth_data.rds')
