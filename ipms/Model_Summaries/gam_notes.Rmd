@@ -1,0 +1,65 @@
+---
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+--- 
+
+# VR Models post-GAM and others
+
+See notes below on best models. Will re-run following examination of smooths and see what these things look like compared to best fits of GAMS/linear only. 
+
+# Repro fitting
+
+Go w/ times sw2_ann based on root depth (see flower_n)
+
+## To re-fit
+
+`repro ~ log_size + s(mean_temp) + seas_temp + s(tot_prec) + seas_prec + mean_sw2 + seas_sw2`
+
+> Works best, use this!
+
+# flower_n fitting
+
+Seasonal GAMs are all best w/ interaction terms. Annual gams are within margin of error, but I think based on understanding of the system (i.e. root depth of flowering plants is usually between 15cm-1m), then we'll go with `sw2` model. 
+
+## To re-fit
+
+sds on temp and sw2 aren't very high, and native seems unremarkable as well. Compare following model w/ seas_sw2:
+
+`flower_n ~ log_size + s(temp_dry) + s(temp_wet) + t2(prec_dry, size) + t2(prec_wet) + s(sw2_dry) + s(sw2_wet) + (1|site)`
+
+>  use **linear** times_sw2_ann model. GAMs produce ridiculous predictions.
+
+# surv fitting
+
+times_sw2_seas and times_sw1_seas are best. I'll try combining these, as they seem to predict different ends. So they'll need interactions w/ size.
+
+## To refit
+
+`alive ~ log_size + s(temp_dry) + temp_wet + prec_dry + prec_wet + sw2_dry * log_size + sw2_wet * log_size + sw1_dry * log_size + sw1_wet * log_size`
+
+> not even close, just use sw2_seas **linear** model.
+
+# growth fitting
+
+Annual GAMs are all best w interaction terms. Differences are all very slim! I don't have much to say about mechanisms here, except to try all interaction gams against...
+
+## To re-fit
+
+try:
+
+### s3 
+
+`log_size_next ~ log_size + t2(size, mean_temp) + s(temp_seas) + t2(prec_tot) + t2(prec_seas) + s(sw3_mean) + s(sw3_seas)`
+
+`sigma ~ log_size + mean_temp + seas_temp + seas_prec + seas_sw3 + (1|site)`
+
+### s2-1
+
+`log_size_next ~ log_size +  mean_temp_t * log_size + t2(seas_temp_t, log_size, bs = "cs", k = 4) + t2(total_prec_t, log_size, bs = "cs", k = 4) + t2(seas_prec_t, log_size, bs = "cs", k = 4) + s(mean_sw2_t, bs = "cs", k = 4) + seas_sw2_t * log_size + s(mean_sw1_t, bs = "cs", k = 4) + seas_sw1_t * log_size +(1 | site)`
+
+`sigma ~ log_size + (1|site)`
+
+> Use this one, as it's tdoing almost as good as the others and actually makes sense
+
