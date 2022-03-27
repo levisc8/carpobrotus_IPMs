@@ -4,5 +4,14 @@ output: github_document
 
 ## Integral projection models for Carpobrotus spp.
 
-Work in progress, project structure will definitely change in the not-so-distant future.
+Work in progress, but getting closer to the end. I have not stored the shapefiles for plants or the climate data here, so it is not reproducible right now. However, the `R` folder will give you an idea of what is going on. A few notes about why it is structured the way it is.
 
+1. It may seem odd that `01_Cliamte_Data_Download.R` comes before utilities and dependencies. Apparently some part of the `krigR` package does not play nicely with the `tidyverse`, and causes a segfault when they're both loaded. Thus, everything related to kriging the climate data is done first, and the rest of the analysis proceeds from there.
+
+2. The `R/utils` folder contains a number of sub-scripts with helper functions. Some of these are no longer used, and will get deleted shortly. 
+
+3. The processing of shape files that represent _Carpobrotus_ ramets is done with `infile_data()`, defined in `R/utils/util-data.R`. Most vital rate modeling was done with `fit_vr_model()`, found in `R/utils/util-vr-model`. However, the final set of models that I'm actually using are contained in `05_Fecundity_Models` and `06_Surv_Grow_models`. 
+
+4. IPM construction is currently for simple IPMs only! I am working on getting seed survival/germination data, but since I don't have it yet, this all that I can do for now. 
+
+This will get updated with more notes shortly. 
