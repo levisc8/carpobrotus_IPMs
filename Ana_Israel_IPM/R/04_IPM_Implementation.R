@@ -56,7 +56,8 @@ carp_ipmr <- init_ipm("simple", "di", "det") %>%
   ) %>%
   make_ipm(usr_funs = list(inv_logit = s_z),
            iterate = TRUE,
-           iterations = 100)
+           iterations = 100,
+           return_all_envs = TRUE)
 
 lambda_ipmr <- lambda_exp_var <- lambda(carp_ipmr)
 
