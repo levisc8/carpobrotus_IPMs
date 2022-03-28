@@ -57,7 +57,7 @@ flower_data <- filter(all_ramets, !is.na(flower_n) & !is.na(size)) #%>%
 # plot_preds(brm_flower_n_list, "flower_n_native", native = "yes")
 
 # # Recruit size distribution model-----------
-# recruits <- readRDS("ipms/Data/seedlings.rds")
+recruits <- readRDS("ipms/Data/seedlings.rds")
 # # 
 # recr_size_model <- brm(log_size_next ~ 1,
 #                        data = recruits,
@@ -156,4 +156,53 @@ flow_waic <- waic(flow_test_model, flow_gam_list$krig_clim$times_sw2_seas)
 repr_waic
 flow_waic
 
+## flower -> fruit -> seed transition parameters
+
+flow_maturation <- read.csv("ipms/Data/seed_pods.csv",
+                            stringsAsFactors = FALSE)
+
+mat_data <- flow_maturation %>%
+  group_by(population, plant) %>%
+  summarise(n_quads = max(quad),
+            n_tot   = sum(n_mat, n_ab),
+            pr_mat  = sum(n_mat) / n_tot)
+
+# D'Antonio (1990) finds the following germination rates: Seeds in intact fruits
+# extracted < 1 year after maturation: 0.24 Seeds in intact fruits extracted > 1
+# year after maturation: 0.73 Talk to TMK + RSG about how to include animal
+# feces data from this paper.
+# https://www.jstor.org/stable/pdf/2404312.pdf?casa_token=EJiz83s5YREAAAAA:NvwT98rakddeZTiXki8r90zIHWabrJUqPh1M94UeYDQITufnLq4PbS0cGXcZNKYcl00xgPA1dpTxfwkxIU766O4oo2ke_0Zsib5I-7Yy7ZpQtoouYjU
+
+v_s  <- 0.24 + 0.73
+g_i  <- 0.24 
+g_sb <- 0.73
+
+# Vila & D'Antonio (1998) find seeds/fruit varies across species/hybrids. They 
+# are: 
+# C. edulis:    1573 +/- 65
+# Hybrid:       704  +/- 43
+# C. chilensis: 483  +/- 27
+# Source (table 1): https://www.jstor.org/stable/pdf/176600.pdf?casa_token=axvw7Gbp014AAAAA:1dL3VbuAI5vP9zMaElpBpX48BhzHtcDpkS8Etvl-1mCbPzTrEZRbvixkfZjtgh3HLYsr5zFWPUJqCBf2QmD9ZQByiJZOul9HsCnlfPW7-JO3mpQnl1w
+
+n_f_ed <- 1573
+n_f_hy <- 704
+n_f_ch <- 483 
+
+# Undetermined populations get mean (or hybrids??)
+n_f_un <- mean(c(1573, 704, 483)) 
+
+# Seedling survival:
+# This is taken from two plots at Rooisand. I counted seedlings in 40x40 cm
+# plots and then came back a year later and used the drone to determine number
+# of survivors and how big they were. Recruit size is modeled above with an
+# intercept only regression, so here is the survival. It'll just be 
+# n_alive / n_tot. I couldn't find plot 2, so we need to exclude that from
+# the calculation of n_tot.
+
+all_sdls <- read.csv("ipms/Data/sdl_plots.csv",
+                     stringsAsFactors = FALSE) %>%
+  .[-2, ]
+
+sdl_s    <- nrow(recruits) / sum(all_sdls$n_sdl)
+  
 # # Finish fecundity model fitting
