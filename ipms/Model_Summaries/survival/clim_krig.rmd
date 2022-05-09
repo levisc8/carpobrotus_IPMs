@@ -1,0 +1,280 @@
+---
+output:
+  html_document:
+    toc: true
+---
+
+# Summary
+
+times sw1 and sw3 seas are best.
+
+## sw3 seas
+
+temp_wet and prec_dry coefs strongly negative, and native strongly positive. all these coefficients are larger than log_size(!!!!). Every interaction, except for log_size X temp_dry is non-0 (!!!). 
+
+temp_wet: `-`
+
+prec_dry: `-`
+
+prec_wet: `+`
+
+sw3_dry: `+`
+
+sw3_wet: `-`
+
+native: `+`
+
+## sw1 seas
+
+temp_wet and prec_dry coefs are negative, but very slightly overlapping 0, native is strongly positive. 
+
+temp_wet: `-`
+
+prec_dry: `-` 
+
+prec_wet: `+`, but possibly 0
+
+sw1_dry: `0`
+
+sw1_wet: `+`, but possibly 0. 
+
+native: `+`
+
+## Overall
+
+cool wet winters help bigger plants. These probably replenish the deeper soil w/ water for dry summers. the lack of effect in sw1 is likely because bigger plants have roots deeper than this soil layer. The nativity coefficient worries me though, as this may 
+
+# All Results
+
+```{r echo = FALSE}
+
+ mod_list <- readRDS('../../Model_Fits/ramet_survival_list_krig.rds') 
+```
+
+## WAIC Results
+
+```{r echo = FALSE}
+
+ print(mod_list[[1]]$mod_waic.diffs) 
+
+```
+
+##  native_only   
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[1]], prob = 0.89) 
+
+ plot(mod_list[[1]][[1]], ask = FALSE)
+ pp_check(mod_list[[1]][[1]],
+type   = 'bars_grouped',
+group  = 'site',
+freq   = FALSE,
+ndraws = 100L) 
+
+```
+
+
+
+##  add_sw1_seas   
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[2]], prob = 0.89) 
+
+ plot(mod_list[[1]][[2]], ask = FALSE)
+ pp_check(mod_list[[1]][[2]],
+type   = 'bars_grouped',
+group  = 'site',
+freq   = FALSE,
+ndraws = 100L) 
+
+```
+
+
+
+##  times_sw1_seas   
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[3]], prob = 0.89) 
+
+ plot(mod_list[[1]][[3]], ask = FALSE)
+ pp_check(mod_list[[1]][[3]],
+type   = 'bars_grouped',
+group  = 'site',
+freq   = FALSE,
+ndraws = 100L) 
+
+```
+
+
+
+##  add_sw2_seas   
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[4]], prob = 0.89) 
+
+ plot(mod_list[[1]][[4]], ask = FALSE)
+ pp_check(mod_list[[1]][[4]],
+type   = 'bars_grouped',
+group  = 'site',
+freq   = FALSE,
+ndraws = 100L) 
+
+```
+
+
+
+##  times_sw2_seas   
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[5]], prob = 0.89) 
+
+ plot(mod_list[[1]][[5]], ask = FALSE)
+ pp_check(mod_list[[1]][[5]],
+type   = 'bars_grouped',
+group  = 'site',
+freq   = FALSE,
+ndraws = 100L) 
+
+```
+
+
+
+##  add_Sw3_seas   
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[6]], prob = 0.89) 
+
+ plot(mod_list[[1]][[6]], ask = FALSE)
+ pp_check(mod_list[[1]][[6]],
+type   = 'bars_grouped',
+group  = 'site',
+freq   = FALSE,
+ndraws = 100L) 
+
+```
+
+
+
+##  times_sw3_seas   
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[7]], prob = 0.89) 
+
+ plot(mod_list[[1]][[7]], ask = FALSE)
+ pp_check(mod_list[[1]][[7]],
+type   = 'bars_grouped',
+group  = 'site',
+freq   = FALSE,
+ndraws = 100L) 
+
+```
+
+
+
+##  add_sw1_ann   
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[8]], prob = 0.89) 
+
+ plot(mod_list[[1]][[8]], ask = FALSE)
+ pp_check(mod_list[[1]][[8]],
+type   = 'bars_grouped',
+group  = 'site',
+freq   = FALSE,
+ndraws = 100L) 
+
+```
+
+
+
+##  times_sw1_ann   
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[9]], prob = 0.89) 
+
+ plot(mod_list[[1]][[9]], ask = FALSE)
+ pp_check(mod_list[[1]][[9]],
+type   = 'bars_grouped',
+group  = 'site',
+freq   = FALSE,
+ndraws = 100L) 
+
+```
+
+
+
+##  add_sw2_ann   
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[10]], prob = 0.89) 
+
+ plot(mod_list[[1]][[10]], ask = FALSE)
+ pp_check(mod_list[[1]][[10]],
+type   = 'bars_grouped',
+group  = 'site',
+freq   = FALSE,
+ndraws = 100L) 
+
+```
+
+
+
+##  times_sw2_ann   
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[11]], prob = 0.89) 
+
+ plot(mod_list[[1]][[11]], ask = FALSE)
+ pp_check(mod_list[[1]][[11]],
+type   = 'bars_grouped',
+group  = 'site',
+freq   = FALSE,
+ndraws = 100L) 
+
+```
+
+
+
+##  add_Sw3_ann   
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[12]], prob = 0.89) 
+
+ plot(mod_list[[1]][[12]], ask = FALSE)
+ pp_check(mod_list[[1]][[12]],
+type   = 'bars_grouped',
+group  = 'site',
+freq   = FALSE,
+ndraws = 100L) 
+
+```
+
+
+
+##  times_sw3_ann   
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[13]], prob = 0.89) 
+
+ plot(mod_list[[1]][[13]], ask = FALSE)
+ pp_check(mod_list[[1]][[13]],
+type   = 'bars_grouped',
+group  = 'site',
+freq   = FALSE,
+ndraws = 100L) 
+
+```
+

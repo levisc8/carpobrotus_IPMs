@@ -568,6 +568,8 @@ have data from all clusters in some places, but not all populations. I think thi
 
 1. Get genetics and germ data from Ana.
 
+  + DONE
+
 2. Stick those in an IPM/subsequent analysis
 
 3. also look for correlates of cluster/drone based trait data and send those back to Ana.
@@ -577,6 +579,3 @@ have data from all clusters in some places, but not all populations. I think thi
 genetics data: Ana must be included, Jaco Le Roux, Dave Richardson. 
 
 germination data: Ana must be included, and two postdocs in Petr Pysek's group. 
-
-
-

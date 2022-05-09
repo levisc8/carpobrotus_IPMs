@@ -1,0 +1,270 @@
+---
+title: "growth"
+output:
+  html_document:
+    toc: true
+---
+
+
+```{r echo = FALSE}
+
+ mod_list <- readRDS('../../Model_Fits/ramet_growth_list_krig.rds') 
+```
+
+# Summary
+
+times_sw3_seas, times_sw1_ann are best beyond the WAIC margin of error. There don't seem to be any major issues w/ waic estimates or divergent transitions. Perhaps unsurprisingly, most estimates of single effects are 0, with the exception of mean and variance intercepts and size slopes. Things get interesting looking at interaction coefficients, suggesting non-linearity. GAMS are running as I type.
+
+## sw3 seasonal breakdown interaction model summary
+
+Interactions are definitely non-0 for log_size:temp_wet_t (`-`), log_size:prec_dry_t (`-`),  log_size:prec_wet_t (`+`), log_size:sw3_dry_t (`+`), log_size:sw3_wet_t (`-`). So I guess big plants cooler wet season temperatures, more precipitation seasonality (i.e. wetter winter, drier summer), and the opposite w/r/t deep soil moisture. 
+
+My general thoughts are that the wet season precip replenishes the deep soil moisture, and the plants w/ deeper roots like this because it gives them an advantage going into the hot, dry summers. This makes sense given D'Antonio's 1990s work and subsequent work on phys integration. 
+
+## sw1 annual interaction model summary
+
+Interactions are definitely non-0 for log_size:seas_temp_t (`-`), log_size:total_prec_t (`-`), log_size:seas_prec_t (`-`), log_size:mean_sw1_t (`+`), log_size:seas_sw1_t (`+`).   So it seems that over the full year, temp seasonality is bad for igger plants, less precip and precip seasonality is bad for bigger plants, and higher shallow moisture helps more. I don't know what to make of this in light of the other model. Given the higher detail in the other model, and the fact that it fits better w/ what we already know physiologically, I think I'll stick w/ that one. 
+
+
+# All Results
+
+## WAIC Results
+
+```{r echo = FALSE}
+
+ print(mod_list[[1]]$mod_waic.diffs) 
+
+```
+
+##  native_only   
+
+
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[1]], prob = 0.89) 
+
+ plot(mod_list[[1]][[1]], ask = FALSE)
+ pp_check(mod_list[[1]][[1]],
+type   = 'scatter_avg_grouped',
+group  = 'site',
+ndraws = 100L) 
+
+```
+
+
+
+##  add_sw1_seas   
+
+
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[2]], prob = 0.89) 
+
+ plot(mod_list[[1]][[2]], ask = FALSE)
+ pp_check(mod_list[[1]][[2]],
+type   = 'scatter_avg_grouped',
+group  = 'site',
+ndraws = 100L) 
+
+```
+
+
+
+##  times_sw1_seas   
+
+
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[3]], prob = 0.89) 
+
+ plot(mod_list[[1]][[3]], ask = FALSE)
+ pp_check(mod_list[[1]][[3]],
+type   = 'scatter_avg_grouped',
+group  = 'site',
+ndraws = 100L) 
+
+```
+
+
+
+##  add_sw2_seas   
+
+
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[4]], prob = 0.89) 
+
+ plot(mod_list[[1]][[4]], ask = FALSE)
+ pp_check(mod_list[[1]][[4]],
+type   = 'scatter_avg_grouped',
+group  = 'site',
+ndraws = 100L) 
+
+```
+
+
+
+##  times_sw2_seas   
+
+
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[5]], prob = 0.89) 
+
+ plot(mod_list[[1]][[5]], ask = FALSE)
+ pp_check(mod_list[[1]][[5]],
+type   = 'scatter_avg_grouped',
+group  = 'site',
+ndraws = 100L) 
+
+```
+
+
+
+##  add_Sw3_seas   
+
+
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[6]], prob = 0.89) 
+
+ plot(mod_list[[1]][[6]], ask = FALSE)
+ pp_check(mod_list[[1]][[6]],
+type   = 'scatter_avg_grouped',
+group  = 'site',
+ndraws = 100L) 
+
+```
+
+
+
+##  times_sw3_seas   
+
+
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[7]], prob = 0.89) 
+
+ plot(mod_list[[1]][[7]], ask = FALSE)
+ pp_check(mod_list[[1]][[7]],
+type   = 'scatter_avg_grouped',
+group  = 'site',
+ndraws = 100L) 
+
+```
+
+
+
+##  add_sw1_ann   
+
+
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[8]], prob = 0.89) 
+
+ plot(mod_list[[1]][[8]], ask = FALSE)
+ pp_check(mod_list[[1]][[8]],
+type   = 'scatter_avg_grouped',
+group  = 'site',
+ndraws = 100L) 
+
+```
+
+
+
+##  times_sw1_ann   
+
+
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[9]], prob = 0.89) 
+
+ plot(mod_list[[1]][[9]], ask = FALSE)
+ pp_check(mod_list[[1]][[9]],
+type   = 'scatter_avg_grouped',
+group  = 'site',
+ndraws = 100L) 
+
+```
+
+
+
+##  add_sw2_ann   
+
+
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[10]], prob = 0.89) 
+
+ plot(mod_list[[1]][[10]], ask = FALSE)
+ pp_check(mod_list[[1]][[10]],
+type   = 'scatter_avg_grouped',
+group  = 'site',
+ndraws = 100L) 
+
+```
+
+
+
+##  times_sw2_ann   
+
+
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[11]], prob = 0.89) 
+
+ plot(mod_list[[1]][[11]], ask = FALSE)
+ pp_check(mod_list[[1]][[11]],
+type   = 'scatter_avg_grouped',
+group  = 'site',
+ndraws = 100L) 
+
+```
+
+
+
+##  add_Sw3_ann   
+
+
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[12]], prob = 0.89) 
+
+ plot(mod_list[[1]][[12]], ask = FALSE)
+ pp_check(mod_list[[1]][[12]],
+type   = 'scatter_avg_grouped',
+group  = 'site',
+ndraws = 100L) 
+
+```
+
+
+
+##  times_sw3_ann   
+
+
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[13]], prob = 0.89) 
+
+ plot(mod_list[[1]][[13]], ask = FALSE)
+ pp_check(mod_list[[1]][[13]],
+type   = 'scatter_avg_grouped',
+group  = 'site',
+ndraws = 100L) 
+
+```
+

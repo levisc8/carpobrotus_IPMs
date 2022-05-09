@@ -1,12 +1,12 @@
 ---
-output: word_document
+output: html_document
 ---
 
 ## Transitions
 
 1. plant -> plant $s(z) * g(z', z)$
 
-2. plant -> fruit $p_r(z) * S(z) * f_n(z) * p_m * p_{f_v}$
+2. plant -> fruit $p_r(z) * S(z) * f_n(z) * p_m$
 
 3. fruit -> seedling $n_f * p_e * g_i * v_s$
 
@@ -24,75 +24,89 @@ output: word_document
 - $s(z)$: survival ~ size
 
   - Data: drone mapping
+  
+     + **DONE**
 
 - $g(z',z)$: size (*t+1*) conditional on survival
 
   - Data: drone mapping
+  
+    + **DONE**
 
 - $p_r(z)$: Probability of flowering ~ size
 
   - Data: drone mapping
+  
+    + **DONE**
 
-- $f_n(z)$: Flower number conditional on flowering
-
-  - Data: drone mapping
-
-- $p_m$: Proportion of flowers at *t* that make it to *t + 1*
-
-  - Data: Sum of total fruits in seed density data set, scaled to actual plant area
-
-- $p_{f_v}$: Proportion of fruits that make it to *t + 1* that are still viable (e.g. $1 - abortion\_rate$)
-
-  - Data: sum of mature fruits in seed density data set divided by $p_m$
-
-- $f_d(z')$: Recruit size distribution
+- $r_n(z)$: Flower number conditional on flowering
 
   - Data: drone mapping
+  
+    + **DONE**
+
+- $p_m$: Proportion of flowers at *t* that mature to *t+1* (doesn't include aborted fruits)
+
+  - Data: Quads
+    
+    + NB: Havatselet is computed as mean of all sites because I did not actually do sub-quad sampling there. 
+    
+    + **DONE**
+
+- $r_d(z')$: Recruit size distribution
+
+  - Data: drone mapping
+  
+    + **DONE**
   
 - $g_i$: germination rate of fresh seeds
 
-  - data: need to talk to Erola
+  - data: [D'Antonio 1990](https://www.jstor.org/stable/pdf/2404312.pdf?casa_token=EJiz83s5YREAAAAA:NvwT98rakddeZTiXki8r90zIHWabrJUqPh1M94UeYDQITufnLq4PbS0cGXcZNKYcl00xgPA1dpTxfwkxIU766O4oo2ke_0Zsib5I-7Yy7ZpQtoouYjU)
   
-    - DONE for SA, NZ, PT
-      
-      - Covid fucked ESP and USA
+    + **DONE**
     
 - $v_s$: total seed viability
 
-  - data: need to talk to Erola
+  - data: [Vila & D'Antonio 1998b](https://www.jstor.org/stable/pdf/42902368.pdf?casa_token=yfrN1ElnkEkAAAAA:PlCQbLl7GUG2BqpbuVIbNQjKKcgS1XgTmDVtn3YKHVF3Ewc5piB8i8PYBgEhy6qtxF7n586qN-0QpFAkANa7Eh9kFmHmy1Pmnm7Iet2KU373g3Bp4N8)
   
-  - DONE for all except CA and Israel, have for Spain, but other sites, not ours
+    + **DONE**
   
-- $n_f$: mean number of seeds per surviving mature fruit
+- $r_f$: mean number of seeds per surviving mature fruit
 
-  - data: Erola
+  - data: [Vila & D'Antonio 1998a](https://www.jstor.org/stable/pdf/176600.pdf?casa_token=axvw7Gbp014AAAAA:1dL3VbuAI5vP9zMaElpBpX48BhzHtcDpkS8Etvl-1mCbPzTrEZRbvixkfZjtgh3HLYsr5zFWPUJqCBf2QmD9ZQByiJZOul9HsCnlfPW7-JO3mpQnl1w)
   
-    - Done for Spain, SA, NZ, PT
+    + **DONE**
   
 - $p_e$: probability that a viable seed that germinates establishes
 
-  - data: Maybe Erola? I really don't know about this one. Consider using transfer function or something
+  - data: simulate - start w/ 1e-5. 
   
-  - Literature
+    + **DONE**
   
 - $s_s$: seedling survival
 
   - data: seedling survey plots from Rooisand (no others available). This is THIN
   
+  - possibly add [Vila & D'Antonio 1998b](https://www.jstor.org/stable/pdf/42902368.pdf?casa_token=yfrN1ElnkEkAAAAA:PlCQbLl7GUG2BqpbuVIbNQjKKcgS1XgTmDVtn3YKHVF3Ewc5piB8i8PYBgEhy6qtxF7n586qN-0QpFAkANa7Eh9kFmHmy1Pmnm7Iet2KU373g3Bp4N8)
+  
+    + NB: [Vila & D'Antonio 1998b](https://www.jstor.org/stable/pdf/42902368.pdf?casa_token=yfrN1ElnkEkAAAAA:PlCQbLl7GUG2BqpbuVIbNQjKKcgS1XgTmDVtn3YKHVF3Ewc5piB8i8PYBgEhy6qtxF7n586qN-0QpFAkANa7Eh9kFmHmy1Pmnm7Iet2KU373g3Bp4N8) find 0 survival of seedlings after 4 months in coastal scrub, but ~20$\%$ survival after a year in back dune area. However, these were seedlings that already had 4 true leaves. This is in line w/ the 20$\%$ estimate from Rooisand.
+    
+    + **DONE**
+  
 - $s_{sb}$: seed bank survival probability
 
-  - data: need to talk to Erola
+  - data: simulated. Start w/ 1e-2
   
-    - Not really, just simulate instead
+    + **DONE**
   
 - $g_{sb}$: seed bank germination probability
 
-  - data: need to talk to Erola
+  - data: [D'Antonio 1990](https://www.jstor.org/stable/pdf/2404312.pdf?casa_token=EJiz83s5YREAAAAA:NvwT98rakddeZTiXki8r90zIHWabrJUqPh1M94UeYDQITufnLq4PbS0cGXcZNKYcl00xgPA1dpTxfwkxIU766O4oo2ke_0Zsib5I-7Yy7ZpQtoouYjU)
   
-    - Not really, artificial aging experiments don't use, just simulate instead. 
+    + **DONE**
   
 ## Function count
 
 Number of functions: 5
 
-Number of discrete parameters: 9
+Number of discrete parameters: 8

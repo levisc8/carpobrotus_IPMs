@@ -1,0 +1,287 @@
+---
+title: "flower_n" 
+output:
+  html_document:
+    toc: true
+---
+
+# Summary
+
+All of the interaction models are basically indistinguishable. Only one not in WAIC marign of error is sw3_ann. All positive size coefficients. Interestingly, in this model, those do not seem to have the largest effect size, though are far more certain.
+
+
+## sw3_seas
+
+prec_wet and sw3_dry are very close to non-0 and point estimates are `---`. All interactions are non-0 and `-`, except for temp_wet and sw3_wet which are `+`.
+
+## sw1_seas
+
+no non-0 non-interaction coefs. for interactions, prec_dry_t_1 is `-`, sw1_dry_t_1 is `+`, and sw1_wet_t_1 is `-`. 
+
+## sw2_ann 
+
+no non-0 non-interactio coefs. log_size:mean_temp_t_1 (`-`), log_size:seas_prec_t_1 (`+`), log_size:mean_sw2_t_1 (`-`), log_size:seas_sw2_t_1 (`-`). 
+
+## sw1_ann
+
+no non-0 non-interaction coefs. for interactions, mean_temp_t_1 is `-`, seas_prec_t_1 is `+`, mean and seas sw1 are `-`. 
+
+## sw3_ann
+
+no non-0 non-interaction coefs. for interactions  log_size:mean_temp_t_1 is `-`, seas_temp_t_1 is `-`, total_prec_t_1 is `-`, mean_sw3_t_1 is `-`.
+
+## Seasonal models 
+
+Seems that there are conflicting notions of what happens w/ sw1 and sw3. I am not sure what to make of this, except wait and see what happens w/ the GAMS.
+
+## Annual models
+
+Overall, there is a consistent trend for mean temp X size (`-`), and mean soil water X size (`-`). The others are hit or miss, though seas_prec seems positive or close to positive. 
+
+# All Results 
+
+```{r echo = FALSE}
+
+ mod_list <- readRDS('../../Model_Fits/ramet_flower_n_list_krig.rds') 
+```
+
+## WAIC Results
+
+```{r echo = FALSE}
+
+ print(mod_list[[1]]$mod_waic.diffs) 
+
+```
+
+##  native_only   
+
+
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[1]], prob = 0.89) 
+
+ plot(mod_list[[1]][[1]], ask = FALSE)
+ pp_check(mod_list[[1]][[1]],
+type   = 'scatter_avg_grouped',
+group  = 'site',
+ndraws = 100L) 
+
+```
+
+
+
+##  add_sw1_seas   
+
+
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[2]], prob = 0.89) 
+
+ plot(mod_list[[1]][[2]], ask = FALSE)
+ pp_check(mod_list[[1]][[2]],
+type   = 'scatter_avg_grouped',
+group  = 'site',
+ndraws = 100L) 
+
+```
+
+
+
+##  times_sw1_seas   
+
+
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[3]], prob = 0.89) 
+
+ plot(mod_list[[1]][[3]], ask = FALSE)
+ pp_check(mod_list[[1]][[3]],
+type   = 'scatter_avg_grouped',
+group  = 'site',
+ndraws = 100L) 
+
+```
+
+
+
+##  add_sw2_seas   
+
+
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[4]], prob = 0.89) 
+
+ plot(mod_list[[1]][[4]], ask = FALSE)
+ pp_check(mod_list[[1]][[4]],
+type   = 'scatter_avg_grouped',
+group  = 'site',
+ndraws = 100L) 
+
+```
+
+
+
+##  times_sw2_seas   
+
+
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[5]], prob = 0.89) 
+
+ plot(mod_list[[1]][[5]], ask = FALSE)
+ pp_check(mod_list[[1]][[5]],
+type   = 'scatter_avg_grouped',
+group  = 'site',
+ndraws = 100L) 
+
+```
+
+
+
+##  add_Sw3_seas   
+
+
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[6]], prob = 0.89) 
+
+ plot(mod_list[[1]][[6]], ask = FALSE)
+ pp_check(mod_list[[1]][[6]],
+type   = 'scatter_avg_grouped',
+group  = 'site',
+ndraws = 100L) 
+
+```
+
+
+
+##  times_sw3_seas   
+
+
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[7]], prob = 0.89) 
+
+ plot(mod_list[[1]][[7]], ask = FALSE)
+ pp_check(mod_list[[1]][[7]],
+type   = 'scatter_avg_grouped',
+group  = 'site',
+ndraws = 100L) 
+
+```
+
+
+
+##  add_sw1_ann   
+
+
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[8]], prob = 0.89) 
+
+ plot(mod_list[[1]][[8]], ask = FALSE)
+ pp_check(mod_list[[1]][[8]],
+type   = 'scatter_avg_grouped',
+group  = 'site',
+ndraws = 100L) 
+
+```
+
+
+
+##  times_sw1_ann   
+
+
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[9]], prob = 0.89) 
+
+ plot(mod_list[[1]][[9]], ask = FALSE)
+ pp_check(mod_list[[1]][[9]],
+type   = 'scatter_avg_grouped',
+group  = 'site',
+ndraws = 100L) 
+
+```
+
+
+
+##  add_sw2_ann   
+
+
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[10]], prob = 0.89) 
+
+ plot(mod_list[[1]][[10]], ask = FALSE)
+ pp_check(mod_list[[1]][[10]],
+type   = 'scatter_avg_grouped',
+group  = 'site',
+ndraws = 100L) 
+
+```
+
+
+
+##  times_sw2_ann   
+
+
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[11]], prob = 0.89) 
+
+ plot(mod_list[[1]][[11]], ask = FALSE)
+ pp_check(mod_list[[1]][[11]],
+type   = 'scatter_avg_grouped',
+group  = 'site',
+ndraws = 100L) 
+
+```
+
+
+
+##  add_Sw3_ann   
+
+
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[12]], prob = 0.89) 
+
+ plot(mod_list[[1]][[12]], ask = FALSE)
+ pp_check(mod_list[[1]][[12]],
+type   = 'scatter_avg_grouped',
+group  = 'site',
+ndraws = 100L) 
+
+```
+
+
+
+##  times_sw3_ann   
+
+
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[13]], prob = 0.89) 
+
+ plot(mod_list[[1]][[13]], ask = FALSE)
+ pp_check(mod_list[[1]][[13]],
+type   = 'scatter_avg_grouped',
+group  = 'site',
+ndraws = 100L) 
+
+```
+

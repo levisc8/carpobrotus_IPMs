@@ -1,0 +1,432 @@
+---
+title: 'survival' 
+output:
+  html_document:
+    toc: true
+---
+
+
+
+# GAM Summary
+
+Best model is `times_sw2_ann`, followed by `times_sw1_ann`. Interesting
+
+## times_sw2_ann
+
+mean_temp: goes from higher surv in big plants in cold to lower for big plants in warm. Plants < -2.5 don't seem to show much effect at all, it all seems negative/0 for them.
+
+seas_temp: Highest for small plants in warm, and big plants in cold. Lowest for big plants in warm. so perhaps higher population turnover in warmer environments?
+
+total_prec: peak is for big plants around -0.8 SDs from global mean. sort of a negative diagonal, small plants do a little better with a lot of rain, whereas small plants do poorly with little. 
+
+seas_prec: bad across the board for high precip seasonality. peak is for big plants around -0.8 SDs. Some benefit accrued for -1-2 SDs. Worth noting the magnitude of this smooth is substantially lower than the others (f(x,y) in [0-0.1]).
+
+mean_sw2: massive dropoff for big plants at low end, and big gain at high end. small dropoff for small plants at high end, and big gain at low end. 
+
+seas_sw2: same as above, but magnitude of smooth isn't as large.
+
+## times_sw1_ann
+
+mean_temp:total_prec are almost identical to times_sw2 (as expected). Seas_prec is slightly different, with the highest concentration being in the big plants at lowest SD (i.e. peak is top left corner, rather than more towards the center).
+
+mean_sw1: Same as mean_sw2, small plants do best in wetter environments, and big plants do best in wetter environments. 
+
+seas_sw1: small plants see no benefit, and big plants in highly seasonal shallow soil water envs do best. I'm wondering if this isn't correlated with something else...
+
+## Overall impressions
+
+So the best model is actually linear seas_sw3. It is in agreement that bigger plants do worse in warmer temperatures, though are more effected in the wet than dry season. It agrees that big plants like drier dry seasons, but conflicts in that like wetter wet seasons (though not nearly as much as they like the dry dry-season). Soil water tells a similar story as precip - big plants want dry deep soils in dry season, and do worse in wet deep soil in the wet season (wait this is weird, return later). 
+
+### GAM impressions
+
+>Big plants seem to like cooler temperatures, perhaps due to less photo-stress(?), though not too cold! More seasonal temperature swings seem to hinder the larger ones, perhaps because those swings induce either heat or cold stress. Weirdly, small plants seem to like the more seasonal environments. I wonder if that's more indirect - the highly seasonal ones may have less heterospecific growth(?).
+For water, it seems there is a clear benefit to big plants in areas w/ less precip. They compete well for water, so not too suprising. seasonality in preicipitation is less smooth, but they like more consistent environments (so probably drier places w/ less defined wet/dry season).
+Suprisingly, I would expected medium/large sizes to benefit most from higher sw2, and small plants to benefit most from higher sw1. Small plants survived better in drier shallow soils than in wetter ones. My suspicion is that competition for light plays a role here, as other plants can handle the competitive pressure on water and tend to grow upwards. The seasonality thing makes sense - small plants may get out grown completely when there is little change in water availability and they aren't yet large enough to smother hetero-specifics. Big plants may benefit from deeper roots and the fact that they're already established (i.e. physiologically buffered against these big swings). 
+
+
+```{r echo = FALSE, message = FALSE, warning = FALSE}
+library(brms)
+library(magrittr)
+library(knitr)
+library(ggplot2)
+
+gam_list <- readRDS('../../Model_Fits/ramet_survival_list_krig_gam.rds') %>%
+  .[[1]] %>%
+  .[!grepl("waic", names(.))] %>%
+  setNames(paste0("gam_", names(.)))
+lin_list <- readRDS("../../Model_Fits/ramet_survival_list_krig.rds") %>%
+  .[[1]] %>%
+  .[!grepl("waic", names(.))]
+
+```
+
+# WAIC Results - all
+
+```{r echo = FALSE, message = FALSE, warning = FALSE}
+
+all_waic <- lapply(c(gam_list, lin_list), waic)
+
+comp_waic <- loo_compare(all_waic)
+
+kable(comp_waic)
+
+gam_list <- list(gam_list)
+
+```
+
+## times_sw3_seas (Linear)
+
+```{r echo = FALSE}
+
+summary(lin_list$times_sw3_seas)
+
+plot(lin_list$times_sw3_seas)
+pp_check(lin_list$times_sw3_seas,
+         type   = 'bars_grouped',
+         group  = 'site',
+         freq   = FALSE,
+         ndraws = 100L) 
+
+
+```
+
+
+##  native_only   
+
+```{r echo = FALSE}
+
+summary(gam_list[[1]][[1]], prob = 0.89) 
+
+plot(gam_list[[1]][[1]], ask = FALSE)
+pp_check(gam_list[[1]][[1]],
+         type   = 'bars_grouped',
+         group  = 'site',
+         freq   = FALSE,
+         ndraws = 100L) 
+
+```
+
+
+
+##  add_sw1_seas   
+
+```{r echo = FALSE}
+
+summary(gam_list[[1]][[2]], prob = 0.89) 
+
+plot(gam_list[[1]][[2]], ask = FALSE)
+pp_check(gam_list[[1]][[2]],
+         type   = 'bars_grouped',
+         group  = 'site',
+         freq   = FALSE,
+         ndraws = 100L) 
+
+```
+
+```{r echo = FALSE}
+
+plot(conditional_smooths(gam_list[[1]][[2]],
+                         surface = TRUE), 
+     stype = 'raster',
+     theme = theme_bw(),
+     ask = FALSE) 
+
+```
+
+
+
+##  times_sw1_seas   
+
+```{r echo = FALSE}
+
+summary(gam_list[[1]][[3]], prob = 0.89) 
+
+plot(gam_list[[1]][[3]], ask = FALSE)
+pp_check(gam_list[[1]][[3]],
+         type   = 'bars_grouped',
+         group  = 'site',
+         freq   = FALSE,
+         ndraws = 100L) 
+
+```
+
+```{r echo = FALSE}
+
+plot(conditional_smooths(gam_list[[1]][[3]],
+                         surface = TRUE), 
+     stype = 'raster',
+     theme = theme_bw(),
+     ask = FALSE) 
+
+```
+
+
+
+##  add_sw2_seas   
+
+```{r echo = FALSE}
+
+summary(gam_list[[1]][[4]], prob = 0.89) 
+
+plot(gam_list[[1]][[4]], ask = FALSE)
+pp_check(gam_list[[1]][[4]],
+         type   = 'bars_grouped',
+         group  = 'site',
+         freq   = FALSE,
+         ndraws = 100L) 
+
+```
+
+```{r echo = FALSE}
+
+plot(conditional_smooths(gam_list[[1]][[4]],
+                         surface = TRUE), 
+     stype = 'raster',
+     theme = theme_bw(),
+     ask = FALSE) 
+
+```
+
+
+
+##  times_sw2_seas   
+
+```{r echo = FALSE}
+
+summary(gam_list[[1]][[5]], prob = 0.89) 
+
+plot(gam_list[[1]][[5]], ask = FALSE)
+pp_check(gam_list[[1]][[5]],
+         type   = 'bars_grouped',
+         group  = 'site',
+         freq   = FALSE,
+         ndraws = 100L) 
+
+```
+
+```{r echo = FALSE}
+
+plot(conditional_smooths(gam_list[[1]][[5]],
+                         surface = TRUE), 
+     stype = 'raster',
+     theme = theme_bw(),
+     ask = FALSE) 
+
+```
+
+
+
+##  add_Sw3_seas   
+
+```{r echo = FALSE}
+
+summary(gam_list[[1]][[6]], prob = 0.89) 
+
+plot(gam_list[[1]][[6]], ask = FALSE)
+pp_check(gam_list[[1]][[6]],
+         type   = 'bars_grouped',
+         group  = 'site',
+         freq   = FALSE,
+         ndraws = 100L) 
+
+```
+
+```{r echo = FALSE}
+
+plot(conditional_smooths(gam_list[[1]][[6]],
+                         surface = TRUE), 
+     stype = 'raster',
+     theme = theme_bw(),
+     ask = FALSE) 
+
+```
+
+
+
+##  times_sw3_seas   
+
+```{r echo = FALSE}
+
+summary(gam_list[[1]][[7]], prob = 0.89) 
+
+plot(gam_list[[1]][[7]], ask = FALSE)
+pp_check(gam_list[[1]][[7]],
+         type   = 'bars_grouped',
+         group  = 'site',
+         freq   = FALSE,
+         ndraws = 100L) 
+
+```
+
+```{r echo = FALSE}
+
+plot(conditional_smooths(gam_list[[1]][[7]],
+                         surface = TRUE), 
+     stype = 'raster',
+     theme = theme_bw(),
+     ask = FALSE) 
+
+```
+
+
+
+##  add_sw1_ann   
+
+```{r echo = FALSE}
+
+summary(gam_list[[1]][[8]], prob = 0.89) 
+
+plot(gam_list[[1]][[8]], ask = FALSE)
+pp_check(gam_list[[1]][[8]],
+         type   = 'bars_grouped',
+         group  = 'site',
+         freq   = FALSE,
+         ndraws = 100L) 
+
+```
+
+```{r echo = FALSE}
+
+plot(conditional_smooths(gam_list[[1]][[8]],
+                         surface = TRUE), 
+     stype = 'raster',
+     theme = theme_bw(),
+     ask = FALSE) 
+
+```
+
+
+
+##  times_sw1_ann   
+
+```{r echo = FALSE}
+
+summary(gam_list[[1]][[9]], prob = 0.89) 
+
+plot(gam_list[[1]][[9]], ask = FALSE)
+pp_check(gam_list[[1]][[9]],
+         type   = 'bars_grouped',
+         group  = 'site',
+         freq   = FALSE,
+         ndraws = 100L) 
+
+```
+
+```{r echo = FALSE}
+
+plot(conditional_smooths(gam_list[[1]][[9]],
+                         surface = TRUE), 
+     stype = 'raster',
+     theme = theme_bw(),
+     ask = FALSE) 
+
+```
+
+
+
+##  add_sw2_ann   
+
+```{r echo = FALSE}
+
+summary(gam_list[[1]][[10]], prob = 0.89) 
+
+plot(gam_list[[1]][[10]], ask = FALSE)
+pp_check(gam_list[[1]][[10]],
+         type   = 'bars_grouped',
+         group  = 'site',
+         freq   = FALSE,
+         ndraws = 100L) 
+
+```
+
+```{r echo = FALSE}
+
+plot(conditional_smooths(gam_list[[1]][[10]],
+                         surface = TRUE), 
+     stype = 'raster',
+     theme = theme_bw(),
+     ask = FALSE) 
+
+```
+
+
+
+##  times_sw2_ann   
+
+```{r echo = FALSE}
+
+summary(gam_list[[1]][[11]], prob = 0.89) 
+
+plot(gam_list[[1]][[11]], ask = FALSE)
+pp_check(gam_list[[1]][[11]],
+         type   = 'bars_grouped',
+         group  = 'site',
+         freq   = FALSE,
+         ndraws = 100L) 
+
+```
+
+```{r echo = FALSE}
+
+plot(conditional_smooths(gam_list[[1]][[11]],
+                         surface = TRUE), 
+     stype = 'raster',
+     theme = theme_bw(),
+     ask = FALSE) 
+
+```
+
+
+
+##  add_Sw3_ann   
+
+```{r echo = FALSE}
+
+summary(gam_list[[1]][[12]], prob = 0.89) 
+
+plot(gam_list[[1]][[12]], ask = FALSE)
+pp_check(gam_list[[1]][[12]],
+         type   = 'bars_grouped',
+         group  = 'site',
+         freq   = FALSE,
+         ndraws = 100L) 
+
+```
+
+```{r echo = FALSE}
+
+plot(conditional_smooths(gam_list[[1]][[12]],
+                         surface = TRUE), 
+     stype = 'raster',
+     theme = theme_bw(),
+     ask = FALSE) 
+
+```
+
+
+
+##  times_sw3_ann   
+
+```{r echo = FALSE}
+
+summary(gam_list[[1]][[13]], prob = 0.89) 
+
+plot(gam_list[[1]][[13]], ask = FALSE)
+pp_check(gam_list[[1]][[13]],
+         type   = 'bars_grouped',
+         group  = 'site',
+         freq   = FALSE,
+         ndraws = 100L) 
+
+```
+
+```{r echo = FALSE}
+
+plot(conditional_smooths(gam_list[[1]][[13]],
+                         surface = TRUE), 
+     stype = 'raster',
+     theme = theme_bw(),
+     ask = FALSE) 
+
+```
+

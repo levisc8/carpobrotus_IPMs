@@ -1,0 +1,434 @@
+---
+title: 'flower_n' 
+output:
+  html_document:
+    toc: true
+---
+
+# Summary
+
+all seasonal interactions models make top 3, and aren't separable from each other. 
+
+## seasonal mods
+
+temp_dry shows negative effect of big plants in drier areas, with 0-ish effect elsewhere. temp_wet is reverse - 0 effect for everything but big plants, which show a gain.
+
+precip_dry shows a curvy surface for prec_dry, w/ peak around +1 SD. Prec_wet shows peak in top left (~-1SD) and negative elsewhere. 
+
+SWs have an L shape for both seasons, w peaks in top left and bottom right. I suspect the bottom right is driven largely by Struisbaai, where everyhing has just 1 flower and and one or two are teeny-tiny. 
+
+Precip seems to have largest magnitude.
+
+## Annual model
+
+sw2 is the only one that's within WAIC SE. 
+
+Mean temperature shows more benefit across the board for warm temps, with more benefit to larger plants than smaller plants. Seasonality shows opposite pattern, with bigger plants doing well in less seasonal environments. 
+
+Precip shows hump for big plants centered at ~+1SD, and then a peak for smallest plants around 2 SDs (likely driven by clone fragments in NZ). Seasonality shows biggest bump for tiny plants at +1 SD, and ~0 effect for everything else, except negative for big plants +1SD.
+
+Mean SW shows 0 effect mostly, w/ big plants in very wet places doing worse. There is a big bump for tiny plants in +2SD SW seasonality. 
+
+## Overall
+
+Consistent effects in seasonal models, w/ precip always the largest in magnitude. Annual model suggest net effect is bigger plants do better in seasonal envs, but seasonal models give better detail, so think I'd stick w/ those for now. 
+
+# All Results
+
+
+```{r echo = FALSE, message = FALSE, warning = FALSE}
+library(brms)
+library(magrittr)
+library(knitr)
+library(ggplot2)
+
+gam_list <- readRDS('../../Model_Fits/ramet_flower_n_list_krig_gam.rds') %>%
+  .[[1]] %>%
+  .[!grepl("waic", names(.))] %>%
+  setNames(paste0("gam_", names(.)))
+lin_list <- readRDS('../../Model_Fits/ramet_flower_n_list_krig.rds') %>%
+  .[[1]] %>%
+  .[!grepl("waic", names(.))]
+
+
+```
+
+## WAIC Results - all
+
+```{r echo = FALSE, message = FALSE, warning = FALSE}
+
+all_waic <- lapply(c(gam_list, lin_list), waic)
+
+comp_waic <- loo_compare(all_waic)
+
+kable(comp_waic)
+
+gam_list <- list(gam_list)
+
+```
+
+##  native_only   
+
+
+
+```{r echo = FALSE}
+
+summary(gam_list[[1]][[1]], prob = 0.89) 
+
+plot(gam_list[[1]][[1]], ask = FALSE)
+pp_check(gam_list[[1]][[1]],
+         type   = 'scatter_avg_grouped',
+         group  = 'site',
+         ndraws = 100L) + 
+  geom_abline(slope = 1, intercept = 0) 
+
+```
+
+
+
+##  add_sw1_seas   
+
+
+
+```{r echo = FALSE}
+
+summary(gam_list[[1]][[2]], prob = 0.89) 
+
+plot(gam_list[[1]][[2]], ask = FALSE)
+pp_check(gam_list[[1]][[2]],
+         type   = 'scatter_avg_grouped',
+         group  = 'site',
+         ndraws = 100L) + 
+  geom_abline(slope = 1, intercept = 0) 
+
+```
+
+```{r echo = FALSE}
+
+plot(conditional_smooths(gam_list[[1]][[2]],
+                         surface = TRUE), 
+     stype = 'raster',
+     theme = theme_bw(),
+     ask = FALSE) 
+
+```
+
+
+
+##  times_sw1_seas   
+
+
+
+```{r echo = FALSE}
+
+summary(gam_list[[1]][[3]], prob = 0.89) 
+
+plot(gam_list[[1]][[3]], ask = FALSE)
+pp_check(gam_list[[1]][[3]],
+         type   = 'scatter_avg_grouped',
+         group  = 'site',
+         ndraws = 100L) + 
+  geom_abline(slope = 1, intercept = 0) 
+
+```
+
+```{r echo = FALSE}
+
+plot(conditional_smooths(gam_list[[1]][[3]],
+                         surface = TRUE), 
+     stype = 'raster',
+     theme = theme_bw(),
+     ask = FALSE) 
+
+```
+
+
+
+##  add_sw2_seas   
+
+
+
+```{r echo = FALSE}
+
+summary(gam_list[[1]][[4]], prob = 0.89) 
+
+plot(gam_list[[1]][[4]], ask = FALSE)
+pp_check(gam_list[[1]][[4]],
+         type   = 'scatter_avg_grouped',
+         group  = 'site',
+         ndraws = 100L) + 
+  geom_abline(slope = 1, intercept = 0) 
+
+```
+
+```{r echo = FALSE}
+
+plot(conditional_smooths(gam_list[[1]][[4]],
+                         surface = TRUE), 
+     stype = 'raster',
+     theme = theme_bw(),
+     ask = FALSE) 
+
+```
+
+
+
+##  times_sw2_seas   
+
+
+
+```{r echo = FALSE}
+
+summary(gam_list[[1]][[5]], prob = 0.89) 
+
+plot(gam_list[[1]][[5]], ask = FALSE)
+pp_check(gam_list[[1]][[5]],
+         type   = 'scatter_avg_grouped',
+         group  = 'site',
+         ndraws = 100L) + 
+  geom_abline(slope = 1, intercept = 0) 
+
+```
+
+```{r echo = FALSE}
+
+plot(conditional_smooths(gam_list[[1]][[5]],
+                         surface = TRUE), 
+     stype = 'raster',
+     theme = theme_bw(),
+     ask = FALSE) 
+
+```
+
+
+
+##  add_Sw3_seas   
+
+
+
+```{r echo = FALSE}
+
+summary(gam_list[[1]][[6]], prob = 0.89) 
+
+plot(gam_list[[1]][[6]], ask = FALSE)
+pp_check(gam_list[[1]][[6]],
+         type   = 'scatter_avg_grouped',
+         group  = 'site',
+         ndraws = 100L) + 
+  geom_abline(slope = 1, intercept = 0) 
+
+```
+
+```{r echo = FALSE}
+
+plot(conditional_smooths(gam_list[[1]][[6]],
+                         surface = TRUE), 
+     stype = 'raster',
+     theme = theme_bw(),
+     ask = FALSE) 
+
+```
+
+
+
+##  times_sw3_seas   
+
+
+
+```{r echo = FALSE}
+
+summary(gam_list[[1]][[7]], prob = 0.89) 
+
+plot(gam_list[[1]][[7]], ask = FALSE)
+pp_check(gam_list[[1]][[7]],
+         type   = 'scatter_avg_grouped',
+         group  = 'site',
+         ndraws = 100L) + 
+  geom_abline(slope = 1, intercept = 0) 
+
+```
+
+```{r echo = FALSE}
+
+plot(conditional_smooths(gam_list[[1]][[7]],
+                         surface = TRUE), 
+     stype = 'raster',
+     theme = theme_bw(),
+     ask = FALSE) 
+
+```
+
+
+
+##  add_sw1_ann   
+
+
+
+```{r echo = FALSE}
+
+summary(gam_list[[1]][[8]], prob = 0.89) 
+
+plot(gam_list[[1]][[8]], ask = FALSE)
+pp_check(gam_list[[1]][[8]],
+         type   = 'scatter_avg_grouped',
+         group  = 'site',
+         ndraws = 100L) + 
+  geom_abline(slope = 1, intercept = 0) 
+
+```
+
+```{r echo = FALSE}
+
+plot(conditional_smooths(gam_list[[1]][[8]],
+                         surface = TRUE), 
+     stype = 'raster',
+     theme = theme_bw(),
+     ask = FALSE) 
+
+```
+
+
+
+##  times_sw1_ann   
+
+
+
+```{r echo = FALSE}
+
+summary(gam_list[[1]][[9]], prob = 0.89) 
+
+plot(gam_list[[1]][[9]], ask = FALSE)
+pp_check(gam_list[[1]][[9]],
+         type   = 'scatter_avg_grouped',
+         group  = 'site',
+         ndraws = 100L) + 
+  geom_abline(slope = 1, intercept = 0) 
+
+```
+
+```{r echo = FALSE}
+
+plot(conditional_smooths(gam_list[[1]][[9]],
+                         surface = TRUE), 
+     stype = 'raster',
+     theme = theme_bw(),
+     ask = FALSE) 
+
+```
+
+
+
+##  add_sw2_ann   
+
+
+
+```{r echo = FALSE}
+
+summary(gam_list[[1]][[10]], prob = 0.89) 
+
+plot(gam_list[[1]][[10]], ask = FALSE)
+pp_check(gam_list[[1]][[10]],
+         type   = 'scatter_avg_grouped',
+         group  = 'site',
+         ndraws = 100L) + 
+  geom_abline(slope = 1, intercept = 0) 
+
+```
+
+```{r echo = FALSE}
+
+plot(conditional_smooths(gam_list[[1]][[10]],
+                         surface = TRUE), 
+     stype = 'raster',
+     theme = theme_bw(),
+     ask = FALSE) 
+
+```
+
+
+
+##  times_sw2_ann   
+
+
+
+```{r echo = FALSE}
+
+summary(gam_list[[1]][[11]], prob = 0.89) 
+
+plot(gam_list[[1]][[11]], ask = FALSE)
+pp_check(gam_list[[1]][[11]],
+         type   = 'scatter_avg_grouped',
+         group  = 'site',
+         ndraws = 100L) + 
+  geom_abline(slope = 1, intercept = 0) 
+
+```
+
+```{r echo = FALSE}
+
+plot(conditional_smooths(gam_list[[1]][[11]],
+                         surface = TRUE), 
+     stype = 'raster',
+     theme = theme_bw(),
+     ask = FALSE) 
+
+```
+
+
+
+##  add_Sw3_ann   
+
+
+
+```{r echo = FALSE}
+
+summary(gam_list[[1]][[12]], prob = 0.89) 
+
+plot(gam_list[[1]][[12]], ask = FALSE)
+pp_check(gam_list[[1]][[12]],
+         type   = 'scatter_avg_grouped',
+         group  = 'site',
+         ndraws = 100L) + 
+  geom_abline(slope = 1, intercept = 0) 
+
+```
+
+```{r echo = FALSE}
+
+plot(conditional_smooths(gam_list[[1]][[12]],
+                         surface = TRUE), 
+     stype = 'raster',
+     theme = theme_bw(),
+     ask = FALSE) 
+
+```
+
+
+
+##  times_sw3_ann   
+
+
+
+```{r echo = FALSE}
+
+summary(gam_list[[1]][[13]], prob = 0.89) 
+
+plot(gam_list[[1]][[13]], ask = FALSE)
+pp_check(gam_list[[1]][[13]],
+         type   = 'scatter_avg_grouped',
+         group  = 'site',
+         ndraws = 100L) + 
+  geom_abline(slope = 1, intercept = 0) 
+
+```
+
+```{r echo = FALSE}
+
+plot(conditional_smooths(gam_list[[1]][[13]],
+                         surface = TRUE), 
+     stype = 'raster',
+     theme = theme_bw(),
+     ask = FALSE) 
+
+```
+

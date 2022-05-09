@@ -1,0 +1,268 @@
+---
+title: 'repro'
+output:
+  html_document:
+    toc: true
+---
+
+
+# Summary
+
+times_sw1_seas and times_sw1+2_ann are best. 
+
+## sw1_seas
+
+No non-0 non-interaction coefs. 
+
+log_size:temp_wet_t_1 `--`, log_size:prec_dry_t_1 `---`, log_size:prec_wet_t_1 `++`, log_size:sw1_dry_t_1 `+++`, log_size:sw1_wet_t_1 `--`.
+
+## sw2_ann
+
+no non-0 non-interaction coefs. 
+
+log_size:seas_temp_t_1 `++` (but possibly 0), log_size:total_prec_t_1 `++` (but possible 0), log_size:seas_prec_t_1 `++`, seas_sw2_t_1 `--`. 
+
+## sw1_ann
+
+no non-0 non-interaction coefs. 
+
+log_size:seas_prec_t_1 `++`, log_size:mean_sw1_t_1 `+` (but possible 0). 
+
+## Overall
+
+I ike that the precipitation seasonality coefficients line up with the seasonal model precipitation coefficients. This feels right. Seasonality in soil moisture doesn't appear to carry over. However, there is a strong effect in the seasonal model, which I tend to weight more evidence for given the WAIC result.
+
+# All Results
+
+```{r echo = FALSE}
+
+ mod_list <- readRDS('../../Model_Fits/ramet_repro_list_krig.rds') 
+```
+
+## WAIC Results
+
+```{r echo = FALSE}
+
+ print(mod_list[[1]]$mod_waic.diffs) 
+
+```
+
+##  native_only   
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[1]], prob = 0.89) 
+
+ plot(mod_list[[1]][[1]], ask = FALSE)
+ pp_check(mod_list[[1]][[1]],
+type   = 'bars_grouped',
+group  = 'site',
+freq   = FALSE,
+ndraws = 100L) 
+
+```
+
+
+
+##  add_sw1_seas   
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[2]], prob = 0.89) 
+
+ plot(mod_list[[1]][[2]], ask = FALSE)
+ pp_check(mod_list[[1]][[2]],
+type   = 'bars_grouped',
+group  = 'site',
+freq   = FALSE,
+ndraws = 100L) 
+
+```
+
+
+
+##  times_sw1_seas   
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[3]], prob = 0.89) 
+
+ plot(mod_list[[1]][[3]], ask = FALSE)
+ pp_check(mod_list[[1]][[3]],
+type   = 'bars_grouped',
+group  = 'site',
+freq   = FALSE,
+ndraws = 100L) 
+
+```
+
+
+
+##  add_sw2_seas   
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[4]], prob = 0.89) 
+
+ plot(mod_list[[1]][[4]], ask = FALSE)
+ pp_check(mod_list[[1]][[4]],
+type   = 'bars_grouped',
+group  = 'site',
+freq   = FALSE,
+ndraws = 100L) 
+
+```
+
+
+
+##  times_sw2_seas   
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[5]], prob = 0.89) 
+
+ plot(mod_list[[1]][[5]], ask = FALSE)
+ pp_check(mod_list[[1]][[5]],
+type   = 'bars_grouped',
+group  = 'site',
+freq   = FALSE,
+ndraws = 100L) 
+
+```
+
+
+
+##  add_Sw3_seas   
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[6]], prob = 0.89) 
+
+ plot(mod_list[[1]][[6]], ask = FALSE)
+ pp_check(mod_list[[1]][[6]],
+type   = 'bars_grouped',
+group  = 'site',
+freq   = FALSE,
+ndraws = 100L) 
+
+```
+
+
+
+##  times_sw3_seas   
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[7]], prob = 0.89) 
+
+ plot(mod_list[[1]][[7]], ask = FALSE)
+ pp_check(mod_list[[1]][[7]],
+type   = 'bars_grouped',
+group  = 'site',
+freq   = FALSE,
+ndraws = 100L) 
+
+```
+
+
+
+##  add_sw1_ann   
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[8]], prob = 0.89) 
+
+ plot(mod_list[[1]][[8]], ask = FALSE)
+ pp_check(mod_list[[1]][[8]],
+type   = 'bars_grouped',
+group  = 'site',
+freq   = FALSE,
+ndraws = 100L) 
+
+```
+
+
+
+##  times_sw1_ann   
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[9]], prob = 0.89) 
+
+ plot(mod_list[[1]][[9]], ask = FALSE)
+ pp_check(mod_list[[1]][[9]],
+type   = 'bars_grouped',
+group  = 'site',
+freq   = FALSE,
+ndraws = 100L) 
+
+```
+
+
+
+##  add_sw2_ann   
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[10]], prob = 0.89) 
+
+ plot(mod_list[[1]][[10]], ask = FALSE)
+ pp_check(mod_list[[1]][[10]],
+type   = 'bars_grouped',
+group  = 'site',
+freq   = FALSE,
+ndraws = 100L) 
+
+```
+
+
+
+##  times_sw2_ann   
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[11]], prob = 0.89) 
+
+ plot(mod_list[[1]][[11]], ask = FALSE)
+ pp_check(mod_list[[1]][[11]],
+type   = 'bars_grouped',
+group  = 'site',
+freq   = FALSE,
+ndraws = 100L) 
+
+```
+
+
+
+##  add_Sw3_ann   
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[12]], prob = 0.89) 
+
+ plot(mod_list[[1]][[12]], ask = FALSE)
+ pp_check(mod_list[[1]][[12]],
+type   = 'bars_grouped',
+group  = 'site',
+freq   = FALSE,
+ndraws = 100L) 
+
+```
+
+
+
+##  times_sw3_ann   
+
+```{r echo = FALSE}
+
+ summary(mod_list[[1]][[13]], prob = 0.89) 
+
+ plot(mod_list[[1]][[13]], ask = FALSE)
+ pp_check(mod_list[[1]][[13]],
+type   = 'bars_grouped',
+group  = 'site',
+freq   = FALSE,
+ndraws = 100L) 
+
+```
+
