@@ -161,36 +161,116 @@ flow_waic
 flow_maturation <- read.csv("ipms/Data/seed_pods.csv",
                             stringsAsFactors = FALSE)
 
-mat_data <- flow_maturation %>%
-  group_by(population, plant) %>%
-  summarise(n_quads = max(quad),
-            n_tot   = sum(n_mat, n_ab),
-            pr_mat  = sum(n_mat) / n_tot)
+# TODO: re-check plant IDs that aren't actually in all_ramets. Use t_1 polygon
+# files to get sizes + flower_n. We can't use merged ramets because sizes aren't
+# preserved. What we really want is pods/m^2. conversion is 
+# (n_mat / (tot_pods  / (0.16m^2 * n_quad))) * flower_n.
+# 0.16 m^2 is the size of the quadrat I used to count seed pods in the field
+# (40 cm X 40 cm)
 
-# D'Antonio (1990) finds the following germination rates: Seeds in intact fruits
+all_sites <- read.csv('ipms/Data/All_Field_Sites.csv', 
+                      stringsAsFactors = FALSE)
+
+pops      <- all_sites[all_sites$Demography == 1 &
+                         all_sites$Polygon_checked == 1 &
+                         all_sites$Polygon_2019_checked == 1 &
+                         all_sites$Site != "Lake_Ellsmere" &
+                         all_sites$Notes == 'ready', # &
+                       #all_sites$Country != 'Israel', 
+                       c('Country', 'Site')] %>%
+  arrange(Site)
+
+t_1_temp <- list()
+
+sf_use_s2(FALSE)
+
+for(i in pops$Site) {
+
+  pop <- i
+  country <- pops$Country[pops$Site == i]
+  
+  t_1_temp[[i]] <- t_1_data_for_seed_pods(
+        glue('ipms/Polygons/{country}/{pop}/Polygon_Final.shp'),
+        pop,
+        # Variables to keep
+        population, 
+        id,
+        size, flower_n)
+  
+  st_geometry(t_1_temp[[i]]) <- NULL
+}
+
+t_1_data <- bind_rows(t_1_temp)
+
+t_1_data$f_p_z <- t_1_data$flower_n / exp(t_1_data$log_size)
+
+mat_data <- flow_maturation %>%
+  left_join(t_1_data, by = c("population" = "population", "plant" = "id")) %>%
+  filter(population != "Lake_Ellsmere") %>%
+  select(population:n_ab, flower_n, log_size, f_p_z) %>%
+  group_by(population, plant) %>%
+  summarise(
+    # number of quads per plant
+    n_quads = max(quad),
+    
+    # total area sampled per plant
+    tot_a   = n_quads * 0.16,
+    
+    # Total mature pods sampled
+    n_p_p   = sum(n_mat),  
+    
+    # Pods/m^2 sampled
+    est_p   = n_p_p / (tot_a),
+    
+    # Flowers/m^2 observed
+    f_p_z   = unique(f_p_z),
+    
+    # pods per unit area / flowers per unit area (gives expected value of total
+    # pods per plant). This can be greater than 1 because we did not necessarily
+    # observe *all* flowers with the drone - some could have emerged later or 
+    # earlier in the season. NB: Maybe use as a measure for how early/late
+    # we were in the season to capture flowering??
+    est_mat = est_p / f_p_z) %>%
+  ungroup() %>%
+  group_by(population) %>%
+  summarise(pop_mat_factor = mean(est_mat, na.rm = TRUE)) %>%
+  bind_rows(data.frame(population = "Havatselet",
+                       pop_mat_factor = mean(.$pop_mat_factor, na.rm = TRUE)))
+
+p_m_pars <- as.list(mat_data$pop_mat_factor) %>%
+  setNames(nm = paste0("p_m_", mat_data$population)) 
+
+saveRDS(p_m_pars, "ipms/Model_Fits/discrete_pars/pod_maturation_pars.rds")
+
+# D'Antonio (1990) finds the following germination rates : Seeds in intact fruits
 # extracted < 1 year after maturation: 0.24 Seeds in intact fruits extracted > 1
 # year after maturation: 0.73 Talk to TMK + RSG about how to include animal
 # feces data from this paper.
 # https://www.jstor.org/stable/pdf/2404312.pdf?casa_token=EJiz83s5YREAAAAA:NvwT98rakddeZTiXki8r90zIHWabrJUqPh1M94UeYDQITufnLq4PbS0cGXcZNKYcl00xgPA1dpTxfwkxIU766O4oo2ke_0Zsib5I-7Yy7ZpQtoouYjU
+# Vila + D'Antonio find variable viability across different sites, so I'll take
+# mean of those values (NB: this is NOT the mean of values across "species". I 
+# don't think the species delination they used back then still applies (Novoa 
+# et al. forthcoming)).
 
-v_s  <- 0.24 + 0.73
-g_i  <- 0.24 
-g_sb <- 0.73
+seed_pars <- list(
+  v_s  = mean(c(43.33, 80.66, 75.33)) / 100,
+  g_i  = 0.24,
+  g_sb = 0.73
+)
 
 # Vila & D'Antonio (1998) find seeds/fruit varies across species/hybrids. They 
 # are: 
 # C. edulis:    1573 +/- 65
 # Hybrid:       704  +/- 43
 # C. chilensis: 483  +/- 27
-# Source (table 1): https://www.jstor.org/stable/pdf/176600.pdf?casa_token=axvw7Gbp014AAAAA:1dL3VbuAI5vP9zMaElpBpX48BhzHtcDpkS8Etvl-1mCbPzTrEZRbvixkfZjtgh3HLYsr5zFWPUJqCBf2QmD9ZQByiJZOul9HsCnlfPW7-JO3mpQnl1w
+# Vila + D'Antonio find variable viability across different "species", so I'll
+# take mean of those values (NB: I don't think the species delination they used
+# back then still applies (Novoa et al. forthcoming)).
+# source for table above: https://www.jstor.org/stable/pdf/176600.pdf?casa_token=axvw7Gbp014AAAAA:1dL3VbuAI5vP9zMaElpBpX48BhzHtcDpkS8Etvl-1mCbPzTrEZRbvixkfZjtgh3HLYsr5zFWPUJqCBf2QmD9ZQByiJZOul9HsCnlfPW7-JO3mpQnl1w
 
-n_f_ed <- 1573
-n_f_hy <- 704
-n_f_ch <- 483 
+seed_pars <- c(seed_pars, list(r_f = mean(c(1573, 704, 483))))
 
-# Undetermined populations get mean (or hybrids??)
-n_f_un <- mean(c(1573, 704, 483)) 
-
+saveRDS(seed_pars, "ipms/Model_Fits/discrete_pars/seed_pars.rds")
 # Seedling survival:
 # This is taken from two plots at Rooisand. I counted seedlings in 40x40 cm
 # plots and then came back a year later and used the drone to determine number

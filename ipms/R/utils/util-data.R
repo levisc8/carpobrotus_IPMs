@@ -239,3 +239,58 @@ update_flower_col <- function(data, pop, id, new_col, time) {
   return(data)
   
 }
+
+# Seed pod data functions ------------
+
+t_1_data_for_seed_pods <- function(path, pop, ...) {
+  
+  sel_vars <- rlang::enquos(...)
+  temp <- sf::st_read(path,
+                      stringsAsFactors = FALSE)  %>%
+    .type_poly_fields() %>%
+    st_make_valid()
+  
+  if(sf::st_crs(temp)$epsg != 4326) temp <- sf::st_transform(temp, 4326)
+  
+  # Now do some initial data manipulation
+  
+  names(temp) <- tolower(names(temp))
+  
+  # calculate breaks for size bins. Only used for histogram plotting
+  log_breaks <- round(dim(temp)[1]/10, digits = -1)
+  
+  # sf::st_area has substantially better precision than QGIS's $area macro. 
+  # overwrite computed sizes from QGIS. as.numeric converts it from
+  # unit-type (m^2) to a simple numeric, as some dplyr verbs don't know
+  # how to handle units
+  
+  temp$size <- as.numeric(sf::st_area(temp))
+  
+  out <- temp %>%
+    dplyr::mutate(population = pop) %>%
+    dplyr::select(!!! sel_vars) %>%
+    dplyr::group_by(id) %>%
+    dplyr::summarise(population = first(population),
+                     size       = sum(size, na.rm = TRUE),
+                     flower_n   = sum(flower_n, na.rm = TRUE)) %>%
+    dplyr::mutate(log_size = log(size))
+  
+  # add in some additional info and make sure columns are correct
+  
+  # QGIS automatically sets the NULLS to 0s when doing the auto-counting. Change
+  # these back to NAs, as they are NOT 0s
+  out$flower_n <- as.integer(out$flower_n)
+  out$flower_n[out$flower_n == 0] <- NA_integer_
+
+  # add in reproduction binary variable
+  out$repro <- ifelse(is.na(out$flower_n), 0, 1)
+  
+  # check that id  are integers
+  if(!is.integer(out$id)) out$id <- as.integer(out$id)
+
+  # drop rows that are mistakenly added to attribute table
+  out <- out[!is.na(out$id), ]
+  
+  
+  return(out)
+}
