@@ -16,7 +16,7 @@
 #SBATCH -c 8
 
 # memory per core (hard limit)
-#SBATCH --mem-per-cpu=8G
+#SBATCH --mem-per-cpu=4G
 
 
 #create a single output directory per job
@@ -26,9 +26,9 @@ mkdir -p "$output_dir"
 module load foss/2019b R/4.0.0
 
 vr=$1
+climate=$2
 
-output="$output_dir"/${SLURM_JOB_NAME}_${SLURM_JOB_ID}_${vr}
-
+output="$output_dir"/${SLURM_JOB_NAME}_${SLURM_JOB_ID}_${climate}_${vr}
 mkdir -p "$output"/cv_results
 
-Rscript "$HOME"/iceplant_shrinkage/shrink_compare.R --vital="$vr" "$output"
+Rscript "$HOME"/iceplant_shrinkage/shrink_compare.R --vital="$vr" --climate="$climate" "$output"

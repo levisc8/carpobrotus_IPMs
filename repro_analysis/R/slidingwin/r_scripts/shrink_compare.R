@@ -1,6 +1,7 @@
 # Shrinkage model comparison
 
 suppressPackageStartupMessages(library(brms))
+suppressPackageStartupMessages(library(future))
 suppressPackageStartupMessages(library(optparse))
 
 # Print attached packages
@@ -26,7 +27,13 @@ Parsoptions <- list(
     opt_str = c("-v", "--vital"),
     dest    = "vital_rate",
     help    = "Specify the vital rate (pr(flowering) or flower #",
-    metavar = "repro|flower_n"
+    metavar = "repro|flower"
+  ),
+  make_option(
+    opt_str = c("-c", "--climate"),
+    dest    = "climate",
+    help    = "Specify the climate to use (temperature/precipitation)",
+    metavar = "prec|temp"
   )
 )
 
@@ -41,13 +48,16 @@ cli <- parse_args(parser, positional_arguments = 1)
 
 print(cli)
 
-vr      <- tolower(cli$options$vital_rate)
+vital_rate <- tolower(cli$options$vital_rate)
+climate    <- tolower(cli$options$climate)
 
 out_dir <- cli$args[1]
 
-mod_list_fp <- paste("/data/levin/iceplant_shrinkage/model_lists/all_models_",
+mod_list_fp <- paste("/data/levin/iceplant_shrinkage/",
                      vital_rate,
-                     ".rds", 
+                     "_",
+                     climate,
+                     "_mod_list.rds", 
                      sep = "")
 
 mod_list <- readRDS(mod_list_fp)
@@ -56,42 +66,57 @@ n_cores <- as.integer(Sys.getenv("NSLOTS", "1"))
 options(mc.cores = n_cores)
 
 waics <- waic(
-  mod_list[[1]], # NULL size only model
-  mod_list[[2]], # Best model using MAT
-  mod_list[[3]], # Best model using MAP
-  mod_list[[4]], # Best model using T_Co
-  mod_list[[5]], # Shrinkage model lin
-  mod_list[[6]], # Shrinkage model quad
+  mod_list[[1]], # Shrinkage model lin  
+  mod_list[[2]], # Shrinkage model quad
   compare = TRUE
-)
-
-out_waic <- paste(out_dir, "/waic_", vr, sep = "")
-
-saveRDS(waics, file = paste(out_waic, ".rds", sep = ""))
-
-loos <- loo(
-  mod_list[[1]], # NULL size only model
-  mod_list[[2]], # Best model using MAT
-  mod_list[[3]], # Best model using MAP
-  mod_list[[4]], # Best model using T_Co
-  mod_list[[5]], # Shrinkage model lin
-  mod_list[[6]], # Shrinkage model quad
-  compare    = TRUE,
-  reloo      = TRUE,
-  reloo_args = list(chains = 8,
-                    iter   = 4000,
-                    warmup = 2000,
-                    cores  = n_cores)
 )
 
 
 cat("************WAIC RESULTS***************\n")
 print(waics)
+cat("\n***************************************")
+
+out_waic <- paste(out_dir, "/cv_results/waic_", vital_rate, "_", climate, sep = "")
+
+saveRDS(waics, file = paste(out_waic, ".rds", sep = ""))
+
+plan("multicore")
+
+if(vital_rate == "repro"){
+  
+  
+  loos <- loo(
+    mod_list[[1]], # Shrinkage model lin  
+    mod_list[[2]], # Shrinkage model quad
+    compare    = TRUE,
+    reloo      = TRUE,
+    reloo_args = list(chains = 8,
+                      iter   = 4000,
+                      warmup = 2000,
+                      cores  = n_cores)
+  )
+} else {
+
+  loos <- kfold(
+    mod_list[[1]], # Shrinkage model lin
+    mod_list[[2]], # Shrinkage model quad
+    chains  = 8, 
+    iter    = 4000,
+    warmup  = 2000,
+    cores   = n_cores,
+    K       = 10,
+    compare = TRUE
+  )
+  
+}
+
+plan("sequential")
+
 
 cat("\n************LOO RESULTS***************\n")
 print(loos)
 
-out_fp <- paste(out_dir, "/cv_results/", clim, "_", vr, sep = "")
+out_fp <- paste(out_dir, "/cv_results/",  vital_rate, "_", climate, sep = "")
 
 saveRDS(list(waic = waics,
              loos = loos),
