@@ -254,15 +254,15 @@ theme.bl <- theme(panel.background = element_rect(fill = NA,
                                                   size = 1.25),
                   panel.grid = element_blank(),
                   axis.title.y = element_text(size = 14,
-                                              margin = margin(t = 0,
-                                                              l = 5,
-                                                              r = 10, 
-                                                              b = 0)),
+                                              margin = ggplot2::margin(t = 0,
+                                                                       l = 5,
+                                                                       r = 10, 
+                                                                       b = 0)),
                   axis.title.x = element_text(size = 14,
-                                              margin = margin(t = 10, 
-                                                              b = 5,
-                                                              l = 0, 
-                                                              r = 0)))
+                                              margin = ggplot2::margin(t = 10, 
+                                                                       b = 5,
+                                                                       l = 0, 
+                                                                       r = 0)))
 
 best_mod <- function(mod_list) {
   

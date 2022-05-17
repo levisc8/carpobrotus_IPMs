@@ -28,3 +28,4 @@ repro_analysis/Data/*
 *.nc4
 *.netrc
 *.urs_cookies
+ipms/Data/weather/*
