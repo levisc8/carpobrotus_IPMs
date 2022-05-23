@@ -17,9 +17,6 @@ all_gr_tr     <- read.csv('ipms/Data/all_ground_truth_points.csv',
 merged_ramets <- read.csv('ipms/Data/merged_ramets.csv',
                           stringsAsFactors = FALSE)
 
-rm_ramets     <- read.csv('ipms/Data/t_2_omissions.csv',
-                          stringsAsFactors = FALSE)
-
 buried_ramets <- read.csv('ipms/Data/buried_ramets.csv',
                           stringsAsFactors = FALSE) %>%
   mutate(pop_id = paste(population, id, sep = "_"))
@@ -274,7 +271,6 @@ all_ramets <- clim %>%
 grow_data <- clim %>%
   select(-c(species, lon:ID)) %>%
   right_join(grow_data, by = "site")
-
 
 
 saveRDS(all_ramets, file = 'ipms/Data/all_ramets_di.rds')
