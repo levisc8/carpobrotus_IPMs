@@ -1,0 +1,11 @@
+---
+output: html_document
+---
+
+# TODO
+
+1. Lambdas for Israel + foxton are trash - go back to raw data, then vital rate models, then IPM code, and see what's going on. 
+
+2. Whenever that is figured out, stack the LTRE by site (just make columns for site intercept_surv/grow/etc), and then RF() everything at once!
+
+3. Remember - cross site analysis is most important (to Tiffany), so don't keep doing single site stuff if you can (except for the actual IPM).

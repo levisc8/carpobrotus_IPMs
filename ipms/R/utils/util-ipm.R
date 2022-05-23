@@ -90,7 +90,24 @@ rename_draws <- function(draws, vr) {
          paste0(vr, "_sigma_intercept_"), 
          names(draws)[grepl("r_site", names(draws))])
   
+  # Smooth terms for LTRE
+  names(draws)[!grepl(vr, names(draws))] <-
+    gsub("^s_s", 
+         paste0(vr, "_smooth_"), 
+         names(draws[!grepl(vr, names(draws))]))
+  
+  names(draws)[!grepl(vr, names(draws))] <-
+    gsub("_tlog_size_1", 
+         "_x_log_size_", 
+         names(draws[!grepl(vr, names(draws))]))
+  
+  names(draws)[!grepl(vr, names(draws))] <-
+    gsub("^s_t2", 
+         paste0(vr, "_smooth_"), 
+         names(draws[!grepl(vr, names(draws))]))
+  
   # Fix the fixed effects now.
+  
   names(draws)[!grepl(vr, names(draws))] <- 
     paste(vr,
           names(draws)[!grepl(vr, names(draws))], sep = "_")
@@ -103,7 +120,12 @@ rename_draws <- function(draws, vr) {
   names(draws) <- gsub("\\:", "_x_", names(draws))
   
   # climate terms
-  names(draws) <- gsub("_t$|_t_1$", "", names(draws))
+  names(draws) <- gsub("_t$|_t_1$|t_1_1", "", names(draws))
+  
+  #climate smooth terms
+  
+  names(draws) <- gsub("\\[", "", names(draws))
+  names(draws) <- gsub("\\]$", "", names(draws))
   
   # Fix intercepts
   

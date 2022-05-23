@@ -5,14 +5,11 @@ library(stringr)   # string manipulation
 library(tidyr)     # Climate data munging
 library(dplyr)     # data manipulation
 library(rlang)
-library(ggplot2)   # plotting
-library(gridExtra) # plotting
-library(glue)      # string manipulation
-library(rlang)
 library(fs)        # file manipulation
 library(ggplot2)   # plotting
 library(gridExtra) # plotting
 library(patchwork)
+library(viridis)
 library(glue)      # string manipulation
 library(purrr)
 library(sf)        # Handle spatial data
