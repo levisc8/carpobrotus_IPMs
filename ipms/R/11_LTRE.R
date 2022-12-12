@@ -1,200 +1,180 @@
 # LTRE Calculations: Random Forest with complete posterior + lambdas
-all_surv_mods <- readRDS("ipms/Model_Fits/ramet_survival_list_krig.rds")
-all_flow_mods <- readRDS("ipms/Model_Fits/ramet_flower_n_list_krig.rds")
 
-surv_mod <- all_surv_mods[[1]][["times_sw2_seas"]]
-flow_mod <- all_flow_mods[[1]][["times_sw2_ann"]]
+# all_surv_mods <- readRDS("ipms/Model_Fits/ramet_survival_list_krig.rds")
+# all_flow_mods <- readRDS("ipms/Model_Fits/ramet_flower_n_list_lin_slope_ran.rds")
+# all_grow_mods <- readRDS("ipms/Model_Fits/ramet_growth_list_krig.rds")
+# all_repr_mods <- readRDS("ipms/Model_Fits/ramet_repro_list_krig.rds")
+# 
+# 
+# surv_mod <- all_surv_mods[[1]][["times_sw3_seas"]]
+# flow_mod <- all_flow_mods[[1]][["times_sw3_seas"]]
+# grow_mod <- all_grow_mods[[1]][["times_sw3_seas"]]
+# repr_mod <- all_repr_mods[[1]][["times_sw1_seas"]]
 
-grow_mod <- readRDS("ipms/Model_Fits/grow_2_1_lin_gam_mix.rds")
-repr_mod <- readRDS("ipms/Model_Fits/repro_lin_gam_mix.rds")
 recr_mod <- readRDS("ipms/Model_Fits/recr_size_brm.rds")
+recr_draws <- as.data.frame(recr_mod) %>%
+  select(1:2) %>%
+  setNames(c("recr_size_int", "recr_size_sigma")) %>%
+  replicate(n = 13, expr = list(.)) %>%
+  do.call(what = "rbind", args = .)
 
-surv_draws <- as.data.frame(surv_mod) %>%
-  select(c(1:16, 19:31)) %>%
-  rename_draws("surv") 
-names(surv_draws) <- gsub(pattern = "^surv_z$", 
-                          "surv_log_size", 
+surv_draws <- read.csv("ipms/Model_Fits/posterior_lambda_surv_pars.csv") %>%
+  rename_draws("surv") %>%
+  setNames(gsub("intercept", "int", names(.)))
+names(surv_draws) <- gsub(pattern = "^surv_z$",
+                          "surv_log_size",
                           x = names(surv_draws))
-surv_obs <- summarise_all(surv_draws, mean)
 
-flow_draws <- as.data.frame(flow_mod) %>%
-  select(c(1:16, 20:32)) %>%
-  rename_draws("flow") 
+all_surv <- gather(data = surv_draws, surv_int_Colares:surv_int_Whirinaki, 
+                     value = "surv_intercept_ran", key = "site") %>%
+  select(-site)
+
+grow_draws <- read.csv("ipms/Model_Fits/posterior_lambda_grow_pars.csv") %>%
+  rename_draws("grow") %>%
+  setNames(gsub("intercept", "int", names(.)))
+
+names(grow_draws) <- gsub(pattern = "^grow_z$", 
+                          "grow_log_size", 
+                          x = names(grow_draws))
+
+all_grow_1 <- gather(data = grow_draws, grow_int_Colares:grow_int_Whirinaki, 
+                     value = "grow_intercept_ran", key = "site") %>%
+  select(-site)
+
+all_grow_2 <- gather(data = grow_draws, 
+                     grow_sigma_int_Colares:grow_sigma_int_Whirinaki, 
+                     value = "grow_sigma_intercept_ran", key = "site") %>%
+  select(-site)
+
+all_grow <- cbind(all_grow_1, 
+                  grow_sigma_intercept_ran = all_grow_2$grow_sigma_intercept_ran) %>%
+  select(-c(grow_sigma_int_Colares:grow_sigma_int_Whirinaki))
+
+
+repr_draws <- read.csv("ipms/Model_Fits/posterior_lambda_repr_pars.csv") %>%
+  rename_draws("repr") %>%
+  setNames(gsub("intercept", "int", names(.)))
+
+names(repr_draws) <- gsub(pattern = "^repr_z$", 
+                          "repr_log_size", 
+                          x = names(repr_draws))
+
+all_repr <- gather(data = repr_draws, repr_int_Colares:repr_int_Whirinaki, 
+                     value = "repr_intercept_ran", key = "site") %>%
+  select(-site)
+
+
+flow_draws <- read.csv("ipms/Model_Fits/posterior_lambda_flow_pars.csv") %>%
+  rename_draws("flow") %>%
+  setNames(gsub("intercept", "int", names(.)))
+
 names(flow_draws) <- gsub(pattern = "^flow_z$", 
                           "flow_log_size", 
                           x = names(flow_draws))
-flow_obs <- summarise_all(flow_draws, mean)
 
-repr_draws <- as.data.frame(repr_mod) %>%
-  select(1:10, 15:33) %>%
-  rename_draws("repr")
+names(flow_draws)[grepl(",log_size", names(flow_draws))] <- gsub(
+  "int", "log_size", names(flow_draws)[grepl(",log_size", names(flow_draws))]
+)
 
-repr_obs <- summarise_all(repr_draws, mean)
+names(flow_draws)[grepl(",log_size", names(flow_draws))] <- gsub(
+  ",log_size", "", names(flow_draws)[grepl(",log_size", names(flow_draws))]
+)
+flow_draws_1 <- gather(data = flow_draws, flow_int_Colares:flow_int_Whirinaki, 
+                       value = "flow_intercept_ran", key = "site")
+flow_draws_2 <- gather(data = flow_draws, flow_log_size_Colares:flow_log_size_Whirinaki, 
+                       value = "flow_slope_ran", key = "site")
 
-grow_draws <- as.data.frame(grow_mod) %>%
-  select(1:10, 20:99) %>%
-  rename_draws("grow")
-
-# Replace the 11-13's on the trailing end of the final smooth names for growth
-names(grow_draws)[85:90] <- gsub("t_1", "t_", names(grow_draws)[85:90]) 
-
-grow_obs <- summarise_all(grow_draws, mean)
-
-recr_draws <- as.data.frame(recr_mod) %>%
-  select(1:2) %>%
-  setNames(c("recr_mean", "recr_sd"))
-
-recr_obs <- summarise_all(recr_draws, mean)
-
-lambdas <- read.csv("ipms/Model_Fits/ipms/gam_mod_general_ipm_site_lambdas.csv",
+lambdas <- read.csv("ipms/Model_Fits/ipms/lin_mod_general_ipm_site_lambdas_prob_resamp.csv",
                     stringsAsFactors = FALSE) %>%
   filter(obs == "no") %>%
-  select(-obs)
+  select(-obs) %>%
+  gather(key = "site", value = "lambda") %>%
+  mutate(site = gsub("lambda_", "", site))
 
-rf_list <- vector("list", ncol(lambdas))
 
-start <- Sys.time()
+all_flow <- cbind(lambda = lambdas$lambda,
+                  flow_draws_1, 
+                  flow_slope_ran = flow_draws_2$flow_slope_ran) %>%
+  select(-c(flow_log_size_Colares:flow_log_size_Whirinaki))
 
-for(i in seq_along(lambdas)) {
-  
-  pop_nm <- names(lambdas)[i] %>%
-    gsub(pattern = "^lambda_", replacement = "", x = .)
-  
-  pop_ran <- paste0(c("grow", "grow_sigma", "surv", "flow", "repr"), "_intercept_", pop_nm)
-  
-  temp_surv <- surv_draws[, c(1:16, grep(pop_ran[3], names(surv_draws)))]
-  temp_flow <- flow_draws[, c(1:16, grep(pop_ran[4], names(flow_draws)))] 
-  temp_repr <- repr_draws[, c(1:10, grep(pop_ran[5], names(repr_draws)), 24:29)]
-  
-  grow_ind  <- c(1:10, 
-                 grep(pop_ran[1], names(grow_draws)),
-                 grep(pop_ran[2], names(grow_draws)),
-                 37:90)
-  
-  temp_grow <- grow_draws[ , grow_ind]
-    
-  pop_draws <- cbind(temp_surv, temp_grow, temp_repr, temp_flow, recr_draws)
+all_data <- cbind(all_flow, all_repr, all_grow, all_surv, recr_draws)
+lams <- all_data$lambda
+pop_draws_site <- select(all_data, -c(lambda))
 
-  lams   <- lambdas[ , i]
-  
-  tuned <- tuneRF(x          = pop_draws, 
-                  y          = lams,
-                  plot       = FALSE,
-                  ntreeTry   = 500,
-                  stepFactor = 2, 
-                  improve    = 1e-6,
-                  mtryStart  = 100)
-  
-  optimal_mtry <- which.min(tuned[, 2])
-  
-  temp_rf <- randomForest(x          = pop_draws,
-                          y          = lams,
-                          ntree      = 500, 
-                          importance = TRUE,
-                          mtry       = tuned[optimal_mtry, 1])
-  
-  sink(paste0("ipms/Model_Summaries/ltre/", pop_nm, "_ltre.txt"))
-  
-    cat("Tuning Results -----------\n\n")
-    print(tuned)
-    cat("\n\nRandom Forest results-----------\n\n")
-    print(temp_rf)
-    cat("\n\n END -----------\n")
-  sink()
-  
-  imps <- temp_rf$importance %>%
-    as.data.frame() %>%
-    mutate(var = rownames(.)) %>%
-    select(c(1, 3)) %>%
-    setNames(c("inc_mse", "var")) %>%
-    arrange(desc(inc_mse))
-  
-  # Save top 15 most important variables for plotting
-  
-  if(i == 1) {
-    
-    out <- data.frame(site = pop_nm,
-                      var  = imps[1:15, 2],
-                      imp  = imps[1:15, 1])
-    out <- cbind(out, out_sd = temp_rf$importanceSD[out$var])
-    
-    var_exp <- data.frame(site = pop_nm,
-                          val  = temp_rf$rsq[length(temp_rf$rsq)] * 100)
-    
-  } else {
-    
-    temp_out <- data.frame(site = pop_nm,
-                           var  = imps[1:15, 2],
-                           imp  = imps[1:15, 1])
-    temp_out <- cbind(temp_out, out_sd = temp_rf$importanceSD[temp_out$var])
-    
-    out <- rbind(out,
-                 temp_out)
-    
-    var_exp <- rbind(var_exp,
-                     data.frame(site = pop_nm,
-                                val  = temp_rf$rsq[length(temp_rf$rsq)] * 100))
-  }
-  
-  rf_list[[i]] <- temp_rf
-  names(rf_list)[i] <- pop_nm
-  
-  
-}
+split_ind <- sample(1:2, 
+                    nrow(pop_draws_site), 
+                    replace = TRUE,
+                    prob = c(0.7, 0.3))
 
-dif <- Sys.time() - start
+lams_test  <- lams[split_ind == 2]
+pop_test   <- pop_draws_site[split_ind == 2, ]
+lams_train <- lams[split_ind == 1]
+pop_train  <- pop_draws_site[split_ind == 1, ]
 
-dif
+# temp_rf_site <- randomForest(x          = pop_train,
+#                              y          = lams_train,
+#                              xtest      = pop_test,
+#                              ytest      = lams_test,
+#                              ntree      = 751,
+#                              importance = TRUE)
+# 
+# saveRDS(temp_rf_site,
+#         file = "ipms/Model_Fits/ltre/all_site_rf_ltre_with_site_term.rds")
 
-var_exp$native <- ifelse(var_exp$site %in% c("Struisbaai", "Rooisand",
-                                             "Vogelgat", "Springfontein",
-                                             "Melkboss", "St_Francis"),
-                         "Native",
-                         "Invaded")
+all_rf_site <- readRDS("ipms/Model_Fits/ltre/all_site_rf_ltre_with_site_term.rds")
 
-saveRDS(rf_list, file = "ipms/Model_Fits/ltre/all_random_forests.rds")
+imps <- all_rf_site$importance %>%
+  as.data.frame() %>%
+  mutate(var = rownames(.)) %>%
+  select(c(1, 3))%>% 
+  cbind(imp_sd = all_rf_site$importanceSD) %>%
+  setNames(c("inc_mse", "var", "imp_sd")) %>%
+  arrange(desc(inc_mse)) %>%
+  # slice_head(n = 15) %>%x
+  mutate(var = factor(var, levels = as.character(var)),
+         var = fct_reorder(var, inc_mse, .fun = max))
 
-saveRDS(out, 
-        file = "ipms/Model_Fits/ltre/random_forest_importance_table.rds")
-saveRDS(var_exp,
-        file = "ipms/Model_Fits/ltre/variance_explained.rds")
 
-pdf("ipms/Figures/ipm_output/LTRE_RF.pdf")
-  for(i in unique(out$site)) {
-    
-    use_dat <- data.frame(x = 1:500, y = rf_list[[i]]$rsq * 100)
-    
-    r2_plt <- ggplot(use_dat, aes(x = x, y = y)) + 
-      geom_line(color = "red", size = 1.5) +
-      theme_bw() +
-      ylab("% Variance Explained") +
-      xlab("# of Trees")
-    
-    temp <- filter(out, site == i)
-    vi_plt <- ggplot(temp, aes(x = var, y = imp)) + 
-      geom_point(size = 2) + 
-      geom_linerange(aes(ymin = imp - 2 * out_sd, ymax = imp + 2 * out_sd),
-                     size = 1.2) +
-      coord_flip() +
-      theme_bw() +
-      ggtitle(i) +
-      ylab("Importance") +
-      xlab("Vital Rate Regression Parameter")
-    
-    
-    print((vi_plt / r2_plt))
-  }
 
-  print(
-    ggplot(var_exp, aes(x = site, y = val, color = native, fill = native)) + 
-      geom_bar(stat = "identity") + 
-      theme_bw() +
-      ylab("% Variance Explained by Random Forest") +
-      xlab("Site") +
-      scale_discrete_manual(breaks = c("Native", "Invaded"),
-                            values = viridis::inferno(2, begin = 0.2, end = 0.5),
-                            aesthetics = c("fill", "color")) + 
-      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size = 16))
-    
-  )
+r2_dat <- data.frame(n_trees = 1:751,
+                     var_exp = all_rf_site$rsq * 100)
+
+r2_plt <- ggplot(r2_dat, aes(x = n_trees, y = var_exp)) + 
+  geom_line(color = "red", size = 1.5) +
+  theme_bw() +
+  ylab("% Variance Explained") +
+  xlab("# of Trees")
+
+vi_plt <- ggplot(imps[1:20, ], aes(x = var, y = inc_mse)) + 
+  geom_point(size = 2) + 
+  geom_linerange(aes(ymin = pmax(0, inc_mse - 2 * imp_sd), ymax = inc_mse + 2 * imp_sd),
+                 size = 1.2) +
+  coord_flip() +
+  theme_bw() +
+  ylab("Importance") +
+  xlab("Vital Rate Regression Parameter") +
+  ggtitle("Including 'site' term")
+
+
+vi_plt_minus_site <- ggplot(filter(imps, var != "site")[1:19, ], 
+                            aes(x = var, y = inc_mse)) + 
+  geom_point(size = 2) + 
+  geom_linerange(aes(ymin = pmax(0, inc_mse - 2 * imp_sd), ymax = inc_mse + 2 * imp_sd),
+                 size = 1.2) +
+  coord_flip() +
+  theme_bw() +
+  ylab("Importance") +
+  xlab("Vital Rate Regression Parameter") +
+  ggtitle("Excluding 'site' term")
+
+pdf("ipms/Figures/ipm_output/all_site_ltre_rf_w_site_term.pdf")
+
+print(vi_plt / vi_plt_minus_site)
+
+dev.off()
+
+pdf("ipms/Figures/ipm_output/all_site_ltre_r2_rf_w_site_term.pdf")
+
+print(r2_plt)
+
 dev.off()

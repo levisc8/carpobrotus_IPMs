@@ -5,22 +5,19 @@
 all_ramets <- readRDS("ipms/Data/all_ramets_di.rds")
 all_sdls   <- readRDS("ipms/Data/seedlings.rds")
 all_surv_mods <- readRDS("ipms/Model_Fits/ramet_survival_list_krig.rds")
-all_flow_mods <- readRDS("ipms/Model_Fits/ramet_flower_n_list_krig.rds")
+all_flow_mods <- readRDS("ipms/Model_Fits/ramet_flower_n_list_lin_slope_ran.rds")
+all_grow_mods <- readRDS("ipms/Model_Fits/ramet_growth_list_krig.rds")
+all_repr_mods <- readRDS("ipms/Model_Fits/ramet_repro_list_krig.rds")
 
-surv_mod <- all_surv_mods[[1]][["times_sw2_seas"]]
-flow_mod <- all_flow_mods[[1]][["times_sw2_ann"]]
+surv_mod <- all_surv_mods[[1]][["times_sw3_seas"]]
+flow_mod <- all_flow_mods[[1]][["times_sw3_seas"]]
+grow_mod <- all_grow_mods[[1]][["times_sw3_seas"]]
+repr_mod <- all_repr_mods[[1]][["times_sw1_seas"]]
 
-grow_mod <- readRDS("ipms/Model_Fits/grow_2_1_lin_gam_mix.rds")
-repr_mod <- readRDS("ipms/Model_Fits/repro_lin_gam_mix.rds")
 recr_mod <- readRDS("ipms/Model_Fits/recr_size_brm.rds")
 
 seed_pars <- readRDS("ipms/Model_Fits/discrete_pars/seed_pars.rds")
 p_m_pars  <- readRDS("ipms/Model_Fits/discrete_pars/pod_maturation_pars.rds")
-
-data_list <- list(
-  grow_mod       = grow_mod, # These can use pred_* functions from util-ipm.R
-  repr_mod       = repr_mod  # These can use pred_* functions from util-ipm.R
-)
 
 recr_list <- list(recr_mu = -8.62,
                   recr_sd = 0.54,
@@ -36,9 +33,37 @@ surv_nms <- paste0("surv_", base_nms) %>%
 
 surv_list <- setNames(as.list(fixef(surv_mod)[ , 1]), surv_nms)
 surv_rans <- setNames(as.list(ranef(surv_mod)[[1]][ , 1, 1]),
-                      paste0("surv_intercept_", rownames(ranef(surv_mod)[[1]])))
+                      paste0("surv_int_", rownames(ranef(surv_mod)[[1]])))
 
 surv_pars <- c(surv_list, surv_rans)
+
+base_nms <- rownames(fixef(grow_mod)) %>%
+  gsub(pattern = "_t$", replacement = "", x = .) %>%
+  gsub(pattern = "\\:", replacement = "_x_", x = .)
+  
+grow_nms <- paste0("grow_", base_nms) %>%
+  gsub(pattern = "Intercept", "int", x = .)
+
+grow_list <- setNames(as.list(fixef(grow_mod)[ , 1]), grow_nms)
+grow_rans <- c(setNames(as.list(ranef(grow_mod)[[1]][ , 1, 1]), 
+                        paste0("grow_int_", rownames(ranef(grow_mod)[[1]]))),
+               setNames(as.list(ranef(grow_mod)[[1]][ , 1, 2]), 
+                        paste0("grow_sigma_int_", rownames(ranef(grow_mod)[[1]]))))
+
+grow_pars <- c(grow_list, grow_rans)
+
+base_nms <- rownames(fixef(repr_mod)) %>%
+  gsub(pattern = "_t_1$", replacement = "", x = .) %>%
+  gsub(pattern = "\\:", replacement = "_x_", x = .)
+
+repr_nms <- paste0("repr_", base_nms) %>%
+  gsub(pattern = "Intercept", "int", x = .)
+
+repr_list <- setNames(as.list(fixef(repr_mod)[ , 1]), repr_nms)
+repr_rans <- setNames(as.list(ranef(repr_mod)[[1]][ , 1, 1]), 
+                      paste0("repr_int_", rownames(ranef(repr_mod)[[1]])))
+
+repr_pars <- c(repr_list, repr_rans)
 
 base_nms <- rownames(fixef(flow_mod)) %>%
   gsub(pattern = "_t_1$", "", x = .) %>%
@@ -48,10 +73,17 @@ flow_nms <- paste0("flow_", base_nms) %>%
   gsub(pattern = "Intercept", "int", x = .)
 
 flow_list <- setNames(as.list(fixef(flow_mod)[ , 1]), flow_nms)
-flow_rans <- setNames(as.list(ranef(flow_mod)[[1]][ , 1, 1]),
-                      paste0("flow_intercept_", rownames(ranef(flow_mod)[[1]])))
+flow_rans <- c(setNames(as.list(ranef(flow_mod)[[1]][ , 1, 1]),
+                      paste0("flow_int_", 
+                             rownames(ranef(flow_mod)[[1]][, , 1]))),
+               setNames(as.list(ranef(flow_mod)[[1]][ , 1, 2]),
+                        paste0("flow_log_size_", 
+                               rownames(ranef(flow_mod)[[1]][, , 2])))
+               
+)
 
-all_lin_pars <- c(surv_pars, flow_list, flow_rans, recr_list)
+all_lin_pars <- c(surv_pars, grow_pars, repr_pars,
+                  flow_list, flow_rans, recr_list)
 
 # For the simple determinstic models created on the first pass, we need
 # to create a list of the environmental parameters too. These should have the form
@@ -84,12 +116,11 @@ for(i in seq_len(nrow(clim_data))) {
 
 
 # Data list for deterministic IPMs
-det_data_list <- c(data_list, 
-                   clim_list, # For surv, flow_n
+det_data_list <- c(clim_list, # For surv, flow_n
                    list(clim_data = use_vr_model(clim_data)),  # for repr, grow_mod
                    all_lin_pars,
-                   list(p_e = 1e-5,
-                        s_sb = 1e-2),
+                   list(p_e = 1e-2,
+                        s_sb = 1e-1),
                    p_m_pars,
                    seed_pars,
                    recr_list)
@@ -114,26 +145,48 @@ carp_ipm <- init_ipm("general", "di", "det") %>%
         surv_temp_wet * temp_wet_t_population +
         surv_prec_dry * prec_dry_t_population +
         surv_prec_wet * prec_wet_t_population +
-        surv_sw2_dry  * sw2_dry_t_population  +
-        surv_sw2_wet  * sw2_wet_t_population  +
+        surv_sw3_dry  * sw3_dry_t_population  +
+        surv_sw3_wet  * sw3_wet_t_population  +
         # Interaction effects
         surv_log_size_x_temp_dry * temp_dry_t_population * z_1 +
         surv_log_size_x_temp_wet * temp_wet_t_population * z_1 +
         surv_log_size_x_prec_dry * prec_dry_t_population * z_1 +
         surv_log_size_x_prec_wet * prec_wet_t_population * z_1 +
-        surv_log_size_x_sw2_dry  * sw2_dry_t_population  * z_1 +
-        surv_log_size_x_sw2_wet  * sw2_wet_t_population  * z_1 +
+        surv_log_size_x_sw3_dry  * sw3_dry_t_population  * z_1 +
+        surv_log_size_x_sw3_wet  * sw3_wet_t_population  * z_1 +
         # Nativity
         surv_native * is_native(population) +
         # Random site effect
-        surv_intercept_population 
+        surv_int_population 
     ),
-    all_g = pred_grow_gam(grow_mod,
-                          z_1,
-                          clim_data, 
-                          site = population),
-    g_sd_population = all_g$sigma,
-    g_mu_population = all_g$mean_est,
+    
+    g_sd_population = exp(grow_sigma_int + grow_sigma_int_population + 
+                            grow_sigma_log_size * z_1 + 
+                            grow_sigma_temp_dry * temp_dry_t_population +
+                            grow_sigma_temp_wet * temp_wet_t_population +
+                            grow_sigma_prec_dry * prec_dry_t_population + 
+                            grow_sigma_prec_wet * prec_wet_t_population +
+                            grow_sigma_sw3_dry *  sw3_dry_t_population +
+                            grow_sigma_sw3_wet *  sw3_wet_t_population +
+                            grow_sigma_native  *  is_native(population)),
+    g_mu_population = grow_int + 
+      grow_log_size * z_1 + 
+      grow_temp_dry * temp_dry_t_population +
+      grow_temp_wet * temp_wet_t_population +
+      grow_prec_dry * prec_dry_t_population + 
+      grow_prec_wet * prec_wet_t_population +
+      grow_sw3_dry *  sw3_dry_t_population +
+      grow_sw3_wet *  sw3_wet_t_population +
+      # Interactions
+      grow_log_size_x_temp_dry * temp_dry_t_population * z_1 +
+      grow_log_size_x_temp_wet * temp_wet_t_population * z_1 +
+      grow_log_size_x_prec_dry * prec_dry_t_population * z_1 +
+      grow_log_size_x_prec_wet * prec_wet_t_population * z_1 +
+      grow_log_size_x_sw3_dry  * sw3_dry_t_population  * z_1 +
+      grow_log_size_x_sw3_wet  * sw3_wet_t_population  * z_1 +
+      
+      grow_native  *  is_native(population) +
+      grow_int_population,
     G_population    = dnorm(z_2, g_mu_population, g_sd_population),
     # Define the rest of the sub-kernel
     states          = list("z"),
@@ -146,12 +199,29 @@ carp_ipm <- init_ipm("general", "di", "det") %>%
   define_kernel(
     name = "P_to_M_population",
     formula = p_repr_population * s_population * 
-              n_flow_population * p_m_population * d_z,
+      n_flow_population * p_m_population * d_z,
     family = "CD",
-    p_repr_population = pred_repr_gam(repr_mod,
-                                      z_1,
-                                      clim_data, 
-                                      site = population),
+    p_repr_population = inv_logit(
+      repr_int + 
+        repr_log_size * z_1 +
+        repr_temp_dry * temp_dry_t_population +
+        repr_temp_wet * temp_wet_t_population +
+        repr_prec_dry * prec_dry_t_population +
+        repr_prec_wet * prec_wet_t_population +
+        repr_sw1_dry  * sw1_dry_t_population  +
+        repr_sw1_wet  * sw1_wet_t_population  +
+        # Interaction effects
+        repr_log_size_x_temp_dry * temp_dry_t_population * z_1 +
+        repr_log_size_x_temp_wet * temp_wet_t_population * z_1 +
+        repr_log_size_x_prec_dry * prec_dry_t_population * z_1 +
+        repr_log_size_x_prec_wet * prec_wet_t_population * z_1 +
+        repr_log_size_x_sw1_dry  * sw1_dry_t_population  * z_1 +
+        repr_log_size_x_sw1_wet  * sw1_wet_t_population  * z_1 +
+        # Nativity
+        repr_native * is_native(population) +
+        # Random site effect
+        repr_int_population
+    ),
     s_population = inv_logit(
       # Fixed Effects
       surv_int + 
@@ -160,41 +230,41 @@ carp_ipm <- init_ipm("general", "di", "det") %>%
         surv_temp_wet * temp_wet_t_population +
         surv_prec_dry * prec_dry_t_population +
         surv_prec_wet * prec_wet_t_population +
-        surv_sw2_dry  * sw2_dry_t_population  +
-        surv_sw2_wet  * sw2_wet_t_population  +
+        surv_sw3_dry  * sw3_dry_t_population  +
+        surv_sw3_wet  * sw3_wet_t_population  +
         # Interaction effects
         surv_log_size_x_temp_dry * temp_dry_t_population * z_1 +
         surv_log_size_x_temp_wet * temp_wet_t_population * z_1 +
         surv_log_size_x_prec_dry * prec_dry_t_population * z_1 +
         surv_log_size_x_prec_wet * prec_wet_t_population * z_1 +
-        surv_log_size_x_sw2_dry  * sw2_dry_t_population  * z_1 +
-        surv_log_size_x_sw2_wet  * sw2_wet_t_population  * z_1 +
+        surv_log_size_x_sw3_dry  * sw3_dry_t_population  * z_1 +
+        surv_log_size_x_sw3_wet  * sw3_wet_t_population  * z_1 +
         # Nativity
         surv_native * is_native(population) +
         # Random site effect
-        surv_intercept_population
-      ),
+        surv_int_population
+    ),
     n_flow_population = exp(
       # Fixed effects
       flow_int +
-        flow_log_size   * z_1 +
-        flow_mean_temp  * mean_temp_t_1_population +
-        flow_seas_temp  * seas_temp_t_1_population +
-        flow_total_prec * total_prec_t_1_population +
-        flow_seas_prec  * seas_prec_t_1_population  +
-        flow_mean_sw2   * mean_sw2_t_1_population +
-        flow_seas_sw2   * seas_sw2_t_1_population +
+        (flow_log_size + flow_log_size_population) * z_1 +
+        flow_temp_wet * temp_wet_t_1_population +
+        flow_temp_dry * temp_dry_t_1_population +
+        flow_prec_wet * prec_wet_t_1_population +
+        flow_prec_dry * prec_dry_t_1_population  +
+        flow_sw3_wet  * sw3_wet_t_1_population +
+        flow_sw3_dry  * sw3_dry_t_1_population +
         # Interactions 
-        flow_log_size_x_mean_temp  * mean_temp_t_1_population  * z_1 +
-        flow_log_size_x_seas_temp  * seas_temp_t_1_population  * z_1 +
-        flow_log_size_x_total_prec * total_prec_t_1_population * z_1 +
-        flow_log_size_x_seas_prec  * seas_prec_t_1_population  * z_1 +
-        flow_log_size_x_mean_sw2   * mean_sw2_t_1_population   * z_1 +
-        flow_log_size_x_seas_sw2   * seas_sw2_t_1_population   * z_1 +
+        flow_log_size_x_temp_wet  * temp_wet_t_1_population * z_1 +
+        flow_log_size_x_temp_dry  * temp_dry_t_1_population * z_1 +
+        flow_log_size_x_prec_wet * prec_wet_t_1_population * z_1 +
+        flow_log_size_x_prec_dry  * prec_dry_t_1_population * z_1 +
+        flow_log_size_x_sw3_wet   * sw3_wet_t_1_population  * z_1 +
+        flow_log_size_x_sw3_dry   * sw3_dry_t_1_population  * z_1 +
         # Nativity
         flow_native * is_native(population) +
         # Random site intercept
-        flow_intercept_population
+        flow_int_population
     ),
     recr_size       = dnorm(z_2, recr_mu, recr_sd),
     states          = list(c("z", "mf")),
@@ -265,14 +335,15 @@ carp_ipm <- init_ipm("general", "di", "det") %>%
       pred_repr_gam = pred_repr_gam,
       is_native     = is_native
     ),
-    iterations = 75
+    iterations = 150
   )
+
 
 print(Sys.time() - start)
 
 obs_lams <- lambda(carp_ipm)
 obs_lams
-is_conv_to_asymptotic(carp_ipm, tolerance = 1e-4)
+is_conv_to_asymptotic(carp_ipm, tolerance = 1e-4) %>% all()
 
 # Resampling G(L/A)MM Posteriors ------
 
@@ -281,26 +352,76 @@ boot_lams <- as_tibble(t(obs_lams)) %>%
 
 # Using the complete posterior to compute uncertainty in the IPM. 
 # The vital rate models aren't conditional on each other, so each
-# can be resampled separately. 
+# can be resampled separately. However, I will resample based on 
+# the posterior probability of each parameter set, so that the results
+# reflect the relative plausibility of each one.
 
-surv_draws <- as.data.frame(surv_mod) %>%
-  select(c(1:16, 19:31)) %>%
-  rename_draws("surv") 
+surv_draws <- as.data.frame(surv_mod) 
+surv_prob  <- surv_draws$lp__ %>%
+  normalize_lp()
+surv_draws <- surv_draws %>%
+  select(c(1:16, 18:30)) %>%
+  rename_draws("surv") %>%
+  setNames(gsub("intercept", "int", names(.)))
 names(surv_draws) <- gsub(pattern = "^surv_z$", 
                           "surv_log_size", 
                           x = names(surv_draws))
 
-flow_draws <- as.data.frame(flow_mod) %>%
-  select(c(1:16, 20:32)) %>%
-  rename_draws("flow") 
+grow_draws <- as.data.frame(grow_mod)
+grow_prob <- grow_draws$lp__ %>%
+  normalize_lp()
+
+grow_draws <- grow_draws %>%
+  select(1:24, 29:54) %>%
+  rename_draws("grow") %>%
+  setNames(gsub("intercept", "int", names(.)))
+
+names(grow_draws) <- gsub(pattern = "^grow_z$", 
+                          "grow_log_size", 
+                          x = names(grow_draws))
+
+
+
+repr_draws <- as.data.frame(repr_mod) 
+repr_prob  <- repr_draws$lp__ %>%
+  normalize_lp()
+
+repr_draws <- repr_draws %>%
+  select(1:16, 19:31) %>%b
+  rename_draws("repr") %>%
+  setNames(gsub("intercept", "int", names(.)))
+
+names(repr_draws) <- gsub(pattern = "^repr_z$", 
+                          "repr_log_size", 
+                          x = names(repr_draws))
+
+flow_draws <- as.data.frame(flow_mod)
+flow_prob  <- flow_draws$lp__ %>%
+  normalize_lp()
+
+flow_draws <- flow_draws %>%
+  select(c(1:16, 47:72)) %>%
+  rename_draws("flow") %>%
+  setNames(gsub("intercept", "int", names(.)))
+
 names(flow_draws) <- gsub(pattern = "^flow_z$", 
                           "flow_log_size", 
                           x = names(flow_draws))
+
+names(flow_draws)[grepl(",log_size", names(flow_draws))] <- gsub(
+  "int", "log_size", names(flow_draws)[grepl(",log_size", names(flow_draws))]
+)
+
+names(flow_draws)[grepl(",log_size", names(flow_draws))] <- gsub(
+  ",log_size", "", names(flow_draws)[grepl(",log_size", names(flow_draws))]
+)
 
 temp_lams <- vector("list", 4000L)
 
 bad_its <- integer()
 i_bad   <- 1L
+
+surv_its <- grow_its <- repr_its <- flow_its <- integer(4000L)
 
 start <- Sys.time()
 
@@ -309,19 +430,24 @@ for(i in seq_len(4000)) {
   if(i %% 100 == 0) {
     message(i, " of 4000 iterations done.")
   }
+  surv_its[i] <- surv_i <- sample(1:nrow(surv_draws), 1, prob = surv_prob)
+  grow_its[i] <- grow_i <- sample(1:nrow(grow_draws), 1, prob = grow_prob)
+  repr_its[i] <- repr_i <- sample(1:nrow(repr_draws), 1, prob = repr_prob)
+  flow_its[i] <- flow_i <- sample(1:nrow(flow_draws), 1, prob = flow_prob)
   
-  boot_surv_pars <- as.list(surv_draws[i, ])
-  boot_flow_pars <- as.list(flow_draws[i, ])
+  boot_surv_pars <- as.list(surv_draws[surv_i, ])
+  boot_flow_pars <- as.list(flow_draws[flow_i, ])
+  boot_grow_pars <- as.list(grow_draws[grow_i, ])
+  boot_repr_pars <- as.list(repr_draws[repr_i, ])
 
   det_data_list <- c(boot_surv_pars, 
                      boot_flow_pars,
+                     boot_grow_pars,
+                     boot_repr_pars,
                      clim_list, 
-                     list(grow_mod = grow_mod,
-                          repr_mod = repr_mod,
-                          iter = i),
                      list(clim_data = use_vr_model(clim_data)),
-                     list(p_e = 1e-5,
-                          s_sb = 1e-2),
+                     list(p_e = 1e-2,
+                          s_sb = 1e-1),
                      p_m_pars,
                      seed_pars,
                      recr_list)
@@ -344,26 +470,48 @@ for(i in seq_len(4000)) {
             surv_temp_wet * temp_wet_t_population +
             surv_prec_dry * prec_dry_t_population +
             surv_prec_wet * prec_wet_t_population +
-            surv_sw2_dry  * sw2_dry_t_population  +
-            surv_sw2_wet  * sw2_wet_t_population  +
+            surv_sw3_dry  * sw3_dry_t_population  +
+            surv_sw3_wet  * sw3_wet_t_population  +
             # Interaction effects
             surv_log_size_x_temp_dry * temp_dry_t_population * z_1 +
             surv_log_size_x_temp_wet * temp_wet_t_population * z_1 +
             surv_log_size_x_prec_dry * prec_dry_t_population * z_1 +
             surv_log_size_x_prec_wet * prec_wet_t_population * z_1 +
-            surv_log_size_x_sw2_dry  * sw2_dry_t_population  * z_1 +
-            surv_log_size_x_sw2_wet  * sw2_wet_t_population  * z_1 +
+            surv_log_size_x_sw3_dry  * sw3_dry_t_population  * z_1 +
+            surv_log_size_x_sw3_wet  * sw3_wet_t_population  * z_1 +
             # Nativity
             surv_native * is_native(population) +
             # Random site effect
-            surv_intercept_population 
+            surv_int_population 
         ),
-        all_g = pred_grow_gam(grow_mod,
-                              z_1,
-                              clim_data, 
-                              site = population),
-        g_sd_population = all_g$sigma,
-        g_mu_population = all_g$mean_est,
+        
+        g_sd_population = exp(grow_sigma_int + grow_sigma_int_population + 
+                                grow_sigma_log_size * z_1 + 
+                                grow_sigma_temp_dry * temp_dry_t_population +
+                                grow_sigma_temp_wet * temp_wet_t_population +
+                                grow_sigma_prec_dry * prec_dry_t_population + 
+                                grow_sigma_prec_wet * prec_wet_t_population +
+                                grow_sigma_sw3_dry *  sw3_dry_t_population +
+                                grow_sigma_sw3_wet *  sw3_wet_t_population +
+                                grow_sigma_native  *  is_native(population)),
+        g_mu_population = grow_int + 
+          grow_log_size * z_1 + 
+          grow_temp_dry * temp_dry_t_population +
+          grow_temp_wet * temp_wet_t_population +
+          grow_prec_dry * prec_dry_t_population + 
+          grow_prec_wet * prec_wet_t_population +
+          grow_sw3_dry *  sw3_dry_t_population +
+          grow_sw3_wet *  sw3_wet_t_population +
+          # Interactions
+          grow_log_size_x_temp_dry * temp_dry_t_population * z_1 +
+          grow_log_size_x_temp_wet * temp_wet_t_population * z_1 +
+          grow_log_size_x_prec_dry * prec_dry_t_population * z_1 +
+          grow_log_size_x_prec_wet * prec_wet_t_population * z_1 +
+          grow_log_size_x_sw3_dry  * sw3_dry_t_population  * z_1 +
+          grow_log_size_x_sw3_wet  * sw3_wet_t_population  * z_1 +
+          
+          grow_native  *  is_native(population) +
+          grow_int_population,
         G_population    = dnorm(z_2, g_mu_population, g_sd_population),
         # Define the rest of the sub-kernel
         states          = list("z"),
@@ -378,10 +526,27 @@ for(i in seq_len(4000)) {
         formula = p_repr_population * s_population * 
           n_flow_population * p_m_population * d_z,
         family = "CD",
-        p_repr_population = pred_repr_gam(repr_mod,
-                                          z_1,
-                                          clim_data, 
-                                          site = population),
+        p_repr_population = inv_logit(
+          repr_int + 
+            repr_log_size * z_1 +
+            repr_temp_dry * temp_dry_t_population +
+            repr_temp_wet * temp_wet_t_population +
+            repr_prec_dry * prec_dry_t_population +
+            repr_prec_wet * prec_wet_t_population +
+            repr_sw1_dry  * sw1_dry_t_population  +
+            repr_sw1_wet  * sw1_wet_t_population  +
+            # Interaction effects
+            repr_log_size_x_temp_dry * temp_dry_t_population * z_1 +
+            repr_log_size_x_temp_wet * temp_wet_t_population * z_1 +
+            repr_log_size_x_prec_dry * prec_dry_t_population * z_1 +
+            repr_log_size_x_prec_wet * prec_wet_t_population * z_1 +
+            repr_log_size_x_sw1_dry  * sw1_dry_t_population  * z_1 +
+            repr_log_size_x_sw1_wet  * sw1_wet_t_population  * z_1 +
+            # Nativity
+            repr_native * is_native(population) +
+            # Random site effect
+            repr_int_population
+        ),
         s_population = inv_logit(
           # Fixed Effects
           surv_int + 
@@ -390,41 +555,41 @@ for(i in seq_len(4000)) {
             surv_temp_wet * temp_wet_t_population +
             surv_prec_dry * prec_dry_t_population +
             surv_prec_wet * prec_wet_t_population +
-            surv_sw2_dry  * sw2_dry_t_population  +
-            surv_sw2_wet  * sw2_wet_t_population  +
+            surv_sw3_dry  * sw3_dry_t_population  +
+            surv_sw3_wet  * sw3_wet_t_population  +
             # Interaction effects
             surv_log_size_x_temp_dry * temp_dry_t_population * z_1 +
             surv_log_size_x_temp_wet * temp_wet_t_population * z_1 +
             surv_log_size_x_prec_dry * prec_dry_t_population * z_1 +
             surv_log_size_x_prec_wet * prec_wet_t_population * z_1 +
-            surv_log_size_x_sw2_dry  * sw2_dry_t_population  * z_1 +
-            surv_log_size_x_sw2_wet  * sw2_wet_t_population  * z_1 +
+            surv_log_size_x_sw3_dry  * sw3_dry_t_population  * z_1 +
+            surv_log_size_x_sw3_wet  * sw3_wet_t_population  * z_1 +
             # Nativity
             surv_native * is_native(population) +
             # Random site effect
-            surv_intercept_population
+            surv_int_population
         ),
         n_flow_population = exp(
           # Fixed effects
           flow_int +
-            flow_log_size   * z_1 +
-            flow_mean_temp  * mean_temp_t_1_population +
-            flow_seas_temp  * seas_temp_t_1_population +
-            flow_total_prec * total_prec_t_1_population +
-            flow_seas_prec  * seas_prec_t_1_population  +
-            flow_mean_sw2   * mean_sw2_t_1_population +
-            flow_seas_sw2   * seas_sw2_t_1_population +
+            (flow_log_size + flow_log_size_population) * z_1 +
+            flow_temp_wet * temp_wet_t_1_population +
+            flow_temp_dry * temp_dry_t_1_population +
+            flow_prec_wet * prec_wet_t_1_population +
+            flow_prec_dry * prec_dry_t_1_population  +
+            flow_sw3_wet  * sw3_wet_t_1_population +
+            flow_sw3_dry  * sw3_dry_t_1_population +
             # Interactions 
-            flow_log_size_x_mean_temp  * mean_temp_t_1_population  * z_1 +
-            flow_log_size_x_seas_temp  * seas_temp_t_1_population  * z_1 +
-            flow_log_size_x_total_prec * total_prec_t_1_population * z_1 +
-            flow_log_size_x_seas_prec  * seas_prec_t_1_population  * z_1 +
-            flow_log_size_x_mean_sw2   * mean_sw2_t_1_population   * z_1 +
-            flow_log_size_x_seas_sw2   * seas_sw2_t_1_population   * z_1 +
+            flow_log_size_x_temp_wet  * temp_wet_t_1_population * z_1 +
+            flow_log_size_x_temp_dry  * temp_dry_t_1_population * z_1 +
+            flow_log_size_x_prec_wet * prec_wet_t_1_population * z_1 +
+            flow_log_size_x_prec_dry  * prec_dry_t_1_population * z_1 +
+            flow_log_size_x_sw3_wet   * sw3_wet_t_1_population  * z_1 +
+            flow_log_size_x_sw3_dry   * sw3_dry_t_1_population  * z_1 +
             # Nativity
             flow_native * is_native(population) +
             # Random site intercept
-            flow_intercept_population
+            flow_int_population
         ),
         recr_size       = dnorm(z_2, recr_mu, recr_sd),
         states          = list(c("z", "mf")),
@@ -495,8 +660,10 @@ for(i in seq_len(4000)) {
           pred_repr_gam = pred_repr_gam,
           is_native     = is_native
         ),
-        iterations = 75
+        iterations = 150
       )
+    
+    
   },
   error = function(e) {
     i       <- get("i", envir = .GlobalEnv, inherits = FALSE)
@@ -517,13 +684,33 @@ for(i in seq_len(4000)) {
   
 }
 
-print(Sys.time() - start) # Simple IPM: 2.48h, general IPM: 
+print(Sys.time() - start) # Simple IPM: 2.48h, GAM IPM: 2 days, GLM IPM: 4.4h
 
 all_lams <- bind_rows(boot_lams, temp_lams) %>%
   as.data.frame()
 
+surv_draws[surv_its, ] %>%
+  write.csv(., file = "ipms/Model_Fits/posterior_lambda_surv_pars.csv",
+            row.names = FALSE,
+            quote = FALSE)
+
+grow_draws[grow_its, ] %>%
+  write.csv(., file = "ipms/Model_Fits/posterior_lambda_grow_pars.csv",
+            row.names = FALSE,
+            quote = FALSE)
+
+repr_draws[repr_its, ] %>%
+  write.csv(., file = "ipms/Model_Fits/posterior_lambda_repr_pars.csv",
+            row.names = FALSE,
+            quote = FALSE)
+
+flow_draws[surv_its, ] %>%
+  write.csv(., file = "ipms/Model_Fits/posterior_lambda_flow_pars.csv",
+            row.names = FALSE,
+            quote = FALSE)
+
 write.csv(all_lams,
-          file = "ipms/Model_Fits/ipms/gam_mod_general_ipm_site_lambdas.csv",
+          file = "ipms/Model_Fits/ipms/lin_mod_general_ipm_site_lambdas_prob_resamp.csv",
           row.names = FALSE,
           quote = FALSE)
 

@@ -10,7 +10,103 @@ get_gg_legend<-function(plot){
 
 
 
-plot_models <- function(mod_list, vr) {
+plot_models <- function(mod_list, vr, gam) {
+  
+  stan_gam <- ifelse(gam, "gam", "lin")
+  
+  switch(stan_gam,
+         "gam" = .plot_gam(mod_list, vr),
+         "lin" = .plot_lin(mod_list, vr))
+  
+}
+
+.plot_lin <- function(mod_list, vr) {
+  
+  pp_type <- switch(vr,
+                    "repro"         = "bars_grouped",
+                    "survival"      = "bars_grouped",
+                    "log_size_next" = "scatter_avg_grouped",
+                    "flower_n"      = "scatter_avg_grouped")
+  
+  
+  for(i in seq_along(mod_list)) {
+    
+    use_mod <- mod_list[[i]]
+    
+    file_nm <- names(mod_list)[i]
+    
+    if(vr == "log_size_next") vr <- "growth"
+    
+    rmd <- glue('ipms/Model_Summaries/{vr}/{file_nm}_glmm.rmd')
+    
+    sink(file = rmd)
+    
+    cat(glue("---\ntitle: '{vr}'"),
+        "\noutput:\n  html_document:\n    toc: true\n---\n\n")
+    
+    
+    cat("```{r echo = FALSE}\n\n",
+        glue("mod_list <- readRDS('../../Model_Fits/ramet_{vr}_list_krig.rds')"),
+        "\n```")
+    
+    cat('\n\n## WAIC Results\n\n')
+    cat("```{r echo = FALSE}\n\n",
+        "print(mod_list[[1]]$mod_waic.diffs)",
+        "\n\n```")
+    
+    for(j in 1:13) {
+      
+      cat("\n\n## ", 
+          glue("{names(mod_list[[1]])[j]} GLMM"),
+          "\n\n") 
+      
+      if(vr %in% c("repro", "survival")) {
+        
+        # using 89% intervals, as 10k ESS is needed to compute precise 95%
+        # (Kruschke 2014), and we don't want to run our MCMC for that long.
+        # Apparently 89% is more stable? (Kruschke 2014). 
+        # Kruschke, J. (2014). Doing bayesian data analysis: A tutorial with r,
+        # JAGS, and stan. Academic Press.
+        
+        
+        cat("```{r echo = FALSE}\n\n",
+            glue("summary(mod_list[[1]][[{j}]], prob = 0.89)"),
+            "\n\n",
+            glue("plot(mod_list[[1]][[{j}]], ask = FALSE)\n\n"),
+            glue("pp_check(mod_list[[1]][[{j}]],
+                      type   = '{pp_type}',
+                      group  = 'site',
+                      freq   = FALSE,
+                      ndraws = 100L)"),
+            "\n\n```\n\n")
+        
+      } else {
+        
+        cat("\n\n```{r echo = FALSE}\n\n",
+            glue("summary(mod_list[[1]][[{j}]], prob = 0.89)"),
+            "\n\n",
+            glue("plot(mod_list[[1]][[{j}]], ask = FALSE)\n\n"),
+            glue("pp_check(mod_list[[1]][[{j}]],
+                      type   = '{pp_type}',
+                      group  = 'site',
+                      ndraws = 100L) + 
+                 geom_abline(slope = 1, intercept = 0)"),
+            "\n\n```\n\n")
+        
+      }
+      
+    }
+    
+    sink()
+    
+    render(input = rmd)
+    
+  }
+  
+}
+
+
+.plot_gam <- function(mod_list, vr) {
   
   pp_type <- switch(vr,
                     "repro"         = "bars_grouped",
@@ -47,7 +143,7 @@ plot_models <- function(mod_list, vr) {
     for(j in 1:13) {
       
       cat("\n\n## ", 
-          glue("{names(mod_list[[1]])[j]}"),
+          glue("{names(mod_list[[1]])[j]} GAMM"),
           "\n\n") 
       
       if(vr %in% c("repro", "survival")) {

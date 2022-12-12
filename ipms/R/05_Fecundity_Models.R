@@ -38,7 +38,7 @@ flower_data <- filter(all_ramets, !is.na(flower_n) & !is.na(size)) #%>%
 
 # BRMS fits ------------------
 
-# brm_repro_list <- list(krig_clim = fit_vr_model(repro_data, "repro"))
+# brm_repro_list <- list(krig_clim = fit_vr_model(repro_data, "repro", gam = TRUE))
 
 # saveRDS(brm_repro_list, file = 'ipms/Model_Fits/ramet_repro_list_krig_gam.rds')
 # brm_repro_list <- readRDS('ipms/Model_Fits/ramet_repro_list_krig_gam.rds')
@@ -48,13 +48,50 @@ flower_data <- filter(all_ramets, !is.na(flower_n) & !is.na(size)) #%>%
 
 # Flower production models -----------------
 
-# brm_flower_n_list <- list(krig_clim = fit_vr_model(flower_data, "flower_n"))
-# 
-# saveRDS(brm_flower_n_list, file = 'ipms/Model_Fits/ramet_flower_n_list_krig_gam.rds')
-# brm_flower_n_list <- readRDS('ipms/Model_Fits/ramet_flower_n_list_krig_gam.rds')
-# 
-# plot_models(brm_flower_n_list, "flower_n")
+brm_flower_n_list <- list(krig_clim = fit_vr_model(flower_data, "flower_n",
+                                                   gam = FALSE))
+
+saveRDS(brm_flower_n_list, file = 'ipms/Model_Fits/ramet_flower_n_list_lin_slope_ran.rds')
+# brm_flower_n_list <- readRDS('ipms/Model_Fits/ramet_flower_n_list_lin_slope_ran.rds')
+ 
+plot_models(brm_flower_n_list, "flower_n", gam = FALSE)
 # plot_preds(brm_flower_n_list, "flower_n_native", native = "yes")
+
+
+brm_flower_n_no_slope_list <- readRDS('ipms/Model_Fits/ramet_flower_n_list_krig.rds')
+
+all_flow_waic <- waic(brm_flower_n_no_slope_list[[1]][[1]],
+                      brm_flower_n_no_slope_list[[1]][[2]],
+                      brm_flower_n_no_slope_list[[1]][[3]],
+                      brm_flower_n_no_slope_list[[1]][[4]],
+                      brm_flower_n_no_slope_list[[1]][[5]],
+                      brm_flower_n_no_slope_list[[1]][[6]],
+                      brm_flower_n_no_slope_list[[1]][[7]],
+                      brm_flower_n_no_slope_list[[1]][[8]],
+                      brm_flower_n_no_slope_list[[1]][[9]],
+                      brm_flower_n_no_slope_list[[1]][[10]],
+                      brm_flower_n_no_slope_list[[1]][[11]],
+                      brm_flower_n_no_slope_list[[1]][[12]],
+                      brm_flower_n_no_slope_list[[1]][[13]],
+                      brm_flower_n_list[[1]][[1]],
+                      brm_flower_n_list[[1]][[2]],
+                      brm_flower_n_list[[1]][[3]],
+                      brm_flower_n_list[[1]][[4]],
+                      brm_flower_n_list[[1]][[5]],
+                      brm_flower_n_list[[1]][[6]],
+                      brm_flower_n_list[[1]][[7]],
+                      brm_flower_n_list[[1]][[8]],
+                      brm_flower_n_list[[1]][[9]],
+                      brm_flower_n_list[[1]][[10]],
+                      brm_flower_n_list[[1]][[11]],
+                      brm_flower_n_list[[1]][[12]],
+                      brm_flower_n_list[[1]][[13]],
+                      model_names = c(paste0(names(brm_flower_n_no_slope_list[[1]][1:13]),
+                                             "_no_slope_ran"),
+                                      paste0(names(brm_flower_n_list[[1]][1:13]),
+                                             "_slope_ran")))
+
+all_flow_waic$diffs
 
 # # Recruit size distribution model-----------
 recruits <- readRDS("ipms/Data/seedlings.rds")

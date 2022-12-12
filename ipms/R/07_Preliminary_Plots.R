@@ -9,76 +9,84 @@ all_ramets <- readRDS("ipms/Data/all_ramets_di.rds") %>%
     )
   )
 
-clim_data <- all_ramets %>% 
-  select(site:ann_pc_2_t, native) %>%
-  group_by(site) %>%
-  summarise_all(.funs = unique) %>%
-  ungroup()
-
-pred_data <- all_ramets %>%
-  group_by(site) %>%
-  summarise(
-    med_size = median(log_size, na.rm = TRUE),
-    avg_size = mean(log_size, na.rm = TRUE),
-    l1_size  = quantile(log_size, 0.1, na.rm = TRUE),
-    u9_size  = quantile(log_size, 0.9, na.rm = TRUE)
-  ) %>%
-  left_join(clim_data)
-
-# Create plot for median, mean, .9, and .1 quantile sized plants for each
-# climate and population setup
-# 
 surv_mods <- readRDS("ipms/Model_Fits/ramet_survival_list_krig.rds")
-grow_mods <- readRDS("ipms/Model_Fits/ramet_growth_list_krig_gam.rds")
-repr_mods <- readRDS("ipms/Model_Fits/ramet_repro_list_krig_gam.rds")
-flow_mods <- readRDS("ipms/Model_Fits/ramet_flower_n_list_krig_gam.rds")
-# 
+flow_mods <- readRDS("ipms/Model_Fits/ramet_flower_n_list_krig.rds")
 
-
-use_surv_mod <- surv_mods[[1]][["times_sw2_seas"]]
+use_surv_mod <- surv_mods[[1]][["times_sw3_seas"]]
 use_grow_mod <- readRDS("ipms/Model_Fits/grow_2_1_lin_gam_mix.rds")
 use_repr_mod <- readRDS("ipms/Model_Fits/repro_lin_gam_mix.rds")
-use_flow_mod <- flow_mods[[1]][["times_sw2_seas"]]
+use_flow_mod <- flow_mods[[1]][["times_sw2_ann"]]
 
-clim_names <- names(clim_data) %>%
-  .[!. %in% c("site", "native")]
+surv_pred <- fitted(use_surv_mod)
+grow_pred <- fitted(use_grow_mod)
+repr_pred <- fitted(use_repr_mod)
+flow_pred <- fitted(use_flow_mod)
 
-surv_terms <- mod_clim_terms(use_surv_mod, clim_names)
-grow_terms <- mod_clim_terms(use_grow_mod, clim_names)
-repr_terms <- mod_clim_terms(use_repr_mod, clim_names)
-flow_terms <- mod_clim_terms(use_flow_mod, clim_names)
-
+surv_data <- cbind(use_surv_mod$data, 
+                   surv_pred = surv_pred[ ,1])
+grow_data <- cbind(use_grow_mod$data,
+                   grow_pred = grow_pred[ ,1])
+repr_data <- cbind(use_repr_mod$data, 
+                   repr_pred = repr_pred[ ,1])
+flow_data <- cbind(use_flow_mod$data,
+                   flow_pred = flow_pred[ ,1])
 
 # loop over populations so that each one gets its own pdf
 
 for(i in seq_along(unique(all_ramets$site))) {
   
   pop <- unique(all_ramets$site)[i]
-  
-  
-  ramet_temp <- filter(pred_data, site == pop)
 
-  sizes     <- select(ramet_temp, site:u9_size, native) %>%
-    pivot_longer(-c(site, native), names_to = "size_qtle", values_to = "log_size")
+  surv_temp <- filter(surv_data, site == pop)
+  grow_temp <- filter(grow_data, site == pop)
+  repr_temp <- filter(repr_data, site == pop)
+  flow_temp <- filter(flow_data, site == pop)
   
-  surv_clim_seqs <- make_clim_seqs(surv_terms, ramet_temp) %>%
-    cbind(site = pop)
   
-  grow_clim_seqs <- make_clim_seqs(grow_terms, ramet_temp) %>%
-    cbind(site = pop)
+  surv_plt <- ggplot(surv_temp) +
+    geom_line(aes(x = log_size, y = surv_pred), 
+              color = "red", size = 1.5) +
+    geom_jitter(aes(x = log_size, y = alive), alpha = 0.5,
+                height = 0.05, width = 0) +
+    theme_bw() +
+    ylab("Survival (t + 1)") + 
+    xlab("Size (t)") +
+    ggtitle(pop)
   
-  repr_clim_seqs <- make_clim_seqs(repr_terms, ramet_temp) %>%
-    cbind(site = pop)
+  grow_plt <- ggplot(grow_temp) +
+    geom_line(aes(x = log_size, y = grow_pred),
+              color = "red", size = 1.5) +
+    geom_abline(intercept = 0, slope = 1, color = "grey50") +
+    geom_point(aes(x = log_size, y = log_size_next), alpha = 0.5) +
+    theme_bw() +
+    ylab("Size (t + 1)") + 
+    xlab("Size (t)")
   
-  flow_clim_seqs <- make_clim_seqs(flow_terms, ramet_temp) %>%
-    cbind(site = pop)
+  repr_plt <- ggplot(repr_temp) +
+    geom_line(aes(x = log_size, y = repr_pred),
+              color = "red", size = 1.5) +
+    geom_jitter(aes(x = log_size, y = repro),
+              alpha = 0.5, height = 0.05, width = 0) +
+    theme_bw() +
+    ylab("Pr(Reproductive) (t)") + 
+    xlab("Size (t)") +
+    ggtitle(pop)
+  
+  flow_plt <- ggplot(flow_temp) +
+    geom_line(aes(x = log_size, y = flow_pred),
+              color = "red", size = 1.5) +
+    geom_point(aes(x = log_size, y = flower_n),
+               alpha = 0.5) +
+    theme_bw() +
+    ylab("# of Flowers (t)") + 
+    xlab("Size (t)")
+  
   
   pdf(glue('ipms/Figures/vr_models/gam/{pop}_p_kern_preliminary_plots.pdf'),
       width = 8,
       height = 8)
   
-    clim_plots(sizes, surv_clim_seqs, use_surv_mod, surv_terms)
-    clim_plots(sizes, grow_clim_seqs, use_grow_mod, grow_terms)
+    grid.arrange(surv_plt, grow_plt, nrow = 2, ncol = 1)
     
   dev.off()
   
@@ -86,33 +94,54 @@ for(i in seq_along(unique(all_ramets$site))) {
       width = 8,
       height = 8)
   
-    clim_plots(sizes, repr_clim_seqs, use_repr_mod, repr_terms)
-    clim_plots(sizes, flow_clim_seqs, use_flow_mod, flow_terms)
+    grid.arrange(repr_plt, flow_plt, nrow = 2, ncol = 1)
   
   dev.off()
   
   
 }
 
-sizes <- c(all_ramets$log_size, all_ramets$log_size_next)
 
 use_sites <- c("Havatselet", "Foxton", "Rooisand", "Colares", "Rarangi")
-all_sizes <- expand.grid(site = use_sites,
-                         log_size = seq(min(sizes, na.rm = TRUE),
-                                        max(sizes, na.rm = TRUE),
-                                        length.out = 50)) %>%
-  mutate(native = case_when(
-    site %in% c("Rooisand") ~ 1,
-    TRUE ~ 0
-  ))
 
+use_surv <- filter(surv_data, site %in% use_sites)
+use_grow <- filter(grow_data, site %in% use_sites)
+use_repr <- filter(repr_data, site %in% use_sites)
+use_flow <- filter(flow_data, site %in% use_sites)
+
+surv_plt <- ggplot(use_surv) +
+  geom_line(aes(x = log_size, y = surv_pred, color = site),
+            size = 1.5, alpha = 0.7) +
+  theme_bw() +
+  ylab("Survival (t + 1") +
+  xlab("Size (t)")
+
+grow_plt <- ggplot(use_grow) +
+  geom_line(aes(x = log_size, y = grow_pred, color = site),
+            size = 1.5, alpha = 0.7) +
+  theme_bw() +
+  ylab("Size (t + 1") +
+  xlab("Size (t)")
+
+repr_plt <- ggplot(use_repr) +
+  geom_line(aes(x = log_size, y = repr_pred, color = site),
+            size = 1.5, alpha = 0.7) +
+  theme_bw() +
+  ylab("Pr(Reproductive) (t + 1") +
+  xlab("Size (t)")
+
+flow_plt <- ggplot(use_flow) +
+  geom_line(aes(x = log_size, y = flow_pred, color = site),
+            size = 1.5, alpha = 0.7) +
+  theme_bw() +
+  ylab("Pr(Reproductive) (t + 1") +
+  xlab("Size (t)")
 
 pdf(glue('ipms/Figures/vr_models/gam/all_pops_f_kern_preliminary_plots.pdf'),
     width = 8,
     height = 8)
 
-  size_clim_plots(all_sizes, clim_data, use_repr_mod, repr_terms, use_sites)
-  size_clim_plots(all_sizes, clim_data, use_flow_mod, flow_terms, use_sites)
+  grid.arrange(repr_plt, flow_plt, nrow = 2, ncol = 1)
 
 dev.off()
 
@@ -120,7 +149,69 @@ pdf(glue('ipms/Figures/vr_models/gam/all_pops_p_kern_preliminary_plots.pdf'),
     width = 8,
     height = 8)
 
-  size_clim_plots(all_sizes, clim_data, use_surv_mod, surv_terms, use_sites)
-  size_clim_plots(all_sizes, clim_data, use_grow_mod, grow_terms, use_sites)
+  grid.arrange(surv_plt, grow_plt, nrow = 2, ncol = 1)
+
+dev.off()
+
+
+#  FInally, create pp_check plots for everything for appendix of publication.
+
+# Survival
+
+pdf("ipms/Figures/vr_models/best_mods/survival.pdf")
+
+pp_check(use_surv_mod,
+         type   = 'bars_grouped',
+         group  = 'site', 
+         freq   = FALSE,
+         ndraws = 100L) 
+
+dev.off()
+
+# 2_1_test is best for growth is best overall. Create pp_check for it!
+
+pdf("ipms/Figures/vr_models/best_mods/growth.pdf")
+
+pp_check(use_grow_mod,
+         type   = 'scatter_avg_grouped',
+         group  = 'site',
+         ndraws = 100L) + 
+  geom_abline(slope = 1, intercept = 0)
+
+plot(conditional_smooths(use_grow_mod,
+                         surface = TRUE), 
+     stype = 'raster',
+     theme = theme_bw(),
+     ask = FALSE)
+
+dev.off()
+
+# Reproduction
+
+pdf("ipms/Figures/vr_models/best_mods/reproduction.pdf")
+
+pp_check(use_repr_mod,
+         type   = 'bars_grouped',
+         group  = 'site',
+         freq   = FALSE,
+         ndraws = 100L) 
+
+plot(conditional_smooths(use_repr_mod,
+                         surface = TRUE), 
+     stype = 'raster',
+     theme = theme_bw(),
+     ask = FALSE)
+
+dev.off()
+
+# Flower Number
+
+pdf("ipms/Figures/vr_models/best_mods/flower_n.pdf")
+
+pp_check(use_flow_mod,
+         type   = 'scatter_avg_grouped',
+         group  = 'site',
+         ndraws = 100L) + 
+  geom_abline(slope = 1, intercept = 0)
 
 dev.off()

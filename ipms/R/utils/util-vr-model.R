@@ -32,7 +32,7 @@ fit_vr_model <- function(data, vr, gam) {
   seas_forms <- switch(stan_gam,
                        "gam" = .make_bfs(vr, "seas"),
                        "lin" = .make_lin_bfs(vr, "seas"))
-  ann_forms  <- switch(gam,
+  ann_forms  <- switch(stan_gam,
                        "gam" = .make_bfs(vr, "ann"),
                        "lin" = .make_lin_bfs(vr, "ann"))
   
@@ -86,7 +86,7 @@ fit_vr_model <- function(data, vr, gam) {
                     family     = fam,
                     chains     = 4,    
                     backend    = be,
-                    inits      = inits,
+                    init       = inits,
                     cores      = getOption("mc.cores", 4L),
                     save_model = mod_fp,
                     control    = list(adapt_delta = 0.999,
