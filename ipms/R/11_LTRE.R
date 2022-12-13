@@ -111,15 +111,15 @@ pop_test   <- pop_draws_site[split_ind == 2, ]
 lams_train <- lams[split_ind == 1]
 pop_train  <- pop_draws_site[split_ind == 1, ]
 
-# temp_rf_site <- randomForest(x          = pop_train,
-#                              y          = lams_train,
-#                              xtest      = pop_test,
-#                              ytest      = lams_test,
-#                              ntree      = 751,
-#                              importance = TRUE)
-# 
-# saveRDS(temp_rf_site,
-#         file = "ipms/Model_Fits/ltre/all_site_rf_ltre_with_site_term.rds")
+all_rf_site <- randomForest(x          = pop_train,
+                             y          = lams_train,
+                             xtest      = pop_test,
+                             ytest      = lams_test,
+                             ntree      = 751,
+                             importance = TRUE)
+
+saveRDS(all_rf_site,
+        file = "ipms/Model_Fits/ltre/all_site_rf_ltre_with_site_term.rds")
 
 all_rf_site <- readRDS("ipms/Model_Fits/ltre/all_site_rf_ltre_with_site_term.rds")
 
@@ -178,3 +178,12 @@ pdf("ipms/Figures/ipm_output/all_site_ltre_r2_rf_w_site_term.pdf")
 print(r2_plt)
 
 dev.off()
+
+dissertation_files <- c("ipms/Model_Fits/ipms/site_climate_values.csv",
+                        "ipms/Model_Fits/ipms/lin_mod_general_ipm_site_lambdas_prob_resamp.csv",
+                        "ipms/Model_Fits/ltre/all_site_rf_ltre_with_site_term.rds")
+
+
+fs::file_copy(dissertation_files,
+              new_path = "../../dissertation/Data",
+              overwrite = TRUE)

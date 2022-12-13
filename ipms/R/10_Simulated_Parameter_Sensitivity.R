@@ -234,6 +234,7 @@ for(i in seq_along(p_e_vals)) {
           repr_log_size_x_sw1_wet  * sw1_wet_t_population  * z_1 +
           # Nativity
           repr_native * is_native(population) +
+          repr_log_size_x_native * is_native(population) * z_1 +
           # Random site effect
           repr_int_population
       ),
@@ -474,6 +475,7 @@ for(i in seq_along(s_sb_vals)) {
           repr_log_size_x_sw1_wet  * sw1_wet_t_population  * z_1 +
           # Nativity
           repr_native * is_native(population) +
+          repr_log_size_x_native * is_native(population) * z_1 +
           # Random site effect
           repr_int_population
       ),

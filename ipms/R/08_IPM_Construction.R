@@ -219,6 +219,7 @@ carp_ipm <- init_ipm("general", "di", "det") %>%
         repr_log_size_x_sw1_wet  * sw1_wet_t_population  * z_1 +
         # Nativity
         repr_native * is_native(population) +
+        repr_log_size_x_native * is_native(population) * z_1 +
         # Random site effect
         repr_int_population
     ),
@@ -387,7 +388,7 @@ repr_prob  <- repr_draws$lp__ %>%
   normalize_lp()
 
 repr_draws <- repr_draws %>%
-  select(1:16, 19:31) %>%b
+  select(1:16, 19:31) %>%
   rename_draws("repr") %>%
   setNames(gsub("intercept", "int", names(.)))
 
@@ -544,6 +545,7 @@ for(i in seq_len(4000)) {
             repr_log_size_x_sw1_wet  * sw1_wet_t_population  * z_1 +
             # Nativity
             repr_native * is_native(population) +
+            repr_log_size_x_native * is_native(population) * z_1 +
             # Random site effect
             repr_int_population
         ),
